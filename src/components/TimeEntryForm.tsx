@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const TimeEntryForm = () => {
   const [date, setDate] = useState("");
-  const [workType, setWorkType] = useState("hourly");
+  const [workType, setWorkType] = useState<"hourly" | "job">("hourly");
   const [jobDescription, setJobDescription] = useState("");
   const [hours, setHours] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
@@ -29,8 +29,15 @@ const TimeEntryForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("You must be logged in to submit time entries");
+      return;
+    }
+
     try {
       const { error } = await supabase.from("timesheet_entries").insert({
+        user_id: user.id,
         date,
         work_type: workType,
         job_description: jobDescription,
@@ -78,7 +85,7 @@ const TimeEntryForm = () => {
         <Label>Work Type</Label>
         <RadioGroup
           value={workType}
-          onValueChange={setWorkType}
+          onValueChange={(value: "hourly" | "job") => setWorkType(value)}
           className="flex gap-4"
         >
           <div className="flex items-center space-x-2">

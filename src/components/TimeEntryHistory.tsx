@@ -32,12 +32,16 @@ const TimeEntryHistory = () => {
 
   useEffect(() => {
     const fetchEntries = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const startDate = `${selectedMonth}-01`;
       const endDate = `${selectedMonth}-31`;
 
       const { data, error } = await supabase
         .from("timesheet_entries")
         .select("*")
+        .eq("user_id", user.id)
         .gte("date", startDate)
         .lte("date", endDate)
         .order("date", { ascending: false });
