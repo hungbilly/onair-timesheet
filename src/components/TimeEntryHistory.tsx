@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { TimeEntry } from "@/types";
 import { MonthlySummaryCards } from "./MonthlySummaryCards";
 import { TimeEntryRow } from "./TimeEntryRow";
+import { TimeEntryCreateRow } from "./TimeEntryCreateRow";
 
 const TimeEntryHistory = () => {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
@@ -107,6 +108,7 @@ const TimeEntryHistory = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
+          <TimeEntryCreateRow onSave={fetchEntries} />
           {entries.map((entry) => (
             <TimeEntryRow
               key={entry.id}
