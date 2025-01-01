@@ -148,6 +148,7 @@ export const TimeEntryCreateRow = ({ onSave }: TimeEntryCreateRowProps) => {
           onChange={(e) => handleTimeChange('start_time', e.target.value)}
           className="w-24 inline-block"
           step="900"
+          list="time-list"
         />
         <Input
           type="time"
@@ -155,7 +156,17 @@ export const TimeEntryCreateRow = ({ onSave }: TimeEntryCreateRowProps) => {
           onChange={(e) => handleTimeChange('end_time', e.target.value)}
           className="w-24 inline-block"
           step="900"
+          list="time-list"
         />
+        <datalist id="time-list">
+          {Array.from({ length: 96 }, (_, i) => {
+            const hours = Math.floor(i / 4);
+            const minutes = (i % 4) * 15;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+          }).map((time) => (
+            <option key={time} value={time} />
+          ))}
+        </datalist>
       </TableCell>
       <TableCell>
         {entry.work_type === "hourly" ? (
