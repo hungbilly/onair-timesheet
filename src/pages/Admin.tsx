@@ -6,6 +6,7 @@ import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 import UserManagement from "@/components/admin/UserManagement";
 import EmployeeStats from "@/components/admin/EmployeeStats";
+import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
 import { supabase } from "@/integrations/supabase/client";
 
 const Admin = () => {
@@ -55,14 +56,17 @@ const Admin = () => {
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <Button 
-          variant="outline" 
-          onClick={handleSignOut}
-          className="gap-2"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign out
-        </Button>
+        <div className="flex items-center gap-4">
+          <ChangePasswordDialog />
+          <Button 
+            variant="outline" 
+            onClick={handleSignOut}
+            className="gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </Button>
+        </div>
       </div>
       
       <Tabs defaultValue="users" className="space-y-4">
