@@ -36,7 +36,7 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
   };
 
   return (
-    <div className="relative border rounded-lg p-4 bg-white">
+    <div className="relative border rounded-lg p-4 bg-white space-y-4">
       {canRemove && (
         <Button
           variant="ghost"
@@ -48,9 +48,9 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
         </Button>
       )}
 
-      <div className="grid grid-cols-12 gap-4">
-        {/* Date */}
-        <div className="col-span-2">
+      {/* Row 1: Date and Work Type */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
           <Label className="text-sm mb-1 block">Date</Label>
           <Popover>
             <PopoverTrigger asChild>
@@ -73,13 +73,12 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
           </Popover>
         </div>
 
-        {/* Work Type */}
-        <div className="col-span-2">
+        <div>
           <Label className="text-sm mb-1 block">Work Type</Label>
           <RadioGroup
             value={entry.workType}
             onValueChange={(value: WorkType) => handleChange("workType", value)}
-            className="flex gap-4"
+            className="flex gap-6"
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="hourly" id={`hourly-${index}`} />
@@ -91,21 +90,22 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
             </div>
           </RadioGroup>
         </div>
+      </div>
 
-        {/* Job Description */}
-        <div className="col-span-3">
+      {/* Row 2: Description and Time */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
           <Label className="text-sm mb-1 block">Description</Label>
           <Input
             value={entry.jobDescription}
             onChange={(e) => handleChange("jobDescription", e.target.value)}
             required
             className="h-9 text-sm px-3"
-            placeholder="Enter description"
+            placeholder="Enter job description"
           />
         </div>
 
-        {/* Time */}
-        <div className="col-span-2">
+        <div>
           <Label className="text-sm mb-1 block">Time</Label>
           <div className="flex gap-2">
             <Input
@@ -124,10 +124,13 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
             />
           </div>
         </div>
+      </div>
 
+      {/* Row 3: Hours/Jobs and Rate */}
+      <div className="grid grid-cols-2 gap-4">
         {entry.workType === "hourly" ? (
           <>
-            <div className="col-span-1.5">
+            <div>
               <Label className="text-sm mb-1 block">Hours</Label>
               <Input
                 type="number"
@@ -140,7 +143,7 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
               />
             </div>
 
-            <div className="col-span-1.5">
+            <div>
               <Label className="text-sm mb-1 block">Rate/Hr</Label>
               <Input
                 type="number"
@@ -155,7 +158,7 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
           </>
         ) : (
           <>
-            <div className="col-span-1.5">
+            <div>
               <Label className="text-sm mb-1 block">Jobs</Label>
               <Input
                 type="number"
@@ -168,7 +171,7 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
               />
             </div>
 
-            <div className="col-span-1.5">
+            <div>
               <Label className="text-sm mb-1 block">Rate/Job</Label>
               <Input
                 type="number"
