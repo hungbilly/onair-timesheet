@@ -46,7 +46,8 @@ const UserManagement = () => {
       .select(`
         id,
         role,
-        full_name
+        full_name,
+        email
       `);
 
     if (error) {
@@ -54,20 +55,9 @@ const UserManagement = () => {
       return;
     }
 
-    // Get user emails from auth.users through the admin API
-    const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
-    
-    if (authError) {
-      toast.error("Error fetching user emails");
-      return;
+    if (profiles) {
+      setUsers(profiles);
     }
-
-    const combinedUsers = profiles.map(profile => ({
-      ...profile,
-      email: authUsers.find(u => u.id === profile.id)?.email || "",
-    }));
-
-    setUsers(combinedUsers);
   };
 
   useEffect(() => {

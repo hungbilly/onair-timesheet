@@ -35,7 +35,7 @@ const EmployeeStats = () => {
   const fetchEmployees = async () => {
     const { data: profiles, error } = await supabase
       .from("profiles")
-      .select("id, full_name")
+      .select("id, full_name, email")
       .eq("role", "staff");
 
     if (error) {
@@ -43,20 +43,9 @@ const EmployeeStats = () => {
       return;
     }
 
-    // Get emails from auth.users
-    const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
-    
-    if (authError) {
-      console.error("Error fetching user emails:", authError);
-      return;
+    if (profiles) {
+      setEmployees(profiles);
     }
-
-    const employeesWithEmail = profiles.map(profile => ({
-      ...profile,
-      email: authUsers.find(u => u.id === profile.id)?.email || "",
-    }));
-
-    setEmployees(employeesWithEmail);
   };
 
   const fetchStats = async () => {
