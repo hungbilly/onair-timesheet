@@ -4,22 +4,63 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const ExpenseForm = () => {
   const [date, setDate] = useState("");
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would be connected to an API
-    console.log({ date, amount, category, description });
-    toast.success("Expense entry saved successfully!");
-    setDate("");
-    setAmount("");
-    setCategory("");
-    setDescription("");
+    setIsSubmitting(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to submit expenses");
+        return;
+      }
+
+      let receiptPath = null;
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('receipts')
+          .upload(fileName, file);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+        receiptPath = fileName;
+      }
+
+      const { error } = await supabase
+        .from('expenses')
+        .insert({
+          user_id: user.id,
+          date,
+          description,
+          amount: Number(amount),
+          receipt_path: receiptPath,
+        });
+
+      if (error) throw error;
+
+      toast.success("Expense saved successfully!");
+      setDate("");
+      setAmount("");
+      setDescription("");
+      setFile(null);
+    } catch (error) {
+      console.error("Error saving expense:", error);
+      toast.error("Failed to save expense");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -31,6 +72,16 @@ const ExpenseForm = () => {
           id="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="grid w-full gap-1.5">
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           required
         />
       </div>
@@ -49,27 +100,18 @@ const ExpenseForm = () => {
       </div>
 
       <div className="grid w-full gap-1.5">
-        <Label htmlFor="category">Category</Label>
+        <Label htmlFor="receipt">Receipt (optional)</Label>
         <Input
-          type="text"
-          id="category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          required
+          type="file"
+          id="receipt"
+          accept="image/*,.pdf"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
         />
       </div>
 
-      <div className="grid w-full gap-1.5">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-        />
-      </div>
-
-      <Button type="submit" className="w-full">Submit Expense</Button>
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? "Saving..." : "Submit Expense"}
+      </Button>
     </form>
   );
 };

@@ -16,12 +16,12 @@ export type TimeEntry = {
 
 export type ExpenseEntry = {
   id: string;
-  date: Date;
-  amount: number;
-  category: string;
+  user_id: string;
+  date: string;
   description: string;
-  userId: string;
-  receipt?: string;
+  amount: number;
+  receipt_path: string | null;
+  created_at: string;
 };
 
 export type User = {
