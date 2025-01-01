@@ -47,13 +47,16 @@ export const generateDetailedCsv = (employeeData: EmployeeData[]) => {
       );
     });
 
-    // Add summary row
+    // Add summary row with total payment
+    const totalPayment = employee.total_salary + employee.total_expenses;
     csvRows.push(
       `${
         employee.full_name || employee.email
       },Summary,,Total Salary: ${employee.total_salary.toFixed(
         2
-      )},Total Expenses: ${employee.total_expenses.toFixed(2)}`
+      )},Total Expenses: ${employee.total_expenses.toFixed(
+        2
+      )},Total Payment: ${totalPayment.toFixed(2)}`
     );
     csvRows.push(""); // Empty row for separation
   });
