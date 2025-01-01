@@ -31,6 +31,7 @@ interface EditUserDialogProps {
 const EditUserDialog = ({ user, onUserUpdated }: EditUserDialogProps) => {
   const [fullName, setFullName] = useState(user.full_name || "");
   const [role, setRole] = useState<"admin" | "staff">(user.role);
+  const [newPassword, setNewPassword] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
   const handleUpdateUser = async () => {
@@ -46,6 +47,25 @@ const EditUserDialog = ({ user, onUserUpdated }: EditUserDialogProps) => {
         });
 
       if (updateError) throw updateError;
+
+      // If a new password was provided, update it
+      if (newPassword) {
+        if (newPassword.length < 6) {
+          toast.error("Password must be at least 6 characters");
+          return;
+        }
+
+        const { error: passwordError } = await supabase.auth.admin.updateUserById(
+          user.id,
+          { password: newPassword }
+        );
+
+        if (passwordError) throw passwordError;
+        
+        // Reset password field
+        setNewPassword("");
+        toast.success("Password updated successfully");
+      }
 
       toast.success("User updated successfully");
       setIsOpen(false);
@@ -94,6 +114,15 @@ const EditUserDialog = ({ user, onUserUpdated }: EditUserDialogProps) => {
                 <SelectItem value="staff">Staff</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <label className="text-sm font-medium">New Password (leave empty to keep current)</label>
+            <Input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Enter new password"
+            />
           </div>
           <Button onClick={handleUpdateUser}>Update</Button>
         </div>
