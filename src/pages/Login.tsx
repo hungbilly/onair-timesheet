@@ -8,10 +8,28 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
+    const checkAuthAndRedirect = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", session.user.id)
+          .single();
+
+        if (profile?.role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
+      }
+    };
+
+    checkAuthAndRedirect();
+
     supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate("/");
+        checkAuthAndRedirect();
       }
     });
   }, [navigate]);
