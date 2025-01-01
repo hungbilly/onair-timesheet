@@ -9,20 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
-
-type TimeEntry = {
-  id: string;
-  date: string;
-  work_type: "hourly" | "job";
-  job_description: string;
-  hours: number | null;
-  hourly_rate: number | null;
-  start_time: string;
-  end_time: string;
-  job_count: number | null;
-  job_rate: number | null;
-  total_salary: number;
-};
+import type { TimeEntry } from "@/types";
 
 const TimeEntryHistory = () => {
   const [entries, setEntries] = useState<TimeEntry[]>([]);

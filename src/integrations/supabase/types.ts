@@ -33,6 +33,54 @@ export type Database = {
         }
         Relationships: []
       }
+      timesheet_entries: {
+        Row: {
+          created_at: string
+          date: string
+          end_time: string | null
+          hourly_rate: number | null
+          hours: number | null
+          id: string
+          job_count: number | null
+          job_description: string
+          job_rate: number | null
+          start_time: string | null
+          total_salary: number
+          user_id: string
+          work_type: Database["public"]["Enums"]["work_type"]
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          end_time?: string | null
+          hourly_rate?: number | null
+          hours?: number | null
+          id?: string
+          job_count?: number | null
+          job_description: string
+          job_rate?: number | null
+          start_time?: string | null
+          total_salary: number
+          user_id: string
+          work_type: Database["public"]["Enums"]["work_type"]
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          end_time?: string | null
+          hourly_rate?: number | null
+          hours?: number | null
+          id?: string
+          job_count?: number | null
+          job_description?: string
+          job_rate?: number | null
+          start_time?: string | null
+          total_salary?: number
+          user_id?: string
+          work_type?: Database["public"]["Enums"]["work_type"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -42,6 +90,7 @@ export type Database = {
     }
     Enums: {
       user_role: "admin" | "staff"
+      work_type: "hourly" | "job"
     }
     CompositeTypes: {
       [_ in never]: never

@@ -6,10 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+
+type WorkType = Database["public"]["Enums"]["work_type"];
 
 const TimeEntryForm = () => {
   const [date, setDate] = useState("");
-  const [workType, setWorkType] = useState<"hourly" | "job">("hourly");
+  const [workType, setWorkType] = useState<WorkType>("hourly");
   const [jobDescription, setJobDescription] = useState("");
   const [hours, setHours] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
@@ -36,19 +39,21 @@ const TimeEntryForm = () => {
     }
 
     try {
-      const { error } = await supabase.from("timesheet_entries").insert({
-        user_id: user.id,
-        date,
-        work_type: workType,
-        job_description: jobDescription,
-        hours: workType === "hourly" ? Number(hours) : null,
-        hourly_rate: workType === "hourly" ? Number(hourlyRate) : null,
-        start_time: startTime || null,
-        end_time: endTime || null,
-        job_count: workType === "job" ? Number(jobCount) : null,
-        job_rate: workType === "job" ? Number(jobRate) : null,
-        total_salary: calculateSalary(),
-      });
+      const { error } = await supabase
+        .from("timesheet_entries")
+        .insert({
+          user_id: user.id,
+          date,
+          work_type: workType,
+          job_description: jobDescription,
+          hours: workType === "hourly" ? Number(hours) : null,
+          hourly_rate: workType === "hourly" ? Number(hourlyRate) : null,
+          start_time: startTime || null,
+          end_time: endTime || null,
+          job_count: workType === "job" ? Number(jobCount) : null,
+          job_rate: workType === "job" ? Number(jobRate) : null,
+          total_salary: calculateSalary(),
+        });
 
       if (error) throw error;
 
