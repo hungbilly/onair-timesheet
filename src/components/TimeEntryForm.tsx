@@ -4,23 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { TimePickerInput } from "./TimePickerInput";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import type { TimeEntry } from "@/types";
 
 type WorkType = Database["public"]["Enums"]["work_type"];
-
-// Helper function to round time to nearest 15 minutes
-const roundToNearest15Min = (time: string) => {
-  if (!time) return "";
-  const [hours, minutes] = time.split(':').map(Number);
-  const totalMinutes = hours * 60 + minutes;
-  const roundedMinutes = Math.round(totalMinutes / 15) * 15;
-  const newHours = Math.floor(roundedMinutes / 60);
-  const newMinutes = roundedMinutes % 60;
-  return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
-};
 
 const TimeEntryForm = () => {
   const [date, setDate] = useState("");
@@ -33,11 +23,6 @@ const TimeEntryForm = () => {
   const [jobCount, setJobCount] = useState("");
   const [jobRate, setJobRate] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-
-  const handleTimeChange = (value: string, setter: (value: string) => void) => {
-    const roundedTime = roundToNearest15Min(value);
-    setter(roundedTime);
-  };
 
   useEffect(() => {
     // Check for editing data in localStorage
@@ -177,29 +162,17 @@ const TimeEntryForm = () => {
         />
       </div>
 
-      <div className="grid w-full gap-1.5">
-        <Label htmlFor="startTime">Start Time</Label>
-        <Input
-          type="time"
-          id="startTime"
-          value={startTime}
-          onChange={(e) => handleTimeChange(e.target.value, setStartTime)}
-          required
-          step="900"
-        />
-      </div>
+      <TimePickerInput
+        label="Start Time"
+        value={startTime}
+        onChange={setStartTime}
+      />
 
-      <div className="grid w-full gap-1.5">
-        <Label htmlFor="endTime">End Time</Label>
-        <Input
-          type="time"
-          id="endTime"
-          value={endTime}
-          onChange={(e) => handleTimeChange(e.target.value, setEndTime)}
-          required
-          step="900"
-        />
-      </div>
+      <TimePickerInput
+        label="End Time"
+        value={endTime}
+        onChange={setEndTime}
+      />
 
       {workType === "hourly" ? (
         <>

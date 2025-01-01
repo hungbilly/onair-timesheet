@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { TimePickerInput } from "./TimePickerInput";
 import type { Database } from "@/integrations/supabase/types";
 
 type WorkType = Database["public"]["Enums"]["work_type"];
@@ -13,17 +14,6 @@ type WorkType = Database["public"]["Enums"]["work_type"];
 interface TimeEntryCreateRowProps {
   onSave: () => void;
 }
-
-// Helper function to round time to nearest 15 minutes
-const roundToNearest15Min = (time: string) => {
-  if (!time) return "";
-  const [hours, minutes] = time.split(':').map(Number);
-  const totalMinutes = hours * 60 + minutes;
-  const roundedMinutes = Math.round(totalMinutes / 15) * 15;
-  const newHours = Math.floor(roundedMinutes / 60);
-  const newMinutes = roundedMinutes % 60;
-  return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
-};
 
 export const TimeEntryCreateRow = ({ onSave }: TimeEntryCreateRowProps) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -38,11 +28,6 @@ export const TimeEntryCreateRow = ({ onSave }: TimeEntryCreateRowProps) => {
     job_count: "",
     job_rate: "",
   });
-
-  const handleTimeChange = (field: 'start_time' | 'end_time', value: string) => {
-    const roundedTime = roundToNearest15Min(value);
-    setEntry({ ...entry, [field]: roundedTime });
-  };
 
   const handleSave = async () => {
     try {
@@ -142,31 +127,18 @@ export const TimeEntryCreateRow = ({ onSave }: TimeEntryCreateRowProps) => {
         />
       </TableCell>
       <TableCell className="space-x-2">
-        <Input
-          type="time"
+        <TimePickerInput
+          label="Start Time"
           value={entry.start_time}
-          onChange={(e) => handleTimeChange('start_time', e.target.value)}
-          className="w-24 inline-block"
-          step="900"
-          list="time-list"
+          onChange={(value) => setEntry({ ...entry, start_time: value })}
+          className="inline-block"
         />
-        <Input
-          type="time"
+        <TimePickerInput
+          label="End Time"
           value={entry.end_time}
-          onChange={(e) => handleTimeChange('end_time', e.target.value)}
-          className="w-24 inline-block"
-          step="900"
-          list="time-list"
+          onChange={(value) => setEntry({ ...entry, end_time: value })}
+          className="inline-block"
         />
-        <datalist id="time-list">
-          {Array.from({ length: 96 }, (_, i) => {
-            const hours = Math.floor(i / 4);
-            const minutes = (i % 4) * 15;
-            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-          }).map((time) => (
-            <option key={time} value={time} />
-          ))}
-        </datalist>
       </TableCell>
       <TableCell>
         {entry.work_type === "hourly" ? (
