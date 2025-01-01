@@ -38,7 +38,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-user-ops`,
+        `${supabase.supabaseUrl}/functions/v1/admin-user-ops`,
         {
           method: 'POST',
           headers: {
