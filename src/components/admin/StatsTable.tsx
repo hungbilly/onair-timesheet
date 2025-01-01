@@ -28,7 +28,7 @@ const StatsTable = ({ stats }: StatsTableProps) => {
           <TableHead>Full Name</TableHead>
           <TableHead>Total Salary</TableHead>
           <TableHead>Total Expenses</TableHead>
-          <TableHead>Net Amount</TableHead>
+          <TableHead>Total Payment</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -38,7 +38,7 @@ const StatsTable = ({ stats }: StatsTableProps) => {
             <TableCell>{stat.full_name}</TableCell>
             <TableCell>${stat.total_salary.toFixed(2)}</TableCell>
             <TableCell>${stat.total_expenses.toFixed(2)}</TableCell>
-            <TableCell>${(stat.total_salary - stat.total_expenses).toFixed(2)}</TableCell>
+            <TableCell>${(stat.total_salary + stat.total_expenses).toFixed(2)}</TableCell>
           </TableRow>
         ))}
         {stats.length > 0 && (
@@ -51,7 +51,7 @@ const StatsTable = ({ stats }: StatsTableProps) => {
               ${stats.reduce((sum, stat) => sum + stat.total_expenses, 0).toFixed(2)}
             </TableCell>
             <TableCell className="font-bold">
-              ${stats.reduce((sum, stat) => sum + (stat.total_salary - stat.total_expenses), 0).toFixed(2)}
+              ${stats.reduce((sum, stat) => sum + (stat.total_salary + stat.total_expenses), 0).toFixed(2)}
             </TableCell>
           </TableRow>
         )}
