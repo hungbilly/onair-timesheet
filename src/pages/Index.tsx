@@ -1,8 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import TimeEntryForm from "@/components/TimeEntryForm";
 import TimeEntryHistory from "@/components/TimeEntryHistory";
-import ExpenseForm from "@/components/ExpenseForm";
 import ExpenseHistory from "@/components/ExpenseHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -37,25 +35,13 @@ const Index = () => {
       </div>
       
       <div className="mt-8">
-        <Tabs defaultValue="time-entry" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger 
-              value="time-entry"
-              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
-            >
-              New Time Entry
-            </TabsTrigger>
+        <Tabs defaultValue="time-history" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger 
               value="time-history"
               className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
             >
               Time History
-            </TabsTrigger>
-            <TabsTrigger 
-              value="expense-entry"
-              className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
-            >
-              New Expense
             </TabsTrigger>
             <TabsTrigger 
               value="expense-history"
@@ -64,18 +50,8 @@ const Index = () => {
               Expense History
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="time-entry" className="mt-6">
-            <div className="max-w-md mx-auto">
-              <TimeEntryForm />
-            </div>
-          </TabsContent>
           <TabsContent value="time-history" className="mt-6">
             <TimeEntryHistory />
-          </TabsContent>
-          <TabsContent value="expense-entry" className="mt-6">
-            <div className="max-w-md mx-auto">
-              <ExpenseForm />
-            </div>
           </TabsContent>
           <TabsContent value="expense-history" className="mt-6">
             <ExpenseHistory />
