@@ -79,6 +79,7 @@ const UserManagement = () => {
         users={users}
         onUpdateRole={handleUpdateRole}
         onDeleteUser={handleDeleteUser}
+        onUserUpdated={fetchUsers}
       />
     </div>
   );

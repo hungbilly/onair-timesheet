@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import EditUserDialog from "./EditUserDialog";
 
 interface User {
   id: string;
@@ -26,9 +27,10 @@ interface UsersTableProps {
   users: User[];
   onUpdateRole: (userId: string, newRole: "admin" | "staff") => void;
   onDeleteUser: (userId: string) => void;
+  onUserUpdated: () => void;
 }
 
-const UsersTable = ({ users, onUpdateRole, onDeleteUser }: UsersTableProps) => {
+const UsersTable = ({ users, onUpdateRole, onDeleteUser, onUserUpdated }: UsersTableProps) => {
   return (
     <Table>
       <TableHeader>
@@ -60,7 +62,8 @@ const UsersTable = ({ users, onUpdateRole, onDeleteUser }: UsersTableProps) => {
                 </SelectContent>
               </Select>
             </TableCell>
-            <TableCell>
+            <TableCell className="space-x-2">
+              <EditUserDialog user={user} onUserUpdated={onUserUpdated} />
               <Button
                 variant="destructive"
                 size="sm"
