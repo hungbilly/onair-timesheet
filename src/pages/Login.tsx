@@ -58,7 +58,7 @@ const Login = () => {
               }
             }}
             providers={[]}
-            disableSignUp={true}
+            view="sign_in"
           />
         </div>
       </div>
