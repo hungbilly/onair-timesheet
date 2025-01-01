@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import type { TimeEntry } from "@/types";
 
@@ -16,6 +17,11 @@ const TimeEntryHistory = () => {
   const [selectedMonth, setSelectedMonth] = useState(
     format(new Date(), "yyyy-MM")
   );
+  const [monthlySummary, setMonthlySummary] = useState({
+    totalHours: 0,
+    totalJobs: 0,
+    totalSalary: 0,
+  });
 
   useEffect(() => {
     const fetchEntries = async () => {
@@ -39,6 +45,18 @@ const TimeEntryHistory = () => {
       }
 
       setEntries(data || []);
+
+      // Calculate monthly summary
+      const summary = (data || []).reduce(
+        (acc, entry) => ({
+          totalHours: acc.totalHours + (entry.hours || 0),
+          totalJobs: acc.totalJobs + (entry.job_count || 0),
+          totalSalary: acc.totalSalary + entry.total_salary,
+        }),
+        { totalHours: 0, totalJobs: 0, totalSalary: 0 }
+      );
+
+      setMonthlySummary(summary);
     };
 
     fetchEntries();
@@ -57,6 +75,37 @@ const TimeEntryHistory = () => {
           onChange={(e) => setSelectedMonth(e.target.value)}
           className="border rounded px-2 py-1"
         />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Hours</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {monthlySummary.totalHours.toFixed(1)}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{monthlySummary.totalJobs}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Salary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ${monthlySummary.totalSalary.toFixed(2)}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Table>
