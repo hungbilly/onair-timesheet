@@ -42,6 +42,8 @@ interface UsersTableProps {
   onUserUpdated: () => void;
 }
 
+const SUPABASE_URL = "https://gnbxsemhjiatjtwisywz.supabase.co";
+
 const ResetPasswordDialog = ({ userId, onClose }: { userId: string, onClose: () => void }) => {
   const [newPassword, setNewPassword] = useState("");
 
@@ -53,7 +55,7 @@ const ResetPasswordDialog = ({ userId, onClose }: { userId: string, onClose: () 
       }
 
       const response = await fetch(
-        `${supabase.supabaseUrl}/functions/v1/admin-user-ops`,
+        `${SUPABASE_URL}/functions/v1/admin-user-ops`,
         {
           method: 'POST',
           headers: {

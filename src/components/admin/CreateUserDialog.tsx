@@ -23,6 +23,8 @@ interface CreateUserDialogProps {
   onUserCreated: () => void;
 }
 
+const SUPABASE_URL = "https://gnbxsemhjiatjtwisywz.supabase.co";
+
 const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,7 +40,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       }
 
       const response = await fetch(
-        `${supabase.supabaseUrl}/functions/v1/admin-user-ops`,
+        `${SUPABASE_URL}/functions/v1/admin-user-ops`,
         {
           method: 'POST',
           headers: {
