@@ -25,7 +25,7 @@ export const generateDetailedCsv = (employeeData: EmployeeData[]) => {
   const csvRows: string[] = [];
 
   // Add header row
-  csvRows.push("Employee,Entry Type,Date,Description,Hours,Amount,Total Payment");
+  csvRows.push("Employee,Entry Type,Date,Description,Hours,Amount");
 
   // Add data rows
   employeeData.forEach((employee) => {
@@ -34,9 +34,7 @@ export const generateDetailedCsv = (employeeData: EmployeeData[]) => {
       csvRows.push(
         `${employee.full_name || employee.email},Timesheet,${entry.date},"${
           entry.job_description
-        }",${entry.hours || ""},${entry.total_salary.toFixed(2)},${(
-          employee.total_salary + employee.total_expenses
-        ).toFixed(2)}`
+        }",${entry.hours || ""},${entry.total_salary.toFixed(2)}`
       );
     });
 
@@ -45,9 +43,7 @@ export const generateDetailedCsv = (employeeData: EmployeeData[]) => {
       csvRows.push(
         `${employee.full_name || employee.email},Expense,${expense.date},"${
           expense.description
-        }",,${expense.amount.toFixed(2)},${(
-          employee.total_salary + employee.total_expenses
-        ).toFixed(2)}`
+        }",,${expense.amount.toFixed(2)}`
       );
     });
 
@@ -57,9 +53,7 @@ export const generateDetailedCsv = (employeeData: EmployeeData[]) => {
         employee.full_name || employee.email
       },Summary,,Total Salary: ${employee.total_salary.toFixed(
         2
-      )},Total Expenses: ${employee.total_expenses.toFixed(
-        2
-      )},Total Payment: ${(employee.total_salary + employee.total_expenses).toFixed(2)}`
+      )},Total Expenses: ${employee.total_expenses.toFixed(2)}`
     );
     csvRows.push(""); // Empty row for separation
   });
