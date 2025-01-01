@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -31,30 +32,35 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
 
   const handleCreateUser = async () => {
     try {
-      // First, create the user in auth.users
-      const { data: { user }, error: signUpError } = await supabase.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true
-      });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("No session found");
+      }
 
-      if (signUpError) throw signUpError;
-      if (!user) throw new Error("No user returned from signUp");
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-user-ops`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            operation: 'createUser',
+            email,
+            password,
+            userData: {
+              email,
+              full_name: fullName,
+              role,
+            },
+          }),
+        }
+      );
 
-      // Now create/update the profile with full name and role
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .upsert({
-          id: user.id,
-          email: email,
-          full_name: fullName,
-          role: role,
-          updated_at: new Date().toISOString()
-        });
-
-      if (profileError) {
-        console.error("Profile update error:", profileError);
-        throw profileError;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create user');
       }
 
       toast.success("User created successfully");
@@ -68,7 +74,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       setRole("staff");
     } catch (error) {
       console.error("Error in handleCreateUser:", error);
-      toast.error("Error creating user");
+      toast.error(error.message || "Error creating user");
     }
   };
 
@@ -80,6 +86,9 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create New User</DialogTitle>
+          <DialogDescription>
+            Create a new user account with their details and initial password.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>

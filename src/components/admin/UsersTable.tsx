@@ -17,6 +17,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -46,18 +47,37 @@ const ResetPasswordDialog = ({ userId, onClose }: { userId: string, onClose: () 
 
   const handleResetPassword = async () => {
     try {
-      const { error } = await supabase.auth.admin.updateUserById(
-        userId,
-        { password: newPassword }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("No session found");
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-user-ops`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            operation: 'resetPassword',
+            userId,
+            password: newPassword,
+          }),
+        }
       );
 
-      if (error) throw error;
-      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to reset password');
+      }
+
       toast.success("Password updated successfully");
       onClose();
     } catch (error) {
       console.error("Error updating password:", error);
-      toast.error("Error updating password");
+      toast.error(error.message || "Error updating password");
     }
   };
 
@@ -65,6 +85,9 @@ const ResetPasswordDialog = ({ userId, onClose }: { userId: string, onClose: () 
     <DialogContent>
       <DialogHeader>
         <DialogTitle>Reset Password</DialogTitle>
+        <DialogDescription>
+          Enter a new password for this user.
+        </DialogDescription>
       </DialogHeader>
       <div className="space-y-4">
         <div>
