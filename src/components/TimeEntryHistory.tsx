@@ -77,15 +77,15 @@ const TimeEntryHistory = () => {
       </div>
 
       <div className="space-y-4">
-        <TimeEntryCreateRow onEntryCreated={handleEntryCreated} />
+        <TimeEntryCreateRow onSave={handleEntryCreated} />
         
         <div className="space-y-2">
           {entries?.map((entry) => (
             <TimeEntryRow
               key={entry.id}
               entry={entry}
-              onEntryDeleted={handleEntryDeleted}
-              onEntryUpdated={handleEntryUpdated}
+              onDelete={handleEntryDeleted}
+              onUpdate={handleEntryUpdated}
             />
           ))}
         </div>

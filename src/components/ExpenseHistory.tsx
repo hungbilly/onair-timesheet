@@ -77,15 +77,15 @@ const ExpenseHistory = () => {
       </div>
 
       <div className="space-y-4">
-        <ExpenseCreateRow onExpenseCreated={handleExpenseCreated} />
+        <ExpenseCreateRow onSave={handleExpenseCreated} />
         
         <div className="space-y-2">
           {expenses?.map((expense) => (
             <ExpenseRow
               key={expense.id}
               expense={expense}
-              onExpenseDeleted={handleExpenseDeleted}
-              onExpenseUpdated={handleExpenseUpdated}
+              onDelete={handleExpenseDeleted}
+              onUpdate={handleExpenseUpdated}
             />
           ))}
         </div>
