@@ -58,6 +58,7 @@ const Login = () => {
               }
             }}
             providers={[]}
+            disableSignUp={true}
           />
         </div>
       </div>
