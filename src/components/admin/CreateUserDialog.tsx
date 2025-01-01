@@ -24,6 +24,7 @@ interface CreateUserDialogProps {
 
 const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<"admin" | "staff">("staff");
   const [isOpen, setIsOpen] = useState(false);
@@ -31,9 +32,10 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
   const handleCreateUser = async () => {
     try {
       // First, create the user in auth.users
-      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+      const { data: { user }, error: signUpError } = await supabase.auth.admin.createUser({
         email,
-        password: "temporary123", // You might want to generate this randomly
+        password,
+        email_confirm: true
       });
 
       if (signUpError) throw signUpError;
@@ -61,6 +63,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       
       // Reset form
       setEmail("");
+      setPassword("");
       setFullName("");
       setRole("staff");
     } catch (error) {
@@ -85,6 +88,15 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Password</label>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password"
             />
           </div>
           <div>

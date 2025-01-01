@@ -14,6 +14,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import EditUserDialog from "./EditUserDialog";
@@ -32,78 +41,118 @@ interface UsersTableProps {
   onUserUpdated: () => void;
 }
 
-const UsersTable = ({ users, onUpdateRole, onDeleteUser, onUserUpdated }: UsersTableProps) => {
-  const handleResetPassword = async (email: string) => {
+const ResetPasswordDialog = ({ userId, onClose }: { userId: string, onClose: () => void }) => {
+  const [newPassword, setNewPassword] = useState("");
+
+  const handleResetPassword = async () => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/login`,
-      });
-      
+      const { error } = await supabase.auth.admin.updateUserById(
+        userId,
+        { password: newPassword }
+      );
+
       if (error) throw error;
       
-      toast.success("Password reset email sent successfully");
+      toast.success("Password updated successfully");
+      onClose();
     } catch (error) {
-      console.error("Error resetting password:", error);
-      toast.error("Error sending password reset email");
+      console.error("Error updating password:", error);
+      toast.error("Error updating password");
     }
   };
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Email</TableHead>
-          <TableHead>Full Name</TableHead>
-          <TableHead>Role</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {users.map((user) => (
-          <TableRow key={user.id}>
-            <TableCell>{user.email}</TableCell>
-            <TableCell>
-              <span className="text-muted-foreground">
-                {user.full_name || "No display name"}
-              </span>
-            </TableCell>
-            <TableCell>
-              <Select
-                value={user.role}
-                onValueChange={(value: "admin" | "staff") =>
-                  onUpdateRole(user.id, value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="staff">Staff</SelectItem>
-                </SelectContent>
-              </Select>
-            </TableCell>
-            <TableCell className="space-x-2">
-              <EditUserDialog user={user} onUserUpdated={onUserUpdated} />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleResetPassword(user.email)}
-              >
-                Reset Password
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => onDeleteUser(user.id)}
-              >
-                Delete
-              </Button>
-            </TableCell>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Reset Password</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-4">
+        <div>
+          <label className="text-sm font-medium">New Password</label>
+          <Input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Enter new password"
+          />
+        </div>
+        <Button onClick={handleResetPassword}>Update Password</Button>
+      </div>
+    </DialogContent>
+  );
+};
+
+const UsersTable = ({ users, onUpdateRole, onDeleteUser, onUserUpdated }: UsersTableProps) => {
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
+  return (
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Email</TableHead>
+            <TableHead>Full Name</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {users.map((user) => (
+            <TableRow key={user.id}>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>
+                <span className="text-muted-foreground">
+                  {user.full_name || "No display name"}
+                </span>
+              </TableCell>
+              <TableCell>
+                <Select
+                  value={user.role}
+                  onValueChange={(value: "admin" | "staff") =>
+                    onUpdateRole(user.id, value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="staff">Staff</SelectItem>
+                  </SelectContent>
+                </Select>
+              </TableCell>
+              <TableCell className="space-x-2">
+                <EditUserDialog user={user} onUserUpdated={onUserUpdated} />
+                <Dialog open={selectedUserId === user.id} onOpenChange={(open) => !open && setSelectedUserId(null)}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedUserId(user.id)}
+                    >
+                      Reset Password
+                    </Button>
+                  </DialogTrigger>
+                  {selectedUserId === user.id && (
+                    <ResetPasswordDialog 
+                      userId={user.id} 
+                      onClose={() => setSelectedUserId(null)} 
+                    />
+                  )}
+                </Dialog>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onDeleteUser(user.id)}
+                >
+                  Delete
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </>
   );
 };
 
