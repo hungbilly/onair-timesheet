@@ -4,8 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { CalendarIcon, X } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
-import { X } from "lucide-react";
 
 type WorkType = Database["public"]["Enums"]["work_type"];
 
@@ -51,14 +54,25 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
         {/* Date */}
         <div className="col-span-2">
           <Label htmlFor={`date-${index}`} className="text-xs">Date</Label>
-          <Input
-            type="date"
-            id={`date-${index}`}
-            value={entry.date}
-            onChange={(e) => handleChange("date", e.target.value)}
-            required
-            className="h-8"
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={`w-full h-8 px-2 justify-start text-left font-normal ${!entry.date && "text-muted-foreground"}`}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {entry.date ? format(new Date(entry.date), "PPP") : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={entry.date ? new Date(entry.date) : undefined}
+                onSelect={(date) => handleChange("date", date ? format(date, "yyyy-MM-dd") : "")}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Work Type */}
@@ -88,7 +102,7 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
             value={entry.jobDescription}
             onChange={(e) => handleChange("jobDescription", e.target.value)}
             required
-            className="h-8"
+            className="h-8 text-sm"
           />
         </div>
 
@@ -102,14 +116,14 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
                 value={entry.startTime}
                 onChange={(e) => handleChange("startTime", e.target.value)}
                 required
-                className="h-8"
+                className="h-8 text-sm px-1"
               />
               <Input
                 type="time"
                 value={entry.endTime}
                 onChange={(e) => handleChange("endTime", e.target.value)}
                 required
-                className="h-8"
+                className="h-8 text-sm px-1"
               />
             </div>
           </div>
@@ -127,7 +141,7 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
                 min="0"
                 step="0.5"
                 required
-                className="h-8"
+                className="h-8 text-sm"
               />
             </div>
 
@@ -141,7 +155,7 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
                 min="0"
                 step="0.01"
                 required
-                className="h-8"
+                className="h-8 text-sm"
               />
             </div>
           </>
@@ -157,7 +171,7 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
                 min="1"
                 step="1"
                 required
-                className="h-8"
+                className="h-8 text-sm"
               />
             </div>
 
@@ -171,7 +185,7 @@ const TimeEntryItem = ({ entry, index, onChange, onRemove, canRemove }: TimeEntr
                 min="0"
                 step="0.01"
                 required
-                className="h-8"
+                className="h-8 text-sm"
               />
             </div>
           </>
