@@ -37,12 +37,13 @@ const EditUserDialog = ({ user, onUserUpdated }: EditUserDialogProps) => {
     try {
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({
+        .upsert({
+          id: user.id,
+          email: user.email,
           full_name: fullName,
-          role,
+          role: role,
           updated_at: new Date().toISOString()
-        })
-        .eq("id", user.id);
+        });
 
       if (updateError) throw updateError;
 

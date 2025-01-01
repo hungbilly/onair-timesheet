@@ -39,19 +39,20 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       if (signUpError) throw signUpError;
       if (!user) throw new Error("No user returned from signUp");
 
-      // Now update the profile with full name and role
-      const { error: updateError } = await supabase
+      // Now create/update the profile with full name and role
+      const { error: profileError } = await supabase
         .from("profiles")
-        .update({
+        .upsert({
+          id: user.id,
+          email: email,
           full_name: fullName,
-          role,
+          role: role,
           updated_at: new Date().toISOString()
-        })
-        .eq("id", user.id);
+        });
 
-      if (updateError) {
-        console.error("Profile update error:", updateError);
-        throw updateError;
+      if (profileError) {
+        console.error("Profile update error:", profileError);
+        throw profileError;
       }
 
       toast.success("User created successfully");
