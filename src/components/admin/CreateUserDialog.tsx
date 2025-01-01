@@ -39,19 +39,6 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       if (signUpError) throw signUpError;
       if (!user) throw new Error("No user returned from signUp");
 
-      // Wait for the trigger to create the profile
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Verify the profile exists and update it
-      const { data: existingProfile, error: profileCheckError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (profileCheckError) throw profileCheckError;
-      if (!existingProfile) throw new Error("Profile not created by trigger");
-
       // Now update the profile with full name and role
       const { error: updateError } = await supabase
         .from("profiles")
