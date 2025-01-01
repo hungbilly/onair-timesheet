@@ -1,95 +1,124 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { TimeEntry } from "@/types";
-import { TimeEntryCreateRow } from "./TimeEntryCreateRow";
-import { TimeEntryRow } from "./TimeEntryRow";
-import { format } from "date-fns";
+import { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import type { TimeEntry } from "@/types";
+import { MonthlySummaryCards } from "./MonthlySummaryCards";
+import { TimeEntryRow } from "./TimeEntryRow";
+import { TimeEntryCreateRow } from "./TimeEntryCreateRow";
 
 const TimeEntryHistory = () => {
-  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
-
-  const { data: profile } = useQuery({
-    queryKey: ["profile"],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
-      
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, email")
-        .eq("id", user.id)
-        .single();
-      
-      return profile;
-    },
+  const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState(
+    new Date().toISOString().slice(0, 7)
+  );
+  const [monthlySummary, setMonthlySummary] = useState({
+    totalHours: 0,
+    totalJobs: 0,
+    totalSalary: 0,
   });
 
-  const { data: entries, refetch } = useQuery({
-    queryKey: ["timeEntries", selectedMonth],
-    queryFn: async () => {
-      const startDate = `${selectedMonth}-01`;
-      const endDate = `${selectedMonth}-31`;
+  const fetchEntries = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-      const { data, error } = await supabase
-        .from("timesheet_entries")
-        .select("*")
-        .gte("date", startDate)
-        .lte("date", endDate)
-        .order("date", { ascending: false });
+    const startDate = `${selectedMonth}-01`;
+    const endDate = `${selectedMonth}-31`;
 
-      if (error) {
-        toast.error("Failed to fetch time entries");
-        throw error;
-      }
+    const { data, error } = await supabase
+      .from("timesheet_entries")
+      .select("*")
+      .eq("user_id", user.id)
+      .gte("date", startDate)
+      .lte("date", endDate)
+      .order("date", { ascending: false });
 
-      return data as TimeEntry[];
-    },
-  });
+    if (error) {
+      console.error("Error fetching entries:", error);
+      return;
+    }
 
-  const handleEntryCreated = () => {
-    refetch();
+    setEntries(data || []);
+
+    const summary = (data || []).reduce(
+      (acc, entry) => ({
+        totalHours: acc.totalHours + (entry.hours || 0),
+        totalJobs: acc.totalJobs + (entry.job_count || 0),
+        totalSalary: acc.totalSalary + entry.total_salary,
+      }),
+      { totalHours: 0, totalJobs: 0, totalSalary: 0 }
+    );
+
+    setMonthlySummary(summary);
   };
 
-  const handleEntryDeleted = () => {
-    refetch();
-  };
+  useEffect(() => {
+    fetchEntries();
+  }, [selectedMonth]);
 
-  const handleEntryUpdated = () => {
-    refetch();
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase
+      .from("timesheet_entries")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      toast.error("Failed to delete entry");
+      return;
+    }
+
+    toast.success("Entry deleted successfully");
+    fetchEntries();
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">
-          {profile?.full_name || profile?.email || "Employee"}'s Time History
-        </h2>
-        <div>
-          <input
-            type="month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="border rounded px-2 py-1"
-          />
-        </div>
+      <div className="flex items-center gap-2">
+        <label htmlFor="month" className="font-medium">
+          Select Month:
+        </label>
+        <input
+          type="month"
+          id="month"
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          className="border rounded px-2 py-1"
+        />
       </div>
 
-      <div className="space-y-4">
-        <TimeEntryCreateRow onSave={handleEntryCreated} />
-        
-        <div className="space-y-2">
-          {entries?.map((entry) => (
+      <MonthlySummaryCards {...monthlySummary} />
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>Time</TableHead>
+            <TableHead>Details</TableHead>
+            <TableHead>Total</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TimeEntryCreateRow onSave={fetchEntries} />
+          {entries.map((entry) => (
             <TimeEntryRow
               key={entry.id}
               entry={entry}
-              onDelete={handleEntryDeleted}
-              onUpdate={handleEntryUpdated}
+              onDelete={handleDelete}
+              onUpdate={fetchEntries}
             />
           ))}
-        </div>
-      </div>
+        </TableBody>
+      </Table>
     </div>
   );
 };
