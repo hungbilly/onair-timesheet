@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import EmployeeFilters from "./EmployeeFilters";
 import StatsTable from "./StatsTable";
 import EmployeeDetailedEntries from "./EmployeeDetailedEntries";
+import { getMonthDateRange } from "@/utils/dateUtils";
 
 interface EmployeeStats {
   id: string;
@@ -15,7 +15,7 @@ interface EmployeeStats {
 }
 
 const EmployeeStats = () => {
-  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [stats, setStats] = useState<EmployeeStats[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<string>("all");
   const [employees, setEmployees] = useState<{ id: string; full_name: string; email: string }[]>([]);
@@ -45,8 +45,7 @@ const EmployeeStats = () => {
       return;
     }
 
-    const startDate = `${selectedMonth}-01`;
-    const endDate = `${selectedMonth}-31`;
+    const { startDate, endDate } = getMonthDateRange(selectedMonth);
 
     // Fetch timesheet entries
     const { data: timesheetData, error: timesheetError } = await supabase
@@ -80,8 +79,7 @@ const EmployeeStats = () => {
   };
 
   const fetchStats = async () => {
-    const startDate = `${selectedMonth}-01`;
-    const endDate = `${selectedMonth}-31`;
+    const { startDate, endDate } = getMonthDateRange(selectedMonth);
 
     let query = supabase
       .from("timesheet_entries")
