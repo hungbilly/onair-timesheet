@@ -25,15 +25,21 @@ interface CreateUserDialogProps {
 const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState<"admin" | "staff">("staff");
   const [isOpen, setIsOpen] = useState(false);
 
   const handleCreateUser = async () => {
     try {
+      if (password.length < 6) {
+        toast.error("Password must be at least 6 characters");
+        return;
+      }
+
       // First, create the user in auth.users
       const { data: { user }, error: signUpError } = await supabase.auth.signUp({
         email,
-        password: "temporary123", // You might want to generate this randomly
+        password,
       });
 
       if (signUpError) throw signUpError;
@@ -62,6 +68,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       // Reset form
       setEmail("");
       setFullName("");
+      setPassword("");
       setRole("staff");
     } catch (error) {
       console.error("Error in handleCreateUser:", error);
@@ -93,6 +100,14 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Password</label>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
           <div>
