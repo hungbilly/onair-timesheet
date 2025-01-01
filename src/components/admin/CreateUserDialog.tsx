@@ -39,20 +39,33 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       if (signUpError) throw signUpError;
       if (!user) throw new Error("No user returned from signUp");
 
-      // Wait a brief moment for the trigger to create the profile
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Wait for the trigger to create the profile
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Verify the profile exists and update it
+      const { data: existingProfile, error: profileCheckError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (profileCheckError) throw profileCheckError;
+      if (!existingProfile) throw new Error("Profile not created by trigger");
 
       // Now update the profile with full name and role
-      const { error: profileError } = await supabase
+      const { error: updateError } = await supabase
         .from("profiles")
-        .update({ 
-          role, 
+        .update({
           full_name: fullName,
+          role,
           updated_at: new Date().toISOString()
         })
         .eq("id", user.id);
 
-      if (profileError) throw profileError;
+      if (updateError) {
+        console.error("Profile update error:", updateError);
+        throw updateError;
+      }
 
       toast.success("User created successfully");
       setIsOpen(false);
@@ -63,8 +76,8 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       setFullName("");
       setRole("staff");
     } catch (error) {
+      console.error("Error in handleCreateUser:", error);
       toast.error("Error creating user");
-      console.error(error);
     }
   };
 
