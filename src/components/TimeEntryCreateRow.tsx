@@ -14,6 +14,17 @@ interface TimeEntryCreateRowProps {
   onSave: () => void;
 }
 
+// Helper function to round time to nearest 15 minutes
+const roundToNearest15Min = (time: string) => {
+  if (!time) return "";
+  const [hours, minutes] = time.split(':').map(Number);
+  const totalMinutes = hours * 60 + minutes;
+  const roundedMinutes = Math.round(totalMinutes / 15) * 15;
+  const newHours = Math.floor(roundedMinutes / 60);
+  const newMinutes = roundedMinutes % 60;
+  return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+};
+
 export const TimeEntryCreateRow = ({ onSave }: TimeEntryCreateRowProps) => {
   const [isCreating, setIsCreating] = useState(false);
   const [entry, setEntry] = useState({
@@ -27,6 +38,11 @@ export const TimeEntryCreateRow = ({ onSave }: TimeEntryCreateRowProps) => {
     job_count: "",
     job_rate: "",
   });
+
+  const handleTimeChange = (field: 'start_time' | 'end_time', value: string) => {
+    const roundedTime = roundToNearest15Min(value);
+    setEntry({ ...entry, [field]: roundedTime });
+  };
 
   const handleSave = async () => {
     try {
@@ -129,14 +145,14 @@ export const TimeEntryCreateRow = ({ onSave }: TimeEntryCreateRowProps) => {
         <Input
           type="time"
           value={entry.start_time}
-          onChange={(e) => setEntry({ ...entry, start_time: e.target.value })}
+          onChange={(e) => handleTimeChange('start_time', e.target.value)}
           className="w-24 inline-block"
           step="900"
         />
         <Input
           type="time"
           value={entry.end_time}
-          onChange={(e) => setEntry({ ...entry, end_time: e.target.value })}
+          onChange={(e) => handleTimeChange('end_time', e.target.value)}
           className="w-24 inline-block"
           step="900"
         />

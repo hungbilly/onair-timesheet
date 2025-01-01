@@ -11,6 +11,17 @@ import type { TimeEntry } from "@/types";
 
 type WorkType = Database["public"]["Enums"]["work_type"];
 
+// Helper function to round time to nearest 15 minutes
+const roundToNearest15Min = (time: string) => {
+  if (!time) return "";
+  const [hours, minutes] = time.split(':').map(Number);
+  const totalMinutes = hours * 60 + minutes;
+  const roundedMinutes = Math.round(totalMinutes / 15) * 15;
+  const newHours = Math.floor(roundedMinutes / 60);
+  const newMinutes = roundedMinutes % 60;
+  return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+};
+
 const TimeEntryForm = () => {
   const [date, setDate] = useState("");
   const [workType, setWorkType] = useState<WorkType>("hourly");
@@ -22,6 +33,11 @@ const TimeEntryForm = () => {
   const [jobCount, setJobCount] = useState("");
   const [jobRate, setJobRate] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  const handleTimeChange = (value: string, setter: (value: string) => void) => {
+    const roundedTime = roundToNearest15Min(value);
+    setter(roundedTime);
+  };
 
   useEffect(() => {
     // Check for editing data in localStorage
@@ -167,7 +183,7 @@ const TimeEntryForm = () => {
           type="time"
           id="startTime"
           value={startTime}
-          onChange={(e) => setStartTime(e.target.value)}
+          onChange={(e) => handleTimeChange(e.target.value, setStartTime)}
           required
           step="900"
         />
@@ -179,7 +195,7 @@ const TimeEntryForm = () => {
           type="time"
           id="endTime"
           value={endTime}
-          onChange={(e) => setEndTime(e.target.value)}
+          onChange={(e) => handleTimeChange(e.target.value, setEndTime)}
           required
           step="900"
         />
