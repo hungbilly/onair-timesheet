@@ -9,6 +9,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { TimeEntry } from "@/types";
 
@@ -23,44 +26,70 @@ const TimeEntryHistory = () => {
     totalSalary: 0,
   });
 
+  const fetchEntries = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const startDate = `${selectedMonth}-01`;
+    const endDate = `${selectedMonth}-31`;
+
+    const { data, error } = await supabase
+      .from("timesheet_entries")
+      .select("*")
+      .eq("user_id", user.id)
+      .gte("date", startDate)
+      .lte("date", endDate)
+      .order("date", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching entries:", error);
+      return;
+    }
+
+    setEntries(data || []);
+
+    // Calculate monthly summary
+    const summary = (data || []).reduce(
+      (acc, entry) => ({
+        totalHours: acc.totalHours + (entry.hours || 0),
+        totalJobs: acc.totalJobs + (entry.job_count || 0),
+        totalSalary: acc.totalSalary + entry.total_salary,
+      }),
+      { totalHours: 0, totalJobs: 0, totalSalary: 0 }
+    );
+
+    setMonthlySummary(summary);
+  };
+
   useEffect(() => {
-    const fetchEntries = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const startDate = `${selectedMonth}-01`;
-      const endDate = `${selectedMonth}-31`;
-
-      const { data, error } = await supabase
-        .from("timesheet_entries")
-        .select("*")
-        .eq("user_id", user.id)
-        .gte("date", startDate)
-        .lte("date", endDate)
-        .order("date", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching entries:", error);
-        return;
-      }
-
-      setEntries(data || []);
-
-      // Calculate monthly summary
-      const summary = (data || []).reduce(
-        (acc, entry) => ({
-          totalHours: acc.totalHours + (entry.hours || 0),
-          totalJobs: acc.totalJobs + (entry.job_count || 0),
-          totalSalary: acc.totalSalary + entry.total_salary,
-        }),
-        { totalHours: 0, totalJobs: 0, totalSalary: 0 }
-      );
-
-      setMonthlySummary(summary);
-    };
-
     fetchEntries();
   }, [selectedMonth]);
+
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase
+      .from("timesheet_entries")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      toast.error("Failed to delete entry");
+      return;
+    }
+
+    toast.success("Entry deleted successfully");
+    fetchEntries();
+  };
+
+  const handleEdit = (entry: TimeEntry) => {
+    // Store the entry in localStorage for the form to access
+    localStorage.setItem("editTimeEntry", JSON.stringify(entry));
+    // Navigate to the form tab
+    const tabsList = document.querySelector('[role="tablist"]');
+    const newTimeEntryTab = tabsList?.querySelector('[value="time-entry"]') as HTMLButtonElement;
+    if (newTimeEntryTab) {
+      newTimeEntryTab.click();
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -117,6 +146,7 @@ const TimeEntryHistory = () => {
             <TableHead>Time</TableHead>
             <TableHead>Details</TableHead>
             <TableHead>Total</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -134,6 +164,26 @@ const TimeEntryHistory = () => {
                   : `${entry.job_count} jobs @ $${entry.job_rate}/job`}
               </TableCell>
               <TableCell>${entry.total_salary.toFixed(2)}</TableCell>
+              <TableCell>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleEdit(entry)}
+                    title="Edit entry"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleDelete(entry.id)}
+                    title="Delete entry"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

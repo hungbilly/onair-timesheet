@@ -8,6 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Expense {
@@ -28,45 +31,86 @@ const ExpenseHistory = () => {
     format(new Date(), "yyyy-MM")
   );
 
+  const fetchExpenses = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const startDate = `${selectedMonth}-01`;
+    const endDate = `${selectedMonth}-31`;
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .select("*")
+      .eq("user_id", user.id)
+      .gte("date", startDate)
+      .lte("date", endDate)
+      .order("date", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching expenses:", error);
+      return;
+    }
+
+    // Get receipt URLs for all expenses with receipts
+    const expensesWithUrls = await Promise.all(
+      (data || []).map(async (expense) => {
+        if (expense.receipt_path) {
+          const { data: urlData } = await supabase.storage
+            .from("receipts")
+            .getPublicUrl(expense.receipt_path);
+          return { ...expense, receiptUrl: urlData.publicUrl };
+        }
+        return expense;
+      })
+    );
+
+    setExpenses(expensesWithUrls);
+  };
+
   useEffect(() => {
-    const fetchExpenses = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const startDate = `${selectedMonth}-01`;
-      const endDate = `${selectedMonth}-31`;
-
-      const { data, error } = await supabase
-        .from("expenses")
-        .select("*")
-        .eq("user_id", user.id)
-        .gte("date", startDate)
-        .lte("date", endDate)
-        .order("date", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching expenses:", error);
-        return;
-      }
-
-      // Get receipt URLs for all expenses with receipts
-      const expensesWithUrls = await Promise.all(
-        (data || []).map(async (expense) => {
-          if (expense.receipt_path) {
-            const { data: urlData } = await supabase.storage
-              .from("receipts")
-              .getPublicUrl(expense.receipt_path);
-            return { ...expense, receiptUrl: urlData.publicUrl };
-          }
-          return expense;
-        })
-      );
-
-      setExpenses(expensesWithUrls);
-    };
-
     fetchExpenses();
   }, [selectedMonth]);
+
+  const handleDelete = async (id: string) => {
+    const expense = expenses.find(e => e.id === id);
+    
+    // Delete the receipt from storage if it exists
+    if (expense?.receipt_path) {
+      const { error: storageError } = await supabase.storage
+        .from("receipts")
+        .remove([expense.receipt_path]);
+      
+      if (storageError) {
+        toast.error("Failed to delete receipt");
+        return;
+      }
+    }
+
+    // Delete the expense record
+    const { error } = await supabase
+      .from("expenses")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      toast.error("Failed to delete expense");
+      return;
+    }
+
+    toast.success("Expense deleted successfully");
+    fetchExpenses();
+  };
+
+  const handleEdit = (expense: ExpenseWithUrl) => {
+    // Store the expense in localStorage for the form to access
+    localStorage.setItem("editExpense", JSON.stringify(expense));
+    // Navigate to the form tab
+    const tabsList = document.querySelector('[role="tablist"]');
+    const newExpenseTab = tabsList?.querySelector('[value="expense-entry"]') as HTMLButtonElement;
+    if (newExpenseTab) {
+      newExpenseTab.click();
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -90,6 +134,7 @@ const ExpenseHistory = () => {
             <TableHead>Description</TableHead>
             <TableHead>Amount</TableHead>
             <TableHead>Receipt</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -109,6 +154,26 @@ const ExpenseHistory = () => {
                     View Receipt
                   </a>
                 )}
+              </TableCell>
+              <TableCell>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleEdit(expense)}
+                    title="Edit expense"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleDelete(expense.id)}
+                    title="Delete expense"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
