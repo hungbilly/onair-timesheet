@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import TimeEntryHistory from "@/components/TimeEntryHistory";
 import ExpenseHistory from "@/components/ExpenseHistory";
 import ProfileEditDialog from "@/components/ProfileEditDialog";
+import ChangePasswordDialog from "@/components/ChangePasswordDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
@@ -27,6 +28,7 @@ const Index = () => {
         <h1 className="text-3xl font-bold">Employee Dashboard</h1>
         <div className="flex items-center gap-4">
           <ProfileEditDialog />
+          <ChangePasswordDialog />
           <Button 
             variant="outline" 
             onClick={handleSignOut}
