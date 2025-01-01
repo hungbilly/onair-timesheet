@@ -1,13 +1,40 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import TimeEntryForm from "@/components/TimeEntryForm";
 import TimeEntryHistory from "@/components/TimeEntryHistory";
 import ExpenseForm from "@/components/ExpenseForm";
 import ExpenseHistory from "@/components/ExpenseHistory";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 const Index = () => {
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Signed out successfully");
+      navigate("/login");
+    } catch (error) {
+      toast.error("Error signing out");
+    }
+  };
+
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-8">Employee Dashboard</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Employee Dashboard</h1>
+        <Button 
+          variant="outline" 
+          onClick={handleSignOut}
+          className="gap-2"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </Button>
+      </div>
       
       <div className="mt-8">
         <Tabs defaultValue="time-entry" className="w-full">
