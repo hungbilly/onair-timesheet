@@ -1,22 +1,9 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import EmployeeFilters from "./EmployeeFilters";
+import StatsTable from "./StatsTable";
 
 interface EmployeeStats {
   id: string;
@@ -72,7 +59,6 @@ const EmployeeStats = () => {
       return;
     }
 
-    // Fetch expenses
     let expensesQuery = supabase
       .from("expenses")
       .select("user_id, amount")
@@ -90,10 +76,9 @@ const EmployeeStats = () => {
       return;
     }
 
-    // Aggregate data by employee
     const aggregatedData = employees.reduce((acc, employee) => {
-      const employeeTimesheets = timesheetData.filter(t => t.user_id === employee.id);
-      const employeeExpenses = expensesData.filter(e => e.user_id === employee.id);
+      const employeeTimesheets = timesheetData?.filter(t => t.user_id === employee.id) || [];
+      const employeeExpenses = expensesData?.filter(e => e.user_id === employee.id) || [];
 
       const totalSalary = employeeTimesheets.reduce((sum, t) => sum + (t.total_salary || 0), 0);
       const totalExpenses = employeeExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
@@ -147,75 +132,20 @@ const EmployeeStats = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-4 items-center">
-        <div>
-          <label className="block text-sm font-medium mb-1">Month</label>
-          <input
-            type="month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="border rounded px-2 py-1"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Employee</label>
-          <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Employees</SelectItem>
-              {employees.map((employee) => (
-                <SelectItem key={employee.id} value={employee.id}>
-                  {employee.full_name || employee.email}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
+      <div className="flex justify-between items-start">
+        <EmployeeFilters
+          selectedMonth={selectedMonth}
+          setSelectedMonth={setSelectedMonth}
+          selectedEmployee={selectedEmployee}
+          setSelectedEmployee={setSelectedEmployee}
+          employees={employees}
+        />
         <Button onClick={exportToCsv} className="mt-6">
           Export CSV
         </Button>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Email</TableHead>
-            <TableHead>Full Name</TableHead>
-            <TableHead>Total Salary</TableHead>
-            <TableHead>Total Expenses</TableHead>
-            <TableHead>Net Amount</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {stats.map((stat) => (
-            <TableRow key={stat.id}>
-              <TableCell>{stat.email}</TableCell>
-              <TableCell>{stat.full_name}</TableCell>
-              <TableCell>${stat.total_salary.toFixed(2)}</TableCell>
-              <TableCell>${stat.total_expenses.toFixed(2)}</TableCell>
-              <TableCell>${(stat.total_salary - stat.total_expenses).toFixed(2)}</TableCell>
-            </TableRow>
-          ))}
-          {stats.length > 0 && (
-            <TableRow>
-              <TableCell colSpan={2} className="font-bold">Total</TableCell>
-              <TableCell className="font-bold">
-                ${stats.reduce((sum, stat) => sum + stat.total_salary, 0).toFixed(2)}
-              </TableCell>
-              <TableCell className="font-bold">
-                ${stats.reduce((sum, stat) => sum + stat.total_expenses, 0).toFixed(2)}
-              </TableCell>
-              <TableCell className="font-bold">
-                ${stats.reduce((sum, stat) => sum + (stat.total_salary - stat.total_expenses), 0).toFixed(2)}
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <StatsTable stats={stats} />
     </div>
   );
 };
