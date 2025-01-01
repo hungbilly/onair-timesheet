@@ -14,6 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import EditUserDialog from "./EditUserDialog";
 
 interface User {
@@ -31,6 +33,21 @@ interface UsersTableProps {
 }
 
 const UsersTable = ({ users, onUpdateRole, onDeleteUser, onUserUpdated }: UsersTableProps) => {
+  const handleResetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/login`,
+      });
+      
+      if (error) throw error;
+      
+      toast.success("Password reset email sent successfully");
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      toast.error("Error sending password reset email");
+    }
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -68,6 +85,13 @@ const UsersTable = ({ users, onUpdateRole, onDeleteUser, onUserUpdated }: UsersT
             </TableCell>
             <TableCell className="space-x-2">
               <EditUserDialog user={user} onUserUpdated={onUserUpdated} />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleResetPassword(user.email)}
+              >
+                Reset Password
+              </Button>
               <Button
                 variant="destructive"
                 size="sm"
