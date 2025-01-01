@@ -8,9 +8,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [fullName, setFullName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .single();
+        
+        setFullName(profile?.full_name || null);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -25,7 +44,12 @@ const Index = () => {
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Employee Dashboard</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Employee Dashboard</h1>
+          {fullName && (
+            <p className="text-muted-foreground mt-1">Welcome, {fullName}</p>
+          )}
+        </div>
         <div className="flex items-center gap-4">
           <ProfileEditDialog />
           <ChangePasswordDialog />
