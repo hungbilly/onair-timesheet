@@ -1,30 +1,31 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import TimeEntryItem, { TimeEntryData } from "./TimeEntryItem";
-import { Plus } from "lucide-react";
+import type { Database } from "@/integrations/supabase/types";
 
-const initialEntryState: TimeEntryData = {
-  date: "",
-  workType: "hourly",
-  jobDescription: "",
-  hours: "",
-  hourlyRate: "",
-  startTime: "",
-  endTime: "",
-  jobCount: "",
-  jobRate: "",
-};
+type WorkType = Database["public"]["Enums"]["work_type"];
 
 const TimeEntryForm = () => {
-  const [entries, setEntries] = useState<TimeEntryData[]>([initialEntryState]);
+  const [date, setDate] = useState("");
+  const [workType, setWorkType] = useState<WorkType>("hourly");
+  const [jobDescription, setJobDescription] = useState("");
+  const [hours, setHours] = useState("");
+  const [hourlyRate, setHourlyRate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [jobCount, setJobCount] = useState("");
+  const [jobRate, setJobRate] = useState("");
 
-  const calculateSalary = (entry: TimeEntryData) => {
-    if (entry.workType === "hourly") {
-      return Number(entry.hours) * Number(entry.hourlyRate);
+  const calculateSalary = () => {
+    if (workType === "hourly") {
+      return Number(hours) * Number(hourlyRate);
     } else {
-      return Number(entry.jobCount) * Number(entry.jobRate);
+      return Number(jobCount) * Number(jobRate);
     }
   };
 
@@ -40,72 +41,160 @@ const TimeEntryForm = () => {
     try {
       const { error } = await supabase
         .from("timesheet_entries")
-        .insert(
-          entries.map(entry => ({
-            user_id: user.id,
-            date: entry.date,
-            work_type: entry.workType,
-            job_description: entry.jobDescription,
-            hours: entry.workType === "hourly" ? Number(entry.hours) : null,
-            hourly_rate: entry.workType === "hourly" ? Number(entry.hourlyRate) : null,
-            start_time: entry.startTime || null,
-            end_time: entry.endTime || null,
-            job_count: entry.workType === "job" ? Number(entry.jobCount) : null,
-            job_rate: entry.workType === "job" ? Number(entry.jobRate) : null,
-            total_salary: calculateSalary(entry),
-          }))
-        );
+        .insert({
+          user_id: user.id,
+          date,
+          work_type: workType,
+          job_description: jobDescription,
+          hours: workType === "hourly" ? Number(hours) : null,
+          hourly_rate: workType === "hourly" ? Number(hourlyRate) : null,
+          start_time: startTime || null,
+          end_time: endTime || null,
+          job_count: workType === "job" ? Number(jobCount) : null,
+          job_rate: workType === "job" ? Number(jobRate) : null,
+          total_salary: calculateSalary(),
+        });
 
       if (error) throw error;
 
-      toast.success("Time entries saved successfully!");
+      toast.success("Time entry saved successfully!");
       // Reset form
-      setEntries([initialEntryState]);
+      setDate("");
+      setJobDescription("");
+      setHours("");
+      setHourlyRate("");
+      setStartTime("");
+      setEndTime("");
+      setJobCount("");
+      setJobRate("");
     } catch (error) {
-      console.error("Error saving time entries:", error);
-      toast.error("Failed to save time entries");
+      console.error("Error saving time entry:", error);
+      toast.error("Failed to save time entry");
     }
   };
 
-  const handleEntryChange = (index: number, updatedEntry: TimeEntryData) => {
-    setEntries(entries.map((entry, i) => i === index ? updatedEntry : entry));
-  };
-
-  const handleAddEntry = () => {
-    setEntries([...entries, { ...initialEntryState }]);
-  };
-
-  const handleRemoveEntry = (index: number) => {
-    setEntries(entries.filter((_, i) => i !== index));
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {entries.map((entry, index) => (
-        <TimeEntryItem
-          key={index}
-          entry={entry}
-          index={index}
-          onChange={handleEntryChange}
-          onRemove={handleRemoveEntry}
-          canRemove={entries.length > 1}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid w-full gap-1.5">
+        <Label htmlFor="date">Date</Label>
+        <Input
+          type="date"
+          id="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          required
         />
-      ))}
-      
-      <div className="flex justify-between">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleAddEntry}
-          className="w-full mr-2"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Another Entry
-        </Button>
-        <Button type="submit" className="w-full ml-2">
-          Submit All Entries
-        </Button>
       </div>
+
+      <div className="grid w-full gap-1.5">
+        <Label>Work Type</Label>
+        <RadioGroup
+          value={workType}
+          onValueChange={(value: "hourly" | "job") => setWorkType(value)}
+          className="flex gap-4"
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="hourly" id="hourly" />
+            <Label htmlFor="hourly">By Hour</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="job" id="job" />
+            <Label htmlFor="job">By Job</Label>
+          </div>
+        </RadioGroup>
+      </div>
+
+      <div className="grid w-full gap-1.5">
+        <Label htmlFor="jobDescription">Job Description</Label>
+        <Textarea
+          id="jobDescription"
+          value={jobDescription}
+          onChange={(e) => setJobDescription(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="grid w-full gap-1.5">
+        <Label htmlFor="startTime">Start Time</Label>
+        <Input
+          type="time"
+          id="startTime"
+          value={startTime}
+          onChange={(e) => setStartTime(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="grid w-full gap-1.5">
+        <Label htmlFor="endTime">End Time</Label>
+        <Input
+          type="time"
+          id="endTime"
+          value={endTime}
+          onChange={(e) => setEndTime(e.target.value)}
+          required
+        />
+      </div>
+
+      {workType === "hourly" ? (
+        <>
+          <div className="grid w-full gap-1.5">
+            <Label htmlFor="hours">Hours</Label>
+            <Input
+              type="number"
+              id="hours"
+              value={hours}
+              onChange={(e) => setHours(e.target.value)}
+              min="0"
+              step="0.5"
+              required
+            />
+          </div>
+
+          <div className="grid w-full gap-1.5">
+            <Label htmlFor="hourlyRate">Hourly Rate</Label>
+            <Input
+              type="number"
+              id="hourlyRate"
+              value={hourlyRate}
+              onChange={(e) => setHourlyRate(e.target.value)}
+              min="0"
+              step="0.01"
+              required
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="grid w-full gap-1.5">
+            <Label htmlFor="jobCount">Number of Jobs</Label>
+            <Input
+              type="number"
+              id="jobCount"
+              value={jobCount}
+              onChange={(e) => setJobCount(e.target.value)}
+              min="1"
+              step="1"
+              required
+            />
+          </div>
+
+          <div className="grid w-full gap-1.5">
+            <Label htmlFor="jobRate">Rate per Job</Label>
+            <Input
+              type="number"
+              id="jobRate"
+              value={jobRate}
+              onChange={(e) => setJobRate(e.target.value)}
+              min="0"
+              step="0.01"
+              required
+            />
+          </div>
+        </>
+      )}
+
+      <Button type="submit" className="w-full">Submit Time Entry</Button>
     </form>
   );
 };
