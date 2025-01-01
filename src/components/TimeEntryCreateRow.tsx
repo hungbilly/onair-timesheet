@@ -131,12 +131,14 @@ export const TimeEntryCreateRow = ({ onSave }: TimeEntryCreateRowProps) => {
           value={entry.start_time}
           onChange={(e) => setEntry({ ...entry, start_time: e.target.value })}
           className="w-24 inline-block"
+          step="900"
         />
         <Input
           type="time"
           value={entry.end_time}
           onChange={(e) => setEntry({ ...entry, end_time: e.target.value })}
           className="w-24 inline-block"
+          step="900"
         />
       </TableCell>
       <TableCell>

@@ -169,6 +169,7 @@ const TimeEntryForm = () => {
           value={startTime}
           onChange={(e) => setStartTime(e.target.value)}
           required
+          step="900"
         />
       </div>
 
@@ -180,6 +181,7 @@ const TimeEntryForm = () => {
           value={endTime}
           onChange={(e) => setEndTime(e.target.value)}
           required
+          step="900"
         />
       </div>
 
