@@ -12,12 +12,17 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ExpenseEntry } from "@/types";
 import { ExpenseRow } from "./ExpenseRow";
 import { ExpenseCreateRow } from "./ExpenseCreateRow";
+import { ExpenseSummaryCards } from "./ExpenseSummaryCards";
 
 const ExpenseHistory = () => {
   const [expenses, setExpenses] = useState<ExpenseEntry[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7)
   );
+  const [monthlySummary, setMonthlySummary] = useState({
+    totalExpenses: 0,
+    totalReceipts: 0,
+  });
 
   const fetchExpenses = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -40,6 +45,16 @@ const ExpenseHistory = () => {
     }
 
     setExpenses(data || []);
+
+    const summary = (data || []).reduce(
+      (acc, expense) => ({
+        totalExpenses: acc.totalExpenses + Number(expense.amount),
+        totalReceipts: acc.totalReceipts + (expense.receipt_path ? 1 : 0),
+      }),
+      { totalExpenses: 0, totalReceipts: 0 }
+    );
+
+    setMonthlySummary(summary);
   };
 
   useEffect(() => {
@@ -88,6 +103,8 @@ const ExpenseHistory = () => {
           className="border rounded px-2 py-1"
         />
       </div>
+
+      <ExpenseSummaryCards {...monthlySummary} />
 
       <Table>
         <TableHeader>
