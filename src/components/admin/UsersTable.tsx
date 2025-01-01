@@ -45,7 +45,11 @@ const UsersTable = ({ users, onUpdateRole, onDeleteUser, onUserUpdated }: UsersT
         {users.map((user) => (
           <TableRow key={user.id}>
             <TableCell>{user.email}</TableCell>
-            <TableCell>{user.full_name || "-"}</TableCell>
+            <TableCell>
+              <span className="text-muted-foreground">
+                {user.full_name || "No display name"}
+              </span>
+            </TableCell>
             <TableCell>
               <Select
                 value={user.role}
