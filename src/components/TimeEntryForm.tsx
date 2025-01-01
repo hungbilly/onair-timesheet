@@ -59,6 +59,7 @@ const TimeEntryForm = () => {
       if (error) throw error;
 
       toast.success("Time entries saved successfully!");
+      // Reset form
       setEntries([initialEntryState]);
     } catch (error) {
       console.error("Error saving time entries:", error);
@@ -79,31 +80,29 @@ const TimeEntryForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        {entries.map((entry, index) => (
-          <TimeEntryItem
-            key={index}
-            entry={entry}
-            index={index}
-            onChange={handleEntryChange}
-            onRemove={handleRemoveEntry}
-            canRemove={entries.length > 1}
-          />
-        ))}
-      </div>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {entries.map((entry, index) => (
+        <TimeEntryItem
+          key={index}
+          entry={entry}
+          index={index}
+          onChange={handleEntryChange}
+          onRemove={handleRemoveEntry}
+          canRemove={entries.length > 1}
+        />
+      ))}
       
-      <div className="flex justify-between gap-4">
+      <div className="flex justify-between">
         <Button
           type="button"
           variant="outline"
           onClick={handleAddEntry}
-          className="w-full"
+          className="w-full mr-2"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add Another Entry
         </Button>
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full ml-2">
           Submit All Entries
         </Button>
       </div>
