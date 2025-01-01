@@ -12,10 +12,30 @@ const Index = () => {
       <div className="mt-8">
         <Tabs defaultValue="time-entry" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="time-entry">New Time Entry</TabsTrigger>
-            <TabsTrigger value="time-history">Time History</TabsTrigger>
-            <TabsTrigger value="expense-entry">New Expense</TabsTrigger>
-            <TabsTrigger value="expense-history">Expense History</TabsTrigger>
+            <TabsTrigger 
+              value="time-entry"
+              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+            >
+              New Time Entry
+            </TabsTrigger>
+            <TabsTrigger 
+              value="time-history"
+              className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+            >
+              Time History
+            </TabsTrigger>
+            <TabsTrigger 
+              value="expense-entry"
+              className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+            >
+              New Expense
+            </TabsTrigger>
+            <TabsTrigger 
+              value="expense-history"
+              className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+            >
+              Expense History
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="time-entry" className="mt-6">
             <div className="max-w-md mx-auto">
