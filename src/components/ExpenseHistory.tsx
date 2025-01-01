@@ -18,8 +18,12 @@ interface Expense {
   receipt_path: string | null;
 }
 
+interface ExpenseWithUrl extends Expense {
+  receiptUrl?: string;
+}
+
 const ExpenseHistory = () => {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expenses, setExpenses] = useState<ExpenseWithUrl[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(
     format(new Date(), "yyyy-MM")
   );
@@ -45,18 +49,24 @@ const ExpenseHistory = () => {
         return;
       }
 
-      setExpenses(data || []);
+      // Get receipt URLs for all expenses with receipts
+      const expensesWithUrls = await Promise.all(
+        (data || []).map(async (expense) => {
+          if (expense.receipt_path) {
+            const { data: urlData } = await supabase.storage
+              .from("receipts")
+              .getPublicUrl(expense.receipt_path);
+            return { ...expense, receiptUrl: urlData.publicUrl };
+          }
+          return expense;
+        })
+      );
+
+      setExpenses(expensesWithUrls);
     };
 
     fetchExpenses();
   }, [selectedMonth]);
-
-  const getReceiptUrl = async (path: string) => {
-    const { data } = await supabase.storage
-      .from("receipts")
-      .getPublicUrl(path);
-    return data.publicUrl;
-  };
 
   return (
     <div className="space-y-4">
@@ -89,9 +99,9 @@ const ExpenseHistory = () => {
               <TableCell>{expense.description}</TableCell>
               <TableCell>${expense.amount.toFixed(2)}</TableCell>
               <TableCell>
-                {expense.receipt_path && (
+                {expense.receiptUrl && (
                   <a
-                    href={getReceiptUrl(expense.receipt_path)}
+                    href={expense.receiptUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline"
