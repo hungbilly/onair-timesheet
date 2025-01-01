@@ -1,10 +1,17 @@
 export type TimeEntry = {
   id: string;
-  date: Date;
-  hours: number;
-  project: string;
-  description: string;
-  userId: string;
+  user_id: string;
+  date: string;
+  work_type: "hourly" | "job";
+  job_description: string;
+  hours: number | null;
+  hourly_rate: number | null;
+  start_time: string | null;
+  end_time: string | null;
+  job_count: number | null;
+  job_rate: number | null;
+  total_salary: number;
+  created_at: string;
 };
 
 export type ExpenseEntry = {
