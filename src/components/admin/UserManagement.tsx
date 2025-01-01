@@ -57,31 +57,14 @@ const UserManagement = () => {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("No active session");
-        return;
-      }
+      const { error } = await supabase.auth.admin.deleteUser(userId);
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId }),
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete user');
-      }
+      if (error) throw error;
 
       toast.success("User deleted successfully");
       fetchUsers();
     } catch (error) {
-      toast.error(error.message || "Error deleting user");
+      toast.error("Error deleting user");
       console.error(error);
     }
   };
