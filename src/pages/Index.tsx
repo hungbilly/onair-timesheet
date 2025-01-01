@@ -2,6 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import TimeEntryHistory from "@/components/TimeEntryHistory";
 import ExpenseHistory from "@/components/ExpenseHistory";
+import ProfileEditDialog from "@/components/ProfileEditDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
@@ -24,14 +25,17 @@ const Index = () => {
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Employee Dashboard</h1>
-        <Button 
-          variant="outline" 
-          onClick={handleSignOut}
-          className="gap-2"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign out
-        </Button>
+        <div className="flex items-center gap-4">
+          <ProfileEditDialog />
+          <Button 
+            variant="outline" 
+            onClick={handleSignOut}
+            className="gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </Button>
+        </div>
       </div>
       
       <div className="mt-8">
