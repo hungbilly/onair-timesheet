@@ -30,6 +30,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
 
   const handleCreateUser = async () => {
     try {
+      // First, create the user in auth.users
       const { data: { user }, error: signUpError } = await supabase.auth.signUp({
         email,
         password: "temporary123", // You might want to generate this randomly
@@ -38,10 +39,17 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
       if (signUpError) throw signUpError;
       if (!user) throw new Error("No user returned from signUp");
 
-      // Update profile
+      // Wait a brief moment for the trigger to create the profile
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Now update the profile with full name and role
       const { error: profileError } = await supabase
         .from("profiles")
-        .update({ role, full_name: fullName })
+        .update({ 
+          role, 
+          full_name: fullName,
+          updated_at: new Date().toISOString()
+        })
         .eq("id", user.id);
 
       if (profileError) throw profileError;
