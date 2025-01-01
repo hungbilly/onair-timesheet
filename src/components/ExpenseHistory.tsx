@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -8,27 +7,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Expense {
-  id: string;
-  date: string;
-  description: string;
-  amount: number;
-  receipt_path: string | null;
-}
-
-interface ExpenseWithUrl extends Expense {
-  receiptUrl?: string;
-}
+import type { ExpenseEntry } from "@/types";
+import { ExpenseRow } from "./ExpenseRow";
+import { ExpenseCreateRow } from "./ExpenseCreateRow";
 
 const ExpenseHistory = () => {
-  const [expenses, setExpenses] = useState<ExpenseWithUrl[]>([]);
+  const [expenses, setExpenses] = useState<ExpenseEntry[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(
-    format(new Date(), "yyyy-MM")
+    new Date().toISOString().slice(0, 7)
   );
 
   const fetchExpenses = async () => {
@@ -51,20 +39,7 @@ const ExpenseHistory = () => {
       return;
     }
 
-    // Get receipt URLs for all expenses with receipts
-    const expensesWithUrls = await Promise.all(
-      (data || []).map(async (expense) => {
-        if (expense.receipt_path) {
-          const { data: urlData } = await supabase.storage
-            .from("receipts")
-            .getPublicUrl(expense.receipt_path);
-          return { ...expense, receiptUrl: urlData.publicUrl };
-        }
-        return expense;
-      })
-    );
-
-    setExpenses(expensesWithUrls);
+    setExpenses(data || []);
   };
 
   useEffect(() => {
@@ -74,7 +49,6 @@ const ExpenseHistory = () => {
   const handleDelete = async (id: string) => {
     const expense = expenses.find(e => e.id === id);
     
-    // Delete the receipt from storage if it exists
     if (expense?.receipt_path) {
       const { error: storageError } = await supabase.storage
         .from("receipts")
@@ -86,7 +60,6 @@ const ExpenseHistory = () => {
       }
     }
 
-    // Delete the expense record
     const { error } = await supabase
       .from("expenses")
       .delete()
@@ -99,32 +72,6 @@ const ExpenseHistory = () => {
 
     toast.success("Expense deleted successfully");
     fetchExpenses();
-  };
-
-  const handleEdit = (expense: ExpenseWithUrl) => {
-    try {
-      localStorage.setItem("editExpense", JSON.stringify(expense));
-      // Find the tabs container
-      const tabsList = document.querySelector('[role="tablist"]');
-      if (!tabsList) {
-        console.error("Tabs list not found");
-        return;
-      }
-      
-      // Find and click the expense entry tab
-      const expenseTab = Array.from(tabsList.children)
-        .find(child => child.textContent?.includes("New Expense")) as HTMLButtonElement;
-      
-      if (expenseTab) {
-        expenseTab.click();
-        toast.success("Please update the expense in the form above");
-      } else {
-        toast.error("Could not find the expense tab");
-      }
-    } catch (error) {
-      console.error("Error setting up edit:", error);
-      toast.error("Failed to set up expense editing");
-    }
   };
 
   return (
@@ -153,44 +100,14 @@ const ExpenseHistory = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
+          <ExpenseCreateRow onSave={fetchExpenses} />
           {expenses.map((expense) => (
-            <TableRow key={expense.id}>
-              <TableCell>{format(new Date(expense.date), "MMM dd, yyyy")}</TableCell>
-              <TableCell>{expense.description}</TableCell>
-              <TableCell>${expense.amount.toFixed(2)}</TableCell>
-              <TableCell>
-                {expense.receiptUrl && (
-                  <a
-                    href={expense.receiptUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >
-                    View Receipt
-                  </a>
-                )}
-              </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleEdit(expense)}
-                    title="Edit expense"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleDelete(expense.id)}
-                    title="Delete expense"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
+            <ExpenseRow
+              key={expense.id}
+              expense={expense}
+              onDelete={handleDelete}
+              onUpdate={fetchExpenses}
+            />
           ))}
         </TableBody>
       </Table>
