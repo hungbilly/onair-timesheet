@@ -81,13 +81,28 @@ const TimeEntryHistory = () => {
   };
 
   const handleEdit = (entry: TimeEntry) => {
-    // Store the entry in localStorage for the form to access
-    localStorage.setItem("editTimeEntry", JSON.stringify(entry));
-    // Navigate to the form tab
-    const tabsList = document.querySelector('[role="tablist"]');
-    const newTimeEntryTab = tabsList?.querySelector('[value="time-entry"]') as HTMLButtonElement;
-    if (newTimeEntryTab) {
-      newTimeEntryTab.click();
+    try {
+      localStorage.setItem("editTimeEntry", JSON.stringify(entry));
+      // Find the tabs container
+      const tabsList = document.querySelector('[role="tablist"]');
+      if (!tabsList) {
+        console.error("Tabs list not found");
+        return;
+      }
+      
+      // Find and click the time entry tab
+      const timeEntryTab = Array.from(tabsList.children)
+        .find(child => child.textContent?.includes("New Time Entry")) as HTMLButtonElement;
+      
+      if (timeEntryTab) {
+        timeEntryTab.click();
+        toast.success("Please update the entry in the form above");
+      } else {
+        toast.error("Could not find the time entry tab");
+      }
+    } catch (error) {
+      console.error("Error setting up edit:", error);
+      toast.error("Failed to set up entry editing");
     }
   };
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,27 @@ const ExpenseForm = () => {
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [currentReceiptPath, setCurrentReceiptPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check for editing data in localStorage
+    const editData = localStorage.getItem("editExpense");
+    if (editData) {
+      try {
+        const expense = JSON.parse(editData);
+        setDate(expense.date);
+        setAmount(expense.amount.toString());
+        setDescription(expense.description);
+        setEditingId(expense.id);
+        setCurrentReceiptPath(expense.receipt_path);
+        // Clear the localStorage after loading
+        localStorage.removeItem("editExpense");
+      } catch (error) {
+        console.error("Error parsing edit data:", error);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,8 +45,16 @@ const ExpenseForm = () => {
         return;
       }
 
-      let receiptPath = null;
+      let receiptPath = currentReceiptPath;
       if (file) {
+        // If editing and there's an existing receipt, delete it
+        if (currentReceiptPath) {
+          await supabase.storage
+            .from('receipts')
+            .remove([currentReceiptPath]);
+        }
+
+        // Upload new file
         const fileExt = file.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
@@ -38,23 +67,45 @@ const ExpenseForm = () => {
         receiptPath = fileName;
       }
 
-      const { error } = await supabase
-        .from('expenses')
-        .insert({
-          user_id: user.id,
-          date,
-          description,
-          amount: Number(amount),
-          receipt_path: receiptPath,
-        });
+      const expenseData = {
+        user_id: user.id,
+        date,
+        description,
+        amount: Number(amount),
+        receipt_path: receiptPath,
+      };
+
+      let error;
+      if (editingId) {
+        // Update existing expense
+        ({ error } = await supabase
+          .from('expenses')
+          .update(expenseData)
+          .eq('id', editingId));
+      } else {
+        // Insert new expense
+        ({ error } = await supabase
+          .from('expenses')
+          .insert(expenseData));
+      }
 
       if (error) throw error;
 
-      toast.success("Expense saved successfully!");
+      toast.success(editingId ? "Expense updated successfully!" : "Expense saved successfully!");
       setDate("");
       setAmount("");
       setDescription("");
       setFile(null);
+      setEditingId(null);
+      setCurrentReceiptPath(null);
+
+      // Switch to history tab
+      const tabsList = document.querySelector('[role="tablist"]');
+      const historyTab = Array.from(tabsList?.children || [])
+        .find(child => child.textContent?.includes("Expense History")) as HTMLButtonElement;
+      if (historyTab) {
+        historyTab.click();
+      }
     } catch (error) {
       console.error("Error saving expense:", error);
       toast.error("Failed to save expense");

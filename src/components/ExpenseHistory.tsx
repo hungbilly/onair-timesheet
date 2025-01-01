@@ -102,13 +102,28 @@ const ExpenseHistory = () => {
   };
 
   const handleEdit = (expense: ExpenseWithUrl) => {
-    // Store the expense in localStorage for the form to access
-    localStorage.setItem("editExpense", JSON.stringify(expense));
-    // Navigate to the form tab
-    const tabsList = document.querySelector('[role="tablist"]');
-    const newExpenseTab = tabsList?.querySelector('[value="expense-entry"]') as HTMLButtonElement;
-    if (newExpenseTab) {
-      newExpenseTab.click();
+    try {
+      localStorage.setItem("editExpense", JSON.stringify(expense));
+      // Find the tabs container
+      const tabsList = document.querySelector('[role="tablist"]');
+      if (!tabsList) {
+        console.error("Tabs list not found");
+        return;
+      }
+      
+      // Find and click the expense entry tab
+      const expenseTab = Array.from(tabsList.children)
+        .find(child => child.textContent?.includes("New Expense")) as HTMLButtonElement;
+      
+      if (expenseTab) {
+        expenseTab.click();
+        toast.success("Please update the expense in the form above");
+      } else {
+        toast.error("Could not find the expense tab");
+      }
+    } catch (error) {
+      console.error("Error setting up edit:", error);
+      toast.error("Failed to set up expense editing");
     }
   };
 
