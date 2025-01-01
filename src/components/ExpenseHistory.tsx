@@ -1,116 +1,95 @@
-import { useEffect, useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { toast } from "sonner";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { ExpenseEntry } from "@/types";
-import { ExpenseRow } from "./ExpenseRow";
-import { ExpenseCreateRow } from "./ExpenseCreateRow";
+import { ExpenseEntry } from "@/types";
+import ExpenseCreateRow from "./ExpenseCreateRow";
+import ExpenseRow from "./ExpenseRow";
+import { format } from "date-fns";
+import { toast } from "sonner";
 
 const ExpenseHistory = () => {
-  const [expenses, setExpenses] = useState<ExpenseEntry[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState(
-    new Date().toISOString().slice(0, 7)
-  );
+  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
 
-  const fetchExpenses = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+      
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", user.id)
+        .single();
+      
+      return profile;
+    },
+  });
 
-    const startDate = `${selectedMonth}-01`;
-    const endDate = `${selectedMonth}-31`;
+  const { data: expenses, refetch } = useQuery({
+    queryKey: ["expenses", selectedMonth],
+    queryFn: async () => {
+      const startDate = `${selectedMonth}-01`;
+      const endDate = `${selectedMonth}-31`;
 
-    const { data, error } = await supabase
-      .from("expenses")
-      .select("*")
-      .eq("user_id", user.id)
-      .gte("date", startDate)
-      .lte("date", endDate)
-      .order("date", { ascending: false });
+      const { data, error } = await supabase
+        .from("expenses")
+        .select("*")
+        .gte("date", startDate)
+        .lte("date", endDate)
+        .order("date", { ascending: false });
 
-    if (error) {
-      console.error("Error fetching expenses:", error);
-      return;
-    }
+      if (error) {
+        toast.error("Failed to fetch expenses");
+        throw error;
+      }
 
-    setExpenses(data || []);
+      return data as ExpenseEntry[];
+    },
+  });
+
+  const handleExpenseCreated = () => {
+    refetch();
   };
 
-  useEffect(() => {
-    fetchExpenses();
-  }, [selectedMonth]);
+  const handleExpenseDeleted = () => {
+    refetch();
+  };
 
-  const handleDelete = async (id: string) => {
-    const expense = expenses.find(e => e.id === id);
-    
-    if (expense?.receipt_path) {
-      const { error: storageError } = await supabase.storage
-        .from("receipts")
-        .remove([expense.receipt_path]);
-      
-      if (storageError) {
-        toast.error("Failed to delete receipt");
-        return;
-      }
-    }
-
-    const { error } = await supabase
-      .from("expenses")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-      toast.error("Failed to delete expense");
-      return;
-    }
-
-    toast.success("Expense deleted successfully");
-    fetchExpenses();
+  const handleExpenseUpdated = () => {
+    refetch();
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <label htmlFor="month" className="font-medium">
-          Select Month:
-        </label>
-        <input
-          type="month"
-          id="month"
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
-          className="border rounded px-2 py-1"
-        />
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">
+          {profile?.full_name || profile?.email || "Employee"}'s Expense History
+        </h2>
+        <div>
+          <input
+            type="month"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="border rounded px-2 py-1"
+          />
+        </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Receipt</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <ExpenseCreateRow onSave={fetchExpenses} />
-          {expenses.map((expense) => (
+      <div className="space-y-4">
+        <ExpenseCreateRow onExpenseCreated={handleExpenseCreated} />
+        
+        <div className="space-y-2">
+          {expenses?.map((expense) => (
             <ExpenseRow
               key={expense.id}
               expense={expense}
-              onDelete={handleDelete}
-              onUpdate={fetchExpenses}
+              onExpenseDeleted={handleExpenseDeleted}
+              onExpenseUpdated={handleExpenseUpdated}
             />
           ))}
-        </TableBody>
-      </Table>
+        </div>
+      </div>
     </div>
   );
 };
