@@ -9,6 +9,7 @@ import {
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import EmployeeDetailedEntries from "./EmployeeDetailedEntries";
+import { useState } from "react";
 
 interface EmployeeStats {
   id: string;
@@ -25,6 +26,15 @@ interface StatsTableProps {
 }
 
 const StatsTable = ({ stats, timesheetEntries, expenses }: StatsTableProps) => {
+  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+
+  const toggleItem = (id: string) => {
+    setOpenItems(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -36,14 +46,18 @@ const StatsTable = ({ stats, timesheetEntries, expenses }: StatsTableProps) => {
       </TableHeader>
       <TableBody>
         {stats.map((stat) => (
-          <Collapsible key={stat.id}>
+          <Collapsible 
+            key={stat.id} 
+            open={openItems[stat.id]} 
+            onOpenChange={() => toggleItem(stat.id)}
+          >
             <TableRow className="hover:bg-muted/50 transition-colors">
               <TableCell className="w-4">
                 <CollapsibleTrigger className="h-4 w-4">
-                  {open => (
-                    <div className="h-4 w-4">
-                      {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                    </div>
+                  {openItems[stat.id] ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4" />
                   )}
                 </CollapsibleTrigger>
               </TableCell>
