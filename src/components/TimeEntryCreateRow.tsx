@@ -96,142 +96,122 @@ export const TimeEntryCreateRow = ({ onSave }: TimeEntryCreateRowProps) => {
   }
 
   return (
-    <>
-      <TableRow className="border-b-0 pb-0 md:pb-3">
-        <TableCell className="p-2 md:p-4">
-          <Input
-            type="date"
-            value={entry.date}
-            onChange={(e) => setEntry({ ...entry, date: e.target.value })}
-            className="w-full"
+    <TableRow className="md:h-16">
+      <TableCell className="p-2 md:p-4">
+        <Input
+          type="date"
+          value={entry.date}
+          onChange={(e) => setEntry({ ...entry, date: e.target.value })}
+          className="w-full md:w-auto"
+        />
+      </TableCell>
+      <TableCell className="p-2 md:p-4">
+        <Select
+          value={entry.work_type}
+          onValueChange={(value: WorkType) => setEntry({ ...entry, work_type: value })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="hourly">Hourly</SelectItem>
+            <SelectItem value="job">Job</SelectItem>
+          </SelectContent>
+        </Select>
+      </TableCell>
+      <TableCell className="p-2 md:p-4">
+        <Input
+          value={entry.job_description}
+          onChange={(e) => setEntry({ ...entry, job_description: e.target.value })}
+          placeholder="Description"
+          className="w-full"
+        />
+      </TableCell>
+      <TableCell className="p-2 md:p-4">
+        <div className="flex gap-2">
+          <TimePickerInput
+            label="Start Time"
+            value={entry.start_time}
+            onChange={(value) => setEntry({ ...entry, start_time: value })}
+            className="w-24"
           />
-        </TableCell>
-        <TableCell className="p-2 md:p-4">
-          <Select
-            value={entry.work_type}
-            onValueChange={(value: WorkType) => setEntry({ ...entry, work_type: value })}
+          <TimePickerInput
+            label="End Time"
+            value={entry.end_time}
+            onChange={(value) => setEntry({ ...entry, end_time: value })}
+            className="w-24"
+          />
+        </div>
+      </TableCell>
+      <TableCell className="p-2 md:p-4">
+        {entry.work_type === "hourly" ? (
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              value={entry.hours}
+              onChange={(e) => setEntry({ ...entry, hours: e.target.value })}
+              className="w-20"
+              placeholder="Hours"
+            />
+            <span>hrs @</span>
+            <Input
+              type="number"
+              value={entry.hourly_rate}
+              onChange={(e) => setEntry({ ...entry, hourly_rate: e.target.value })}
+              className="w-20"
+              placeholder="Rate/hr"
+            />
+            <span>/hr</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              value={entry.job_count}
+              onChange={(e) => setEntry({ ...entry, job_count: e.target.value })}
+              className="w-20"
+              placeholder="Jobs"
+            />
+            <span>jobs @</span>
+            <Input
+              type="number"
+              value={entry.job_rate}
+              onChange={(e) => setEntry({ ...entry, job_rate: e.target.value })}
+              className="w-20"
+              placeholder="Rate/job"
+            />
+            <span>/job</span>
+          </div>
+        )}
+      </TableCell>
+      <TableCell className="p-2 md:p-4">
+        $
+        {(
+          (entry.work_type === "hourly"
+            ? Number(entry.hours) * Number(entry.hourly_rate)
+            : Number(entry.job_count) * Number(entry.job_rate)) || 0
+        ).toFixed(2)}
+      </TableCell>
+      <TableCell className="p-2 md:p-4">
+        <div className="flex gap-2 justify-end">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleSave}
+            title="Save entry"
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="hourly">Hourly</SelectItem>
-              <SelectItem value="job">Job</SelectItem>
-            </SelectContent>
-          </Select>
-        </TableCell>
-        <TableCell className="p-2 md:p-4">
-          <Input
-            value={entry.job_description}
-            onChange={(e) => setEntry({ ...entry, job_description: e.target.value })}
-            placeholder="Description"
-            className="w-full"
-          />
-        </TableCell>
-        <TableCell className="hidden md:table-cell">
-          <div className="flex gap-2">
-            <TimePickerInput
-              label="Start Time"
-              value={entry.start_time}
-              onChange={(value) => setEntry({ ...entry, start_time: value })}
-              className="w-24"
-            />
-            <TimePickerInput
-              label="End Time"
-              value={entry.end_time}
-              onChange={(value) => setEntry({ ...entry, end_time: value })}
-              className="w-24"
-            />
-          </div>
-        </TableCell>
-      </TableRow>
-      <TableRow className="border-t-0">
-        <TableCell className="md:hidden p-2">
-          <div className="flex flex-col gap-2">
-            <TimePickerInput
-              label="Start Time"
-              value={entry.start_time}
-              onChange={(value) => setEntry({ ...entry, start_time: value })}
-              className="w-full"
-            />
-            <TimePickerInput
-              label="End Time"
-              value={entry.end_time}
-              onChange={(value) => setEntry({ ...entry, end_time: value })}
-              className="w-full"
-            />
-          </div>
-        </TableCell>
-        <TableCell colSpan={2} className="p-2 md:p-4">
-          {entry.work_type === "hourly" ? (
-            <div className="flex flex-col md:flex-row gap-2 md:items-center">
-              <Input
-                type="number"
-                value={entry.hours}
-                onChange={(e) => setEntry({ ...entry, hours: e.target.value })}
-                className="w-full md:w-20"
-                placeholder="Hours"
-              />
-              <span className="hidden md:inline">hrs @</span>
-              <Input
-                type="number"
-                value={entry.hourly_rate}
-                onChange={(e) => setEntry({ ...entry, hourly_rate: e.target.value })}
-                className="w-full md:w-20"
-                placeholder="Rate/hr"
-              />
-              <span className="hidden md:inline">/hr</span>
-            </div>
-          ) : (
-            <div className="flex flex-col md:flex-row gap-2 md:items-center">
-              <Input
-                type="number"
-                value={entry.job_count}
-                onChange={(e) => setEntry({ ...entry, job_count: e.target.value })}
-                className="w-full md:w-20"
-                placeholder="Jobs"
-              />
-              <span className="hidden md:inline">jobs @</span>
-              <Input
-                type="number"
-                value={entry.job_rate}
-                onChange={(e) => setEntry({ ...entry, job_rate: e.target.value })}
-                className="w-full md:w-20"
-                placeholder="Rate/job"
-              />
-              <span className="hidden md:inline">/job</span>
-            </div>
-          )}
-        </TableCell>
-        <TableCell className="p-2 md:p-4">
-          $
-          {(
-            (entry.work_type === "hourly"
-              ? Number(entry.hours) * Number(entry.hourly_rate)
-              : Number(entry.job_count) * Number(entry.job_rate)) || 0
-          ).toFixed(2)}
-        </TableCell>
-        <TableCell className="p-2 md:p-4">
-          <div className="flex gap-2 justify-end">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleSave}
-              title="Save entry"
-            >
-              <Save className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setIsCreating(false)}
-              title="Cancel"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </TableCell>
-      </TableRow>
-    </>
+            <Save className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setIsCreating(false)}
+            title="Cancel"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
   );
 };
