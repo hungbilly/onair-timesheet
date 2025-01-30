@@ -35,8 +35,7 @@ const UsersTable = ({ users, onUpdateRole, onDeleteUser, onUserUpdated }: UsersT
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Email</TableHead>
-          <TableHead>Full Name</TableHead>
+          <TableHead>User Info</TableHead>
           <TableHead>Role</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
@@ -44,11 +43,13 @@ const UsersTable = ({ users, onUpdateRole, onDeleteUser, onUserUpdated }: UsersT
       <TableBody>
         {users.map((user) => (
           <TableRow key={user.id}>
-            <TableCell>{user.email}</TableCell>
             <TableCell>
-              <span className="text-muted-foreground">
-                {user.full_name || "No display name"}
-              </span>
+              <div className="flex flex-col gap-1">
+                <span>{user.email}</span>
+                <span className="text-sm text-muted-foreground">
+                  {user.full_name || "No display name"}
+                </span>
+              </div>
             </TableCell>
             <TableCell>
               <Select
