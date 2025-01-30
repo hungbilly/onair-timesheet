@@ -64,7 +64,10 @@ const StatsTable = ({ stats, selectedMonth }: StatsTableProps) => {
           .eq("user_id", employeeId)
           .eq("month", selectedMonth);
 
-        if (deleteError) throw deleteError;
+        if (deleteError) {
+          console.error("Delete error:", deleteError);
+          throw deleteError;
+        }
 
         setApprovalStates(prev => ({ ...prev, [employeeId]: false }));
         toast({
@@ -79,7 +82,6 @@ const StatsTable = ({ stats, selectedMonth }: StatsTableProps) => {
             user_id: employeeId,
             month: selectedMonth,
             approved_by: currentUser.user.id,
-            approved_at: new Date().toISOString(),
           });
 
         if (insertError) throw insertError;
