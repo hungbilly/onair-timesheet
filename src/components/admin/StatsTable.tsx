@@ -28,13 +28,23 @@ const StatsTable = ({ stats, selectedMonth }: StatsTableProps) => {
 
   const handleApprove = async (employeeId: string) => {
     try {
+      const { data: currentUser } = await supabase.auth.getUser();
+      if (!currentUser.user?.id) throw new Error("No user found");
+
       const { error } = await supabase
         .from("monthly_approvals")
-        .upsert({
-          user_id: employeeId,
-          month: selectedMonth,
-          approved_by: (await supabase.auth.getUser()).data.user?.id,
-        });
+        .upsert(
+          {
+            user_id: employeeId,
+            month: selectedMonth,
+            approved_by: currentUser.user.id,
+            approved_at: new Date().toISOString(),
+          },
+          {
+            onConflict: 'user_id,month',
+            ignoreDuplicates: false,
+          }
+        );
 
       if (error) throw error;
 
