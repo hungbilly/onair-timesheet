@@ -80,7 +80,7 @@ const TimeEntryHistory = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
         <label htmlFor="month" className="font-medium">
           Select Month:
         </label>
@@ -89,36 +89,42 @@ const TimeEntryHistory = () => {
           id="month"
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(e.target.value)}
-          className="border rounded px-2 py-1"
+          className="border rounded px-2 py-1 w-full sm:w-auto"
         />
       </div>
 
       <MonthlySummaryCards {...monthlySummary} />
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Time</TableHead>
-            <TableHead>Details</TableHead>
-            <TableHead>Total</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TimeEntryCreateRow onSave={fetchEntries} />
-          {entries.map((entry) => (
-            <TimeEntryRow
-              key={entry.id}
-              entry={entry}
-              onDelete={handleDelete}
-              onUpdate={fetchEntries}
-            />
-          ))}
-        </TableBody>
-      </Table>
+      <div className="overflow-x-auto -mx-4 sm:mx-0">
+        <div className="min-w-full inline-block align-middle">
+          <div className="overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="whitespace-nowrap">Date</TableHead>
+                  <TableHead className="whitespace-nowrap">Type</TableHead>
+                  <TableHead className="whitespace-nowrap">Description</TableHead>
+                  <TableHead className="whitespace-nowrap">Time</TableHead>
+                  <TableHead className="whitespace-nowrap">Details</TableHead>
+                  <TableHead className="whitespace-nowrap">Total</TableHead>
+                  <TableHead className="whitespace-nowrap">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TimeEntryCreateRow onSave={fetchEntries} />
+                {entries.map((entry) => (
+                  <TimeEntryRow
+                    key={entry.id}
+                    entry={entry}
+                    onDelete={handleDelete}
+                    onUpdate={fetchEntries}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
