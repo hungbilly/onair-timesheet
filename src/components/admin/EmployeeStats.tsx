@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import EmployeeFilters from "./EmployeeFilters";
 import StatsTable from "./StatsTable";
-import EmployeeDetailedEntries from "./EmployeeDetailedEntries";
 import { useEmployeeData } from "@/hooks/useEmployeeData";
 import { generateDetailedCsv } from "@/utils/csvExport";
 import { getMonthDateRange } from "@/utils/dateUtils";
@@ -17,11 +16,10 @@ import * as XLSX from 'xlsx';
 
 const EmployeeStats = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
-  const [selectedEmployee, setSelectedEmployee] = useState<string>("all");
   
   const { employees, stats, timesheetEntries, expenses } = useEmployeeData(
     selectedMonth,
-    selectedEmployee
+    "all" // We'll always fetch all employees now
   );
 
   const fetchEmployeeData = async () => {
@@ -122,14 +120,31 @@ const EmployeeStats = () => {
     XLSX.writeFile(workbook, `employee-report-${selectedMonth}.xlsx`);
   };
 
+  // Group entries by user_id for the expandable rows
+  const entriesByUser = timesheetEntries.reduce((acc, entry) => {
+    if (!acc[entry.user_id]) {
+      acc[entry.user_id] = [];
+    }
+    acc[entry.user_id].push(entry);
+    return acc;
+  }, {});
+
+  const expensesByUser = expenses.reduce((acc, expense) => {
+    if (!acc[expense.user_id]) {
+      acc[expense.user_id] = [];
+    }
+    acc[expense.user_id].push(expense);
+    return acc;
+  }, {});
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-start">
         <EmployeeFilters
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
-          selectedEmployee={selectedEmployee}
-          setSelectedEmployee={setSelectedEmployee}
+          selectedEmployee="all"
+          setSelectedEmployee={() => {}} // We don't need this anymore
           employees={employees}
         />
         <DropdownMenu>
@@ -147,14 +162,11 @@ const EmployeeStats = () => {
         </DropdownMenu>
       </div>
 
-      <StatsTable stats={stats} />
-
-      {selectedEmployee !== "all" && (
-        <EmployeeDetailedEntries
-          timesheetEntries={timesheetEntries}
-          expenses={expenses}
-        />
-      )}
+      <StatsTable 
+        stats={stats} 
+        timesheetEntries={entriesByUser}
+        expenses={expensesByUser}
+      />
     </div>
   );
 };
