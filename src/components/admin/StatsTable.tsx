@@ -24,8 +24,7 @@ const StatsTable = ({ stats }: StatsTableProps) => {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Email</TableHead>
-          <TableHead>Full Name</TableHead>
+          <TableHead>Employee Info</TableHead>
           <TableHead>Total Salary</TableHead>
           <TableHead>Total Expenses</TableHead>
           <TableHead>Total Payment</TableHead>
@@ -34,8 +33,14 @@ const StatsTable = ({ stats }: StatsTableProps) => {
       <TableBody>
         {stats.map((stat) => (
           <TableRow key={stat.id}>
-            <TableCell>{stat.email}</TableCell>
-            <TableCell>{stat.full_name}</TableCell>
+            <TableCell>
+              <div className="flex flex-col gap-1">
+                <span>{stat.email}</span>
+                <span className="text-sm text-muted-foreground">
+                  {stat.full_name || "No display name"}
+                </span>
+              </div>
+            </TableCell>
             <TableCell>${stat.total_salary.toFixed(2)}</TableCell>
             <TableCell>${stat.total_expenses.toFixed(2)}</TableCell>
             <TableCell>${(stat.total_salary + stat.total_expenses).toFixed(2)}</TableCell>
@@ -43,7 +48,7 @@ const StatsTable = ({ stats }: StatsTableProps) => {
         ))}
         {stats.length > 0 && (
           <TableRow>
-            <TableCell colSpan={2} className="font-bold">Total</TableCell>
+            <TableCell className="font-bold">Total</TableCell>
             <TableCell className="font-bold">
               ${stats.reduce((sum, stat) => sum + stat.total_salary, 0).toFixed(2)}
             </TableCell>
