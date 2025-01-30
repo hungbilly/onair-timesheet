@@ -55,92 +55,99 @@ export const TimeEntryRow = ({ entry, onDelete, onUpdate }: TimeEntryRowProps) =
 
   if (isEditing) {
     return (
-      <TableRow className="md:h-16">
-        <TableCell className="p-2 md:p-4">
-          {format(new Date(entry.date), "MMM dd, yyyy")}
-        </TableCell>
-        <TableCell className="p-2 md:p-4">
-          <div className="flex gap-2">
+      <TableRow className="md:h-32">
+        <TableCell className="p-2 md:p-4 border-r">
+          <div className="flex flex-col gap-2">
             <Input
-              type="time"
-              value={editedEntry.start_time}
-              onChange={(e) =>
-                setEditedEntry({ ...editedEntry, start_time: e.target.value })
-              }
-              className="w-24"
+              type="date"
+              value={entry.date}
+              readOnly
+              className="w-full"
             />
-            <Input
-              type="time"
-              value={editedEntry.end_time}
-              onChange={(e) =>
-                setEditedEntry({ ...editedEntry, end_time: e.target.value })
-              }
-              className="w-24"
-            />
+            <div className="flex gap-2">
+              <Input
+                type="time"
+                value={editedEntry.start_time}
+                onChange={(e) =>
+                  setEditedEntry({ ...editedEntry, start_time: e.target.value })
+                }
+                className="w-24"
+              />
+              <Input
+                type="time"
+                value={editedEntry.end_time}
+                onChange={(e) =>
+                  setEditedEntry({ ...editedEntry, end_time: e.target.value })
+                }
+                className="w-24"
+              />
+            </div>
           </div>
         </TableCell>
-        <TableCell className="capitalize p-2 md:p-4">{entry.work_type}</TableCell>
         <TableCell className="p-2 md:p-4">
-          <Input
-            value={editedEntry.job_description}
-            onChange={(e) =>
-              setEditedEntry({ ...editedEntry, job_description: e.target.value })
-            }
-          />
-        </TableCell>
-        <TableCell className="p-2 md:p-4">
-          {entry.work_type === "hourly" ? (
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                value={editedEntry.hours}
-                onChange={(e) =>
-                  setEditedEntry({ ...editedEntry, hours: Number(e.target.value) })
-                }
-                className="w-20"
-              />
-              <span>hrs @</span>
-              <Input
-                type="number"
-                value={editedEntry.hourly_rate}
-                onChange={(e) =>
-                  setEditedEntry({
-                    ...editedEntry,
-                    hourly_rate: Number(e.target.value),
-                  })
-                }
-                className="w-20"
-              />
-              <span>/hr</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                value={editedEntry.job_count}
-                onChange={(e) =>
-                  setEditedEntry({
-                    ...editedEntry,
-                    job_count: Number(e.target.value),
-                  })
-                }
-                className="w-20"
-              />
-              <span>jobs @</span>
-              <Input
-                type="number"
-                value={editedEntry.job_rate}
-                onChange={(e) =>
-                  setEditedEntry({
-                    ...editedEntry,
-                    job_rate: Number(e.target.value),
-                  })
-                }
-                className="w-20"
-              />
-              <span>/job</span>
-            </div>
-          )}
+          <div className="flex flex-col gap-2">
+            <div className="capitalize font-medium">{entry.work_type}</div>
+            <Input
+              value={editedEntry.job_description}
+              onChange={(e) =>
+                setEditedEntry({ ...editedEntry, job_description: e.target.value })
+              }
+              placeholder="Description"
+              className="w-full"
+            />
+            {entry.work_type === "hourly" ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  value={editedEntry.hours}
+                  onChange={(e) =>
+                    setEditedEntry({ ...editedEntry, hours: Number(e.target.value) })
+                  }
+                  className="w-20"
+                />
+                <span>hrs @</span>
+                <Input
+                  type="number"
+                  value={editedEntry.hourly_rate}
+                  onChange={(e) =>
+                    setEditedEntry({
+                      ...editedEntry,
+                      hourly_rate: Number(e.target.value),
+                    })
+                  }
+                  className="w-20"
+                />
+                <span>/hr</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  value={editedEntry.job_count}
+                  onChange={(e) =>
+                    setEditedEntry({
+                      ...editedEntry,
+                      job_count: Number(e.target.value),
+                    })
+                  }
+                  className="w-20"
+                />
+                <span>jobs @</span>
+                <Input
+                  type="number"
+                  value={editedEntry.job_rate}
+                  onChange={(e) =>
+                    setEditedEntry({
+                      ...editedEntry,
+                      job_rate: Number(e.target.value),
+                    })
+                  }
+                  className="w-20"
+                />
+                <span>/job</span>
+              </div>
+            )}
+          </div>
         </TableCell>
         <TableCell className="p-2 md:p-4">
           ${(
@@ -174,21 +181,31 @@ export const TimeEntryRow = ({ entry, onDelete, onUpdate }: TimeEntryRowProps) =
   }
 
   return (
-    <TableRow className="md:h-16">
-      <TableCell className="p-2 md:p-4">
-        {format(new Date(entry.date), "MMM dd, yyyy")}
+    <TableRow className="md:h-32">
+      <TableCell className="p-2 md:p-4 border-r">
+        <div className="flex flex-col gap-1">
+          <div className="font-medium">
+            {format(new Date(entry.date), "MMM dd, yyyy")}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {entry.start_time} - {entry.end_time}
+          </div>
+        </div>
       </TableCell>
       <TableCell className="p-2 md:p-4">
-        {entry.start_time} - {entry.end_time}
+        <div className="flex flex-col gap-1">
+          <div className="capitalize font-medium">{entry.work_type}</div>
+          <div className="text-sm">{entry.job_description}</div>
+          <div className="text-sm text-muted-foreground">
+            {entry.work_type === "hourly"
+              ? `${entry.hours} hrs @ $${entry.hourly_rate}/hr`
+              : `${entry.job_count} jobs @ $${entry.job_rate}/job`}
+          </div>
+        </div>
       </TableCell>
-      <TableCell className="capitalize p-2 md:p-4">{entry.work_type}</TableCell>
-      <TableCell className="p-2 md:p-4">{entry.job_description}</TableCell>
       <TableCell className="p-2 md:p-4">
-        {entry.work_type === "hourly"
-          ? `${entry.hours} hrs @ $${entry.hourly_rate}/hr`
-          : `${entry.job_count} jobs @ $${entry.job_rate}/job`}
+        ${entry.total_salary.toFixed(2)}
       </TableCell>
-      <TableCell className="p-2 md:p-4">${entry.total_salary.toFixed(2)}</TableCell>
       <TableCell className="p-2 md:p-4">
         <div className="flex gap-2 justify-end">
           <Button

@@ -83,7 +83,7 @@ export const TimeEntryCreateRow = ({ onSave }: TimeEntryCreateRowProps) => {
   if (!isCreating) {
     return (
       <TableRow>
-        <TableCell colSpan={7} className="text-center p-2 md:p-4">
+        <TableCell colSpan={4} className="text-center p-2 md:p-4">
           <Button
             variant="outline"
             onClick={() => setIsCreating(true)}
@@ -96,93 +96,91 @@ export const TimeEntryCreateRow = ({ onSave }: TimeEntryCreateRowProps) => {
   }
 
   return (
-    <TableRow className="md:h-16">
-      <TableCell className="p-2 md:p-4">
-        <Input
-          type="date"
-          value={entry.date}
-          onChange={(e) => setEntry({ ...entry, date: e.target.value })}
-          className="w-full md:w-auto"
-        />
-      </TableCell>
-      <TableCell className="p-2 md:p-4">
-        <div className="flex gap-2">
-          <TimePickerInput
-            label="Start Time"
-            value={entry.start_time}
-            onChange={(value) => setEntry({ ...entry, start_time: value })}
-            className="w-24"
+    <TableRow className="md:h-32">
+      <TableCell className="p-2 md:p-4 border-r">
+        <div className="flex flex-col gap-2">
+          <Input
+            type="date"
+            value={entry.date}
+            onChange={(e) => setEntry({ ...entry, date: e.target.value })}
+            className="w-full"
           />
-          <TimePickerInput
-            label="End Time"
-            value={entry.end_time}
-            onChange={(value) => setEntry({ ...entry, end_time: value })}
-            className="w-24"
-          />
+          <div className="flex gap-2">
+            <TimePickerInput
+              label="Start Time"
+              value={entry.start_time}
+              onChange={(value) => setEntry({ ...entry, start_time: value })}
+              className="w-24"
+            />
+            <TimePickerInput
+              label="End Time"
+              value={entry.end_time}
+              onChange={(value) => setEntry({ ...entry, end_time: value })}
+              className="w-24"
+            />
+          </div>
         </div>
       </TableCell>
       <TableCell className="p-2 md:p-4">
-        <Select
-          value={entry.work_type}
-          onValueChange={(value: WorkType) => setEntry({ ...entry, work_type: value })}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="hourly">Hourly</SelectItem>
-            <SelectItem value="job">Job</SelectItem>
-          </SelectContent>
-        </Select>
-      </TableCell>
-      <TableCell className="p-2 md:p-4">
-        <Input
-          value={entry.job_description}
-          onChange={(e) => setEntry({ ...entry, job_description: e.target.value })}
-          placeholder="Description"
-          className="w-full"
-        />
-      </TableCell>
-      <TableCell className="p-2 md:p-4">
-        {entry.work_type === "hourly" ? (
-          <div className="flex items-center gap-2">
-            <Input
-              type="number"
-              value={entry.hours}
-              onChange={(e) => setEntry({ ...entry, hours: e.target.value })}
-              className="w-20"
-              placeholder="Hours"
-            />
-            <span>hrs @</span>
-            <Input
-              type="number"
-              value={entry.hourly_rate}
-              onChange={(e) => setEntry({ ...entry, hourly_rate: e.target.value })}
-              className="w-20"
-              placeholder="Rate/hr"
-            />
-            <span>/hr</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Input
-              type="number"
-              value={entry.job_count}
-              onChange={(e) => setEntry({ ...entry, job_count: e.target.value })}
-              className="w-20"
-              placeholder="Jobs"
-            />
-            <span>jobs @</span>
-            <Input
-              type="number"
-              value={entry.job_rate}
-              onChange={(e) => setEntry({ ...entry, job_rate: e.target.value })}
-              className="w-20"
-              placeholder="Rate/job"
-            />
-            <span>/job</span>
-          </div>
-        )}
+        <div className="flex flex-col gap-2">
+          <Select
+            value={entry.work_type}
+            onValueChange={(value: WorkType) => setEntry({ ...entry, work_type: value })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="hourly">Hourly</SelectItem>
+              <SelectItem value="job">Job</SelectItem>
+            </SelectContent>
+          </Select>
+          <Input
+            value={entry.job_description}
+            onChange={(e) => setEntry({ ...entry, job_description: e.target.value })}
+            placeholder="Description"
+            className="w-full"
+          />
+          {entry.work_type === "hourly" ? (
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                value={entry.hours}
+                onChange={(e) => setEntry({ ...entry, hours: e.target.value })}
+                className="w-20"
+                placeholder="Hours"
+              />
+              <span>hrs @</span>
+              <Input
+                type="number"
+                value={entry.hourly_rate}
+                onChange={(e) => setEntry({ ...entry, hourly_rate: e.target.value })}
+                className="w-20"
+                placeholder="Rate/hr"
+              />
+              <span>/hr</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                value={entry.job_count}
+                onChange={(e) => setEntry({ ...entry, job_count: e.target.value })}
+                className="w-20"
+                placeholder="Jobs"
+              />
+              <span>jobs @</span>
+              <Input
+                type="number"
+                value={entry.job_rate}
+                onChange={(e) => setEntry({ ...entry, job_rate: e.target.value })}
+                className="w-20"
+                placeholder="Rate/job"
+              />
+              <span>/job</span>
+            </div>
+          )}
+        </div>
       </TableCell>
       <TableCell className="p-2 md:p-4">
         $
