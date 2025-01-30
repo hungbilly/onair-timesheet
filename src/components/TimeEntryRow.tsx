@@ -59,15 +59,6 @@ export const TimeEntryRow = ({ entry, onDelete, onUpdate }: TimeEntryRowProps) =
         <TableCell className="p-2 md:p-4">
           {format(new Date(entry.date), "MMM dd, yyyy")}
         </TableCell>
-        <TableCell className="capitalize p-2 md:p-4">{entry.work_type}</TableCell>
-        <TableCell className="p-2 md:p-4">
-          <Input
-            value={editedEntry.job_description}
-            onChange={(e) =>
-              setEditedEntry({ ...editedEntry, job_description: e.target.value })
-            }
-          />
-        </TableCell>
         <TableCell className="p-2 md:p-4">
           <div className="flex gap-2">
             <Input
@@ -87,6 +78,15 @@ export const TimeEntryRow = ({ entry, onDelete, onUpdate }: TimeEntryRowProps) =
               className="w-24"
             />
           </div>
+        </TableCell>
+        <TableCell className="capitalize p-2 md:p-4">{entry.work_type}</TableCell>
+        <TableCell className="p-2 md:p-4">
+          <Input
+            value={editedEntry.job_description}
+            onChange={(e) =>
+              setEditedEntry({ ...editedEntry, job_description: e.target.value })
+            }
+          />
         </TableCell>
         <TableCell className="p-2 md:p-4">
           {entry.work_type === "hourly" ? (
@@ -178,11 +178,11 @@ export const TimeEntryRow = ({ entry, onDelete, onUpdate }: TimeEntryRowProps) =
       <TableCell className="p-2 md:p-4">
         {format(new Date(entry.date), "MMM dd, yyyy")}
       </TableCell>
-      <TableCell className="capitalize p-2 md:p-4">{entry.work_type}</TableCell>
-      <TableCell className="p-2 md:p-4">{entry.job_description}</TableCell>
       <TableCell className="p-2 md:p-4">
         {entry.start_time} - {entry.end_time}
       </TableCell>
+      <TableCell className="capitalize p-2 md:p-4">{entry.work_type}</TableCell>
+      <TableCell className="p-2 md:p-4">{entry.job_description}</TableCell>
       <TableCell className="p-2 md:p-4">
         {entry.work_type === "hourly"
           ? `${entry.hours} hrs @ $${entry.hourly_rate}/hr`

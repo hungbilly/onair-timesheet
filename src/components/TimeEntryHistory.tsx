@@ -102,9 +102,9 @@ const TimeEntryHistory = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="whitespace-nowrap">Date</TableHead>
+                  <TableHead className="whitespace-nowrap">Time</TableHead>
                   <TableHead className="whitespace-nowrap">Type</TableHead>
                   <TableHead className="whitespace-nowrap">Description</TableHead>
-                  <TableHead className="whitespace-nowrap">Time</TableHead>
                   <TableHead className="whitespace-nowrap">Details</TableHead>
                   <TableHead className="whitespace-nowrap">Total</TableHead>
                   <TableHead className="whitespace-nowrap">Actions</TableHead>
