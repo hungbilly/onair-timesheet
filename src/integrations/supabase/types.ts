@@ -39,6 +39,30 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_approvals: {
+        Row: {
+          approved_at: string | null
+          approved_by: string
+          id: string
+          month: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by: string
+          id?: string
+          month: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string
+          id?: string
+          month?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

@@ -6,6 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EmployeeStats {
   id: string;
@@ -17,15 +20,45 @@ interface EmployeeStats {
 
 interface StatsTableProps {
   stats: EmployeeStats[];
+  selectedMonth: string;
 }
 
-const StatsTable = ({ stats }: StatsTableProps) => {
+const StatsTable = ({ stats, selectedMonth }: StatsTableProps) => {
+  const { toast } = useToast();
+
+  const handleApprove = async (employeeId: string) => {
+    try {
+      const { error } = await supabase
+        .from("monthly_approvals")
+        .upsert({
+          user_id: employeeId,
+          month: selectedMonth,
+          approved_by: (await supabase.auth.getUser()).data.user?.id,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Monthly entries approved successfully",
+      });
+    } catch (error) {
+      console.error("Error approving entries:", error);
+      toast({
+        title: "Error",
+        description: "Failed to approve monthly entries",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Employee Info</TableHead>
           <TableHead>Payment Details</TableHead>
+          <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -46,6 +79,14 @@ const StatsTable = ({ stats }: StatsTableProps) => {
                 <div>Total: <span className="font-medium">${(stat.total_salary + stat.total_expenses).toFixed(2)}</span></div>
               </div>
             </TableCell>
+            <TableCell>
+              <Button 
+                onClick={() => handleApprove(stat.id)}
+                size="sm"
+              >
+                Approve Month
+              </Button>
+            </TableCell>
           </TableRow>
         ))}
         {stats.length > 0 && (
@@ -58,6 +99,7 @@ const StatsTable = ({ stats }: StatsTableProps) => {
                 <div>Total: <span className="font-bold">${stats.reduce((sum, stat) => sum + (stat.total_salary + stat.total_expenses), 0).toFixed(2)}</span></div>
               </div>
             </TableCell>
+            <TableCell />
           </TableRow>
         )}
       </TableBody>

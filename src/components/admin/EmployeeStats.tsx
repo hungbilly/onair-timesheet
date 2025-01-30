@@ -147,7 +147,7 @@ const EmployeeStats = () => {
         </DropdownMenu>
       </div>
 
-      <StatsTable stats={stats} />
+      <StatsTable stats={stats} selectedMonth={selectedMonth} />
 
       {selectedEmployee !== "all" && (
         <EmployeeDetailedEntries
