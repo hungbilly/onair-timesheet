@@ -25,9 +25,7 @@ const StatsTable = ({ stats }: StatsTableProps) => {
       <TableHeader>
         <TableRow>
           <TableHead>Employee Info</TableHead>
-          <TableHead>Total Salary</TableHead>
-          <TableHead>Total Expenses</TableHead>
-          <TableHead>Total Payment</TableHead>
+          <TableHead>Payment Details</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -41,22 +39,24 @@ const StatsTable = ({ stats }: StatsTableProps) => {
                 </span>
               </div>
             </TableCell>
-            <TableCell>${stat.total_salary.toFixed(2)}</TableCell>
-            <TableCell>${stat.total_expenses.toFixed(2)}</TableCell>
-            <TableCell>${(stat.total_salary + stat.total_expenses).toFixed(2)}</TableCell>
+            <TableCell>
+              <div className="flex flex-col gap-1">
+                <div>Salary: <span className="font-medium">${stat.total_salary.toFixed(2)}</span></div>
+                <div>Expenses: <span className="font-medium">${stat.total_expenses.toFixed(2)}</span></div>
+                <div>Total: <span className="font-medium">${(stat.total_salary + stat.total_expenses).toFixed(2)}</span></div>
+              </div>
+            </TableCell>
           </TableRow>
         ))}
         {stats.length > 0 && (
           <TableRow>
             <TableCell className="font-bold">Total</TableCell>
-            <TableCell className="font-bold">
-              ${stats.reduce((sum, stat) => sum + stat.total_salary, 0).toFixed(2)}
-            </TableCell>
-            <TableCell className="font-bold">
-              ${stats.reduce((sum, stat) => sum + stat.total_expenses, 0).toFixed(2)}
-            </TableCell>
-            <TableCell className="font-bold">
-              ${stats.reduce((sum, stat) => sum + (stat.total_salary + stat.total_expenses), 0).toFixed(2)}
+            <TableCell>
+              <div className="flex flex-col gap-1">
+                <div>Salary: <span className="font-bold">${stats.reduce((sum, stat) => sum + stat.total_salary, 0).toFixed(2)}</span></div>
+                <div>Expenses: <span className="font-bold">${stats.reduce((sum, stat) => sum + stat.total_expenses, 0).toFixed(2)}</span></div>
+                <div>Total: <span className="font-bold">${stats.reduce((sum, stat) => sum + (stat.total_salary + stat.total_expenses), 0).toFixed(2)}</span></div>
+              </div>
             </TableCell>
           </TableRow>
         )}
