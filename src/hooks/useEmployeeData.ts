@@ -75,7 +75,8 @@ export const useEmployeeData = (selectedMonth: string, selectedEmployee: string)
   const fetchStats = async () => {
     const { startDate, endDate } = getMonthDateRange(selectedMonth);
 
-    let query = supabase
+    // Fetch all timesheet entries for the selected month
+    const { data: timesheetData, error: timesheetError } = await supabase
       .from("timesheet_entries")
       .select(`
         user_id,
@@ -84,53 +85,47 @@ export const useEmployeeData = (selectedMonth: string, selectedEmployee: string)
       .gte("date", startDate)
       .lte("date", endDate);
 
-    if (selectedEmployee !== "all") {
-      query = query.eq("user_id", selectedEmployee);
-    }
-
-    const { data: timesheetData, error: timesheetError } = await query;
-
     if (timesheetError) {
       console.error("Error fetching timesheet data:", timesheetError);
       return;
     }
 
-    let expensesQuery = supabase
+    // Fetch all expenses for the selected month
+    const { data: expensesData, error: expensesError } = await supabase
       .from("expenses")
       .select("user_id, amount")
       .gte("date", startDate)
       .lte("date", endDate);
-
-    if (selectedEmployee !== "all") {
-      expensesQuery = expensesQuery.eq("user_id", selectedEmployee);
-    }
-
-    const { data: expensesData, error: expensesError } = await expensesQuery;
 
     if (expensesError) {
       console.error("Error fetching expenses data:", expensesError);
       return;
     }
 
-    const aggregatedData = employees.reduce((acc, employee) => {
+    // Calculate stats for all employees
+    const aggregatedData = employees.map(employee => {
       const employeeTimesheets = timesheetData?.filter(t => t.user_id === employee.id) || [];
       const employeeExpenses = expensesData?.filter(e => e.user_id === employee.id) || [];
 
       const totalSalary = employeeTimesheets.reduce((sum, t) => sum + (t.total_salary || 0), 0);
       const totalExpenses = employeeExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
 
-      acc.push({
+      return {
         id: employee.id,
         full_name: employee.full_name || "Unknown",
         email: employee.email,
         total_salary: totalSalary,
         total_expenses: totalExpenses,
-      });
+      };
+    });
 
-      return acc;
-    }, [] as EmployeeStats[]);
-
-    setStats(aggregatedData);
+    // If a specific employee is selected, only show that employee's stats
+    if (selectedEmployee !== "all") {
+      const filteredStats = aggregatedData.filter(stat => stat.id === selectedEmployee);
+      setStats(filteredStats);
+    } else {
+      setStats(aggregatedData);
+    }
   };
 
   const refetch = useCallback(() => {
