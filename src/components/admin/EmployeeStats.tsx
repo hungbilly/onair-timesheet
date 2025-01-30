@@ -85,9 +85,9 @@ const EmployeeStats = () => {
     // Create summary worksheet
     const summaryData = employeeData.map(employee => ({
       'Employee': employee.full_name || employee.email,
-      'Total Salary': employee.total_salary.toFixed(2),
-      'Total Expenses': employee.total_expenses.toFixed(2),
-      'Total Payment': (employee.total_salary + employee.total_expenses).toFixed(2)
+      'Total Salary': employee.total_salary,
+      'Total Expenses': employee.total_expenses,
+      'Total Payment': employee.total_salary + employee.total_expenses
     }));
     const summaryWs = XLSX.utils.json_to_sheet(summaryData);
     XLSX.utils.book_append_sheet(workbook, summaryWs, 'Summary');
@@ -100,7 +100,7 @@ const EmployeeStats = () => {
         'Type': entry.work_type,
         'Description': entry.job_description,
         'Hours': entry.hours || '',
-        'Amount': entry.total_salary.toFixed(2)
+        'Amount': entry.total_salary
       }))
     );
     const timesheetWs = XLSX.utils.json_to_sheet(timesheetData);
@@ -112,7 +112,7 @@ const EmployeeStats = () => {
         'Employee': employee.full_name || employee.email,
         'Date': expense.date,
         'Description': expense.description,
-        'Amount': expense.amount.toFixed(2)
+        'Amount': expense.amount
       }))
     );
     const expensesWs = XLSX.utils.json_to_sheet(expensesData);
