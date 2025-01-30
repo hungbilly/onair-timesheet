@@ -43,22 +43,19 @@ const EmployeeStats = () => {
           .lte("date", endDate)
           .order("date", { ascending: true });
 
-        const totalSalary = (timesheetData || []).reduce(
-          (sum, entry) => sum + entry.total_salary,
-          0
-        );
-        const totalExpenses = (expensesData || []).reduce(
-          (sum, entry) => sum + entry.amount,
-          0
-        );
-
         return {
           email: employee.email,
           full_name: employee.full_name || "",
           timesheet_entries: timesheetData || [],
           expenses: expensesData || [],
-          total_salary: totalSalary,
-          total_expenses: totalExpenses,
+          total_salary: (timesheetData || []).reduce(
+            (sum, entry) => sum + entry.total_salary,
+            0
+          ),
+          total_expenses: (expensesData || []).reduce(
+            (sum, entry) => sum + entry.amount,
+            0
+          ),
         };
       })
     );
