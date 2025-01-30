@@ -58,13 +58,13 @@ const StatsTable = ({ stats, selectedMonth }: StatsTableProps) => {
 
       if (approvalStates[employeeId]) {
         // Delete approval
-        const { error } = await supabase
+        const { error: deleteError } = await supabase
           .from("monthly_approvals")
           .delete()
           .eq("user_id", employeeId)
           .eq("month", selectedMonth);
 
-        if (error) throw error;
+        if (deleteError) throw deleteError;
 
         setApprovalStates(prev => ({ ...prev, [employeeId]: false }));
         toast({
@@ -73,22 +73,16 @@ const StatsTable = ({ stats, selectedMonth }: StatsTableProps) => {
         });
       } else {
         // Add approval
-        const { error } = await supabase
+        const { error: insertError } = await supabase
           .from("monthly_approvals")
-          .upsert(
-            {
-              user_id: employeeId,
-              month: selectedMonth,
-              approved_by: currentUser.user.id,
-              approved_at: new Date().toISOString(),
-            },
-            {
-              onConflict: 'user_id,month',
-              ignoreDuplicates: false,
-            }
-          );
+          .insert({
+            user_id: employeeId,
+            month: selectedMonth,
+            approved_by: currentUser.user.id,
+            approved_at: new Date().toISOString(),
+          });
 
-        if (error) throw error;
+        if (insertError) throw insertError;
 
         setApprovalStates(prev => ({ ...prev, [employeeId]: true }));
         toast({
