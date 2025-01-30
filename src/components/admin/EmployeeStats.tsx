@@ -19,7 +19,7 @@ const EmployeeStats = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [selectedEmployee, setSelectedEmployee] = useState<string>("all");
   
-  const { employees, stats, timesheetEntries, expenses } = useEmployeeData(
+  const { employees, stats, timesheetEntries, expenses, refetch } = useEmployeeData(
     selectedMonth,
     selectedEmployee
   );
@@ -151,6 +151,8 @@ const EmployeeStats = () => {
         <EmployeeDetailedEntries
           timesheetEntries={timesheetEntries}
           expenses={expenses}
+          onUpdate={refetch}
+          userId={selectedEmployee}
         />
       )}
 

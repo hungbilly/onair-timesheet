@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMonthDateRange } from "@/utils/dateUtils";
 
@@ -133,6 +133,11 @@ export const useEmployeeData = (selectedMonth: string, selectedEmployee: string)
     setStats(aggregatedData);
   };
 
+  const refetch = useCallback(() => {
+    fetchStats();
+    fetchDetailedEntries();
+  }, [selectedMonth, selectedEmployee]);
+
   useEffect(() => {
     fetchEmployees();
   }, []);
@@ -149,5 +154,6 @@ export const useEmployeeData = (selectedMonth: string, selectedEmployee: string)
     stats,
     timesheetEntries,
     expenses,
+    refetch,
   };
 };
