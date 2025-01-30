@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import EmployeeFilters from "./EmployeeFilters";
 import StatsTable from "./StatsTable";
+import EmployeeDetailedEntries from "./EmployeeDetailedEntries";
 import { useEmployeeData } from "@/hooks/useEmployeeData";
 import { generateDetailedCsv } from "@/utils/csvExport";
 import { getMonthDateRange } from "@/utils/dateUtils";
@@ -16,10 +17,11 @@ import * as XLSX from 'xlsx';
 
 const EmployeeStats = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [selectedEmployee, setSelectedEmployee] = useState<string>("all");
   
   const { employees, stats, timesheetEntries, expenses } = useEmployeeData(
     selectedMonth,
-    "all" // We'll always fetch all employees now
+    selectedEmployee
   );
 
   const fetchEmployeeData = async () => {
@@ -43,19 +45,22 @@ const EmployeeStats = () => {
           .lte("date", endDate)
           .order("date", { ascending: true });
 
+        const totalSalary = (timesheetData || []).reduce(
+          (sum, entry) => sum + entry.total_salary,
+          0
+        );
+        const totalExpenses = (expensesData || []).reduce(
+          (sum, entry) => sum + entry.amount,
+          0
+        );
+
         return {
           email: employee.email,
           full_name: employee.full_name || "",
           timesheet_entries: timesheetData || [],
           expenses: expensesData || [],
-          total_salary: (timesheetData || []).reduce(
-            (sum, entry) => sum + entry.total_salary,
-            0
-          ),
-          total_expenses: (expensesData || []).reduce(
-            (sum, entry) => sum + entry.amount,
-            0
-          ),
+          total_salary: totalSalary,
+          total_expenses: totalExpenses,
         };
       })
     );
@@ -117,31 +122,14 @@ const EmployeeStats = () => {
     XLSX.writeFile(workbook, `employee-report-${selectedMonth}.xlsx`);
   };
 
-  // Group entries by user_id for the expandable rows
-  const entriesByUser = timesheetEntries.reduce((acc, entry) => {
-    if (!acc[entry.user_id]) {
-      acc[entry.user_id] = [];
-    }
-    acc[entry.user_id].push(entry);
-    return acc;
-  }, {});
-
-  const expensesByUser = expenses.reduce((acc, expense) => {
-    if (!acc[expense.user_id]) {
-      acc[expense.user_id] = [];
-    }
-    acc[expense.user_id].push(expense);
-    return acc;
-  }, {});
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-start">
         <EmployeeFilters
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
-          selectedEmployee="all"
-          setSelectedEmployee={() => {}} // We don't need this anymore
+          selectedEmployee={selectedEmployee}
+          setSelectedEmployee={setSelectedEmployee}
           employees={employees}
         />
         <DropdownMenu>
@@ -159,11 +147,14 @@ const EmployeeStats = () => {
         </DropdownMenu>
       </div>
 
-      <StatsTable 
-        stats={stats} 
-        timesheetEntries={entriesByUser}
-        expenses={expensesByUser}
-      />
+      <StatsTable stats={stats} />
+
+      {selectedEmployee !== "all" && (
+        <EmployeeDetailedEntries
+          timesheetEntries={timesheetEntries}
+          expenses={expenses}
+        />
+      )}
     </div>
   );
 };
