@@ -64,23 +64,29 @@ export const TimeEntryRow = ({ entry, onDelete, onUpdate }: TimeEntryRowProps) =
               readOnly
               className="w-full"
             />
-            <div className="flex gap-2">
-              <Input
-                type="time"
-                value={editedEntry.start_time}
-                onChange={(e) =>
-                  setEditedEntry({ ...editedEntry, start_time: e.target.value })
-                }
-                className="w-24"
-              />
-              <Input
-                type="time"
-                value={editedEntry.end_time}
-                onChange={(e) =>
-                  setEditedEntry({ ...editedEntry, end_time: e.target.value })
-                }
-                className="w-24"
-              />
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm">Start Time</label>
+                <Input
+                  type="time"
+                  value={editedEntry.start_time}
+                  onChange={(e) =>
+                    setEditedEntry({ ...editedEntry, start_time: e.target.value })
+                  }
+                  className="w-full"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm">End Time</label>
+                <Input
+                  type="time"
+                  value={editedEntry.end_time}
+                  onChange={(e) =>
+                    setEditedEntry({ ...editedEntry, end_time: e.target.value })
+                  }
+                  className="w-full"
+                />
+              </div>
             </div>
           </div>
         </TableCell>
@@ -183,12 +189,13 @@ export const TimeEntryRow = ({ entry, onDelete, onUpdate }: TimeEntryRowProps) =
   return (
     <TableRow className="md:h-32">
       <TableCell className="p-2 md:p-4 border-r">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <div className="font-medium">
             {format(new Date(entry.date), "MMM dd, yyyy")}
           </div>
-          <div className="text-sm text-muted-foreground">
-            {entry.start_time} - {entry.end_time}
+          <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+            <div>Start: {entry.start_time}</div>
+            <div>End: {entry.end_time}</div>
           </div>
         </div>
       </TableCell>

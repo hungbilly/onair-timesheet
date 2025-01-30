@@ -105,18 +105,18 @@ export const TimeEntryCreateRow = ({ onSave }: TimeEntryCreateRowProps) => {
             onChange={(e) => setEntry({ ...entry, date: e.target.value })}
             className="w-full"
           />
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2">
             <TimePickerInput
               label="Start Time"
               value={entry.start_time}
               onChange={(value) => setEntry({ ...entry, start_time: value })}
-              className="w-24"
+              className="w-full"
             />
             <TimePickerInput
               label="End Time"
               value={entry.end_time}
               onChange={(value) => setEntry({ ...entry, end_time: value })}
-              className="w-24"
+              className="w-full"
             />
           </div>
         </div>
