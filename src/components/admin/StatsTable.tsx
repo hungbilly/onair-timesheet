@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 interface EmployeeStats {
   id: string;
@@ -25,38 +26,81 @@ interface StatsTableProps {
 
 const StatsTable = ({ stats, selectedMonth }: StatsTableProps) => {
   const { toast } = useToast();
+  const [approvalStates, setApprovalStates] = useState<Record<string, boolean>>({});
+
+  // Fetch initial approval states
+  useEffect(() => {
+    const fetchApprovalStates = async () => {
+      const { data: approvals, error } = await supabase
+        .from("monthly_approvals")
+        .select("user_id")
+        .eq("month", selectedMonth);
+
+      if (error) {
+        console.error("Error fetching approvals:", error);
+        return;
+      }
+
+      const states: Record<string, boolean> = {};
+      approvals?.forEach((approval) => {
+        states[approval.user_id] = true;
+      });
+      setApprovalStates(states);
+    };
+
+    fetchApprovalStates();
+  }, [selectedMonth]);
 
   const handleApprove = async (employeeId: string) => {
     try {
       const { data: currentUser } = await supabase.auth.getUser();
       if (!currentUser.user?.id) throw new Error("No user found");
 
-      const { error } = await supabase
-        .from("monthly_approvals")
-        .upsert(
-          {
-            user_id: employeeId,
-            month: selectedMonth,
-            approved_by: currentUser.user.id,
-            approved_at: new Date().toISOString(),
-          },
-          {
-            onConflict: 'user_id,month',
-            ignoreDuplicates: false,
-          }
-        );
+      if (approvalStates[employeeId]) {
+        // Delete approval
+        const { error } = await supabase
+          .from("monthly_approvals")
+          .delete()
+          .eq("user_id", employeeId)
+          .eq("month", selectedMonth);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Monthly entries approved successfully",
-      });
+        setApprovalStates(prev => ({ ...prev, [employeeId]: false }));
+        toast({
+          title: "Success",
+          description: "Monthly approval removed successfully",
+        });
+      } else {
+        // Add approval
+        const { error } = await supabase
+          .from("monthly_approvals")
+          .upsert(
+            {
+              user_id: employeeId,
+              month: selectedMonth,
+              approved_by: currentUser.user.id,
+              approved_at: new Date().toISOString(),
+            },
+            {
+              onConflict: 'user_id,month',
+              ignoreDuplicates: false,
+            }
+          );
+
+        if (error) throw error;
+
+        setApprovalStates(prev => ({ ...prev, [employeeId]: true }));
+        toast({
+          title: "Success",
+          description: "Monthly entries approved successfully",
+        });
+      }
     } catch (error) {
-      console.error("Error approving entries:", error);
+      console.error("Error managing approval:", error);
       toast({
         title: "Error",
-        description: "Failed to approve monthly entries",
+        description: "Failed to manage monthly approval",
         variant: "destructive",
       });
     }
@@ -93,8 +137,9 @@ const StatsTable = ({ stats, selectedMonth }: StatsTableProps) => {
               <Button 
                 onClick={() => handleApprove(stat.id)}
                 size="sm"
+                variant={approvalStates[stat.id] ? "default" : "destructive"}
               >
-                Approve Month
+                {approvalStates[stat.id] ? "Approved" : "Not Approved"}
               </Button>
             </TableCell>
           </TableRow>
