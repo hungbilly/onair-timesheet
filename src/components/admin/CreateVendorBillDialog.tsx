@@ -33,6 +33,7 @@ const CreateVendorBillDialog = ({ onBillCreated }: CreateVendorBillDialogProps) 
     vendorId: "",
     amount: "",
     description: "",
+    dueDate: new Date().toISOString().slice(0, 7), // Default to current month
   });
   const [file, setFile] = useState<File | null>(null);
 
@@ -71,13 +72,16 @@ const CreateVendorBillDialog = ({ onBillCreated }: CreateVendorBillDialogProps) 
         invoicePath = fileName;
       }
 
+      // Set the due date to the first day of the selected month
+      const dueDate = `${formData.dueDate}-01`;
+
       const { error } = await supabase.from("vendor_bills").insert({
         vendor_id: formData.vendorId,
         amount: Number(formData.amount),
         description: formData.description,
         invoice_path: invoicePath,
         created_by: user.id,
-        due_date: new Date().toISOString().split('T')[0], // Adding today's date as due_date
+        due_date: dueDate,
       });
 
       if (error) throw error;
@@ -89,6 +93,7 @@ const CreateVendorBillDialog = ({ onBillCreated }: CreateVendorBillDialogProps) 
         vendorId: "",
         amount: "",
         description: "",
+        dueDate: new Date().toISOString().slice(0, 7),
       });
       setFile(null);
     } catch (error) {
@@ -133,6 +138,17 @@ const CreateVendorBillDialog = ({ onBillCreated }: CreateVendorBillDialogProps) 
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="month">Month</Label>
+            <Input
+              id="month"
+              type="month"
+              value={formData.dueDate}
+              onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+              required
+            />
           </div>
 
           <div className="space-y-2">
