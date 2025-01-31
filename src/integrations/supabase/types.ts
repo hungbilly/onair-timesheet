@@ -138,6 +138,77 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_bills: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          description: string | null
+          due_date: string
+          id: string
+          invoice_path: string | null
+          paid_at: string | null
+          paid_by: string | null
+          status: Database["public"]["Enums"]["bill_status"]
+          vendor_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_date: string
+          id?: string
+          invoice_path?: string | null
+          paid_at?: string | null
+          paid_by?: string | null
+          status?: Database["public"]["Enums"]["bill_status"]
+          vendor_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_date?: string
+          id?: string
+          invoice_path?: string | null
+          paid_at?: string | null
+          paid_by?: string | null
+          status?: Database["public"]["Enums"]["bill_status"]
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_bills_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendors: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -146,6 +217,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      bill_status: "pending" | "paid"
       user_role: "admin" | "staff"
       work_type: "hourly" | "job"
     }

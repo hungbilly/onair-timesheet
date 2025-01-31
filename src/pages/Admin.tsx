@@ -6,6 +6,7 @@ import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 import UserManagement from "@/components/admin/UserManagement";
 import EmployeeStats from "@/components/admin/EmployeeStats";
+import VendorBills from "@/components/admin/VendorBills";
 import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -73,6 +74,7 @@ const Admin = () => {
         <TabsList>
           <TabsTrigger value="users">User Management</TabsTrigger>
           <TabsTrigger value="stats">Employee Stats</TabsTrigger>
+          <TabsTrigger value="bills">Vendor Bills</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -81,6 +83,10 @@ const Admin = () => {
 
         <TabsContent value="stats">
           <EmployeeStats />
+        </TabsContent>
+
+        <TabsContent value="bills">
+          <VendorBills />
         </TabsContent>
       </Tabs>
     </div>
