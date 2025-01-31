@@ -77,6 +77,7 @@ const CreateVendorBillDialog = ({ onBillCreated }: CreateVendorBillDialogProps) 
         description: formData.description,
         invoice_path: invoicePath,
         created_by: user.id,
+        due_date: new Date().toISOString().split('T')[0], // Adding today's date as due_date
       });
 
       if (error) throw error;
