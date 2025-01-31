@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash } from "lucide-react";
@@ -66,7 +66,7 @@ const VendorManagement = () => {
     }
   };
 
-  useState(() => {
+  useEffect(() => {
     fetchVendors();
   }, []);
 
@@ -76,14 +76,20 @@ const VendorManagement = () => {
         // Update existing vendor
         const { error } = await supabase
           .from("vendors")
-          .update(values)
+          .update({
+            name: values.name,
+            description: values.description || null,
+          })
           .eq("id", selectedVendor.id);
 
         if (error) throw error;
         toast.success("Vendor updated successfully");
       } else {
         // Create new vendor
-        const { error } = await supabase.from("vendors").insert(values);
+        const { error } = await supabase.from("vendors").insert({
+          name: values.name,
+          description: values.description || null,
+        });
 
         if (error) throw error;
         toast.success("Vendor created successfully");
