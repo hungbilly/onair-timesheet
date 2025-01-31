@@ -1,14 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import EmployeeFilters from "./EmployeeFilters";
 import StatsTable from "./StatsTable";
 import EmployeeDetailedEntries from "./EmployeeDetailedEntries";
+import ExportDataDialog from "./ExportDataDialog";
 import { useEmployeeData } from "@/hooks/useEmployeeData";
 import { generateDetailedCsv } from "@/utils/csvExport";
 import { getMonthDateRange } from "@/utils/dateUtils";
@@ -24,32 +19,44 @@ const EmployeeStats = () => {
     selectedEmployee
   );
 
-  const fetchEmployeeData = async () => {
-    const { startDate, endDate } = getMonthDateRange(selectedMonth);
-    
+  const fetchEmployeeData = async (months: string[], employeeIds: string[]) => {
+    const employeesToFetch = employeeIds.length > 0 
+      ? employees.filter(emp => employeeIds.includes(emp.id))
+      : employees;
+
     return await Promise.all(
-      employees.map(async (employee) => {
-        const { data: timesheetData } = await supabase
-          .from("timesheet_entries")
-          .select("*")
-          .eq("user_id", employee.id)
-          .gte("date", startDate)
-          .lte("date", endDate)
-          .order("date", { ascending: true });
+      employeesToFetch.map(async (employee) => {
+        const allTimesheetData = [];
+        const allExpensesData = [];
 
-        const { data: expensesData } = await supabase
-          .from("expenses")
-          .select("*")
-          .eq("user_id", employee.id)
-          .gte("date", startDate)
-          .lte("date", endDate)
-          .order("date", { ascending: true });
+        for (const month of months) {
+          const { startDate, endDate } = getMonthDateRange(month);
+          
+          const { data: timesheetData } = await supabase
+            .from("timesheet_entries")
+            .select("*")
+            .eq("user_id", employee.id)
+            .gte("date", startDate)
+            .lte("date", endDate)
+            .order("date", { ascending: true });
 
-        const totalSalary = (timesheetData || []).reduce(
+          const { data: expensesData } = await supabase
+            .from("expenses")
+            .select("*")
+            .eq("user_id", employee.id)
+            .gte("date", startDate)
+            .lte("date", endDate)
+            .order("date", { ascending: true });
+
+          if (timesheetData) allTimesheetData.push(...timesheetData);
+          if (expensesData) allExpensesData.push(...expensesData);
+        }
+
+        const totalSalary = allTimesheetData.reduce(
           (sum, entry) => sum + entry.total_salary,
           0
         );
-        const totalExpenses = (expensesData || []).reduce(
+        const totalExpenses = allExpensesData.reduce(
           (sum, entry) => sum + entry.amount,
           0
         );
@@ -57,8 +64,8 @@ const EmployeeStats = () => {
         return {
           email: employee.email,
           full_name: employee.full_name || "",
-          timesheet_entries: timesheetData || [],
-          expenses: expensesData || [],
+          timesheet_entries: allTimesheetData,
+          expenses: allExpensesData,
           total_salary: totalSalary,
           total_expenses: totalExpenses,
         };
@@ -66,20 +73,20 @@ const EmployeeStats = () => {
     );
   };
 
-  const exportToCsv = async () => {
-    const employeeData = await fetchEmployeeData();
+  const handleExportCsv = async (selectedMonths: string[], selectedEmployees: string[]) => {
+    const employeeData = await fetchEmployeeData(selectedMonths, selectedEmployees);
     const csvContent = generateDetailedCsv(employeeData);
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `employee-report-${selectedMonth}.csv`;
+    a.download = `employee-report-${selectedMonths.join("-")}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
-  const exportToXlsx = async () => {
-    const employeeData = await fetchEmployeeData();
+  const handleExportXlsx = async (selectedMonths: string[], selectedEmployees: string[]) => {
+    const employeeData = await fetchEmployeeData(selectedMonths, selectedEmployees);
     const workbook = XLSX.utils.book_new();
     
     // Create summary worksheet
@@ -119,7 +126,7 @@ const EmployeeStats = () => {
     XLSX.utils.book_append_sheet(workbook, expensesWs, 'Expenses');
 
     // Export the workbook
-    XLSX.writeFile(workbook, `employee-report-${selectedMonth}.xlsx`);
+    XLSX.writeFile(workbook, `employee-report-${selectedMonths.join("-")}.xlsx`);
   };
 
   return (
@@ -132,19 +139,11 @@ const EmployeeStats = () => {
           setSelectedEmployee={setSelectedEmployee}
           employees={employees}
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="mt-6">Export</Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={exportToCsv}>
-              Export as CSV
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={exportToXlsx}>
-              Export as Spreadsheet
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ExportDataDialog
+          employees={employees}
+          onExportCsv={handleExportCsv}
+          onExportXlsx={handleExportXlsx}
+        />
       </div>
 
       {selectedEmployee !== "all" && (
