@@ -14,9 +14,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
 type VendorBill = Database["public"]["Tables"]["vendor_bills"]["Row"] & {
-  vendor_name: string;
-  created_by_name: string;
-  paid_by_name: string | null;
+  vendors: { name: string } | null;
+  profiles_created_by: { full_name: string } | null;
+  profiles_paid_by: { full_name: string } | null;
 };
 
 interface VendorBillsListProps {
@@ -34,9 +34,9 @@ const VendorBillsList = ({ filter, refreshTrigger }: VendorBillsListProps) => {
         .from("vendor_bills")
         .select(`
           *,
-          vendor_name:vendors(name),
-          created_by_name:profiles!vendor_bills_created_by_fkey(full_name),
-          paid_by_name:profiles!vendor_bills_paid_by_fkey(full_name)
+          vendors:vendor_id(name),
+          profiles_created_by:profiles!vendor_bills_created_by_fkey(full_name),
+          profiles_paid_by:profiles!vendor_bills_paid_by_fkey(full_name)
         `)
         .order("due_date", { ascending: true });
 
@@ -48,7 +48,7 @@ const VendorBillsList = ({ filter, refreshTrigger }: VendorBillsListProps) => {
 
       if (error) throw error;
 
-      setBills(data as VendorBill[]);
+      setBills(data || []);
     } catch (error) {
       console.error("Error fetching bills:", error);
       toast.error("Failed to load vendor bills");
@@ -129,7 +129,7 @@ const VendorBillsList = ({ filter, refreshTrigger }: VendorBillsListProps) => {
         <TableBody>
           {bills.map((bill) => (
             <TableRow key={bill.id}>
-              <TableCell>{bill.vendor_name}</TableCell>
+              <TableCell>{bill.vendors?.name}</TableCell>
               <TableCell>${bill.amount.toFixed(2)}</TableCell>
               <TableCell>{new Date(bill.due_date).toLocaleDateString()}</TableCell>
               <TableCell>
@@ -146,7 +146,7 @@ const VendorBillsList = ({ filter, refreshTrigger }: VendorBillsListProps) => {
                 )}
               </TableCell>
               <TableCell>{bill.description}</TableCell>
-              <TableCell>{bill.created_by_name}</TableCell>
+              <TableCell>{bill.profiles_created_by?.full_name}</TableCell>
               <TableCell>
                 {bill.invoice_path && (
                   <Button
