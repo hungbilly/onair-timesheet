@@ -180,6 +180,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "vendor_bills_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_bills_paid_by_fkey"
+            columns: ["paid_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "vendor_bills_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false

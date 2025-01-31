@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import UserManagement from "@/components/admin/UserManagement";
 import EmployeeStats from "@/components/admin/EmployeeStats";
 import VendorBills from "@/components/admin/VendorBills";
+import VendorManagement from "@/components/admin/VendorManagement";
 import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -75,6 +76,7 @@ const Admin = () => {
           <TabsTrigger value="users">User Management</TabsTrigger>
           <TabsTrigger value="stats">Employee Stats</TabsTrigger>
           <TabsTrigger value="bills">Vendor Bills</TabsTrigger>
+          <TabsTrigger value="vendors">Vendors</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -87,6 +89,10 @@ const Admin = () => {
 
         <TabsContent value="bills">
           <VendorBills />
+        </TabsContent>
+
+        <TabsContent value="vendors">
+          <VendorManagement />
         </TabsContent>
       </Tabs>
     </div>
