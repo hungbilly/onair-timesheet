@@ -32,7 +32,6 @@ const CreateVendorBillDialog = ({ onBillCreated }: CreateVendorBillDialogProps) 
   const [formData, setFormData] = useState({
     vendorId: "",
     amount: "",
-    dueDate: "",
     description: "",
   });
   const [file, setFile] = useState<File | null>(null);
@@ -75,7 +74,6 @@ const CreateVendorBillDialog = ({ onBillCreated }: CreateVendorBillDialogProps) 
       const { error } = await supabase.from("vendor_bills").insert({
         vendor_id: formData.vendorId,
         amount: Number(formData.amount),
-        due_date: formData.dueDate,
         description: formData.description,
         invoice_path: invoicePath,
         created_by: user.id,
@@ -89,7 +87,6 @@ const CreateVendorBillDialog = ({ onBillCreated }: CreateVendorBillDialogProps) 
       setFormData({
         vendorId: "",
         amount: "",
-        dueDate: "",
         description: "",
       });
       setFile(null);
@@ -151,18 +148,7 @@ const CreateVendorBillDialog = ({ onBillCreated }: CreateVendorBillDialogProps) 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dueDate">Due Date</Label>
-            <Input
-              id="dueDate"
-              type="date"
-              value={formData.dueDate}
-              onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Remarks</Label>
             <Textarea
               id="description"
               value={formData.description}
