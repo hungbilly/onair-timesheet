@@ -12,6 +12,7 @@ import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { getMonthDateRange } from "@/utils/dateUtils";
 
 type VendorBill = Database["public"]["Tables"]["vendor_bills"]["Row"] & {
   vendors: { name: string } | null;
@@ -29,8 +30,7 @@ const VendorBillsList = ({ refreshTrigger, selectedMonth }: VendorBillsListProps
 
   const fetchBills = async () => {
     try {
-      const startDate = `${selectedMonth}-01`;
-      const endDate = `${selectedMonth}-31`;
+      const { startDate, endDate } = getMonthDateRange(selectedMonth);
 
       const { data, error } = await supabase
         .from("vendor_bills")
