@@ -228,7 +228,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_month_end_date: {
+        Args: {
+          year: number
+          month: number
+        }
+        Returns: string
+      }
     }
     Enums: {
       bill_status: "pending" | "paid"
