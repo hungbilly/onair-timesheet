@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import {
   Table,
@@ -13,6 +14,7 @@ import type { TimeEntry } from "@/types";
 import { MonthlySummaryCards } from "./MonthlySummaryCards";
 import { TimeEntryRow } from "./TimeEntryRow";
 import { TimeEntryCreateRow } from "./TimeEntryCreateRow";
+import { getMonthDateRange } from "@/utils/dateUtils";
 
 const TimeEntryHistory = () => {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
@@ -29,8 +31,7 @@ const TimeEntryHistory = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const startDate = `${selectedMonth}-01`;
-    const endDate = `${selectedMonth}-31`;
+    const { startDate, endDate } = getMonthDateRange(selectedMonth);
 
     const { data, error } = await supabase
       .from("timesheet_entries")
