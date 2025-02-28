@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import {
   Table,
@@ -13,6 +14,7 @@ import type { ExpenseEntry } from "@/types";
 import { ExpenseRow } from "./ExpenseRow";
 import { ExpenseCreateRow } from "./ExpenseCreateRow";
 import { ExpenseSummaryCards } from "./ExpenseSummaryCards";
+import { getMonthDateRange } from "@/utils/dateUtils";
 
 const ExpenseHistory = () => {
   const [expenses, setExpenses] = useState<ExpenseEntry[]>([]);
@@ -28,8 +30,7 @@ const ExpenseHistory = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const startDate = `${selectedMonth}-01`;
-    const endDate = `${selectedMonth}-31`;
+    const { startDate, endDate } = getMonthDateRange(selectedMonth);
 
     const { data, error } = await supabase
       .from("expenses")
