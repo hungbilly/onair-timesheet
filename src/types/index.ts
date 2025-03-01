@@ -1,3 +1,4 @@
+
 export type TimeEntry = {
   id: string;
   user_id: string;
@@ -22,6 +23,7 @@ export type ExpenseEntry = {
   amount: number;
   receipt_path: string | null;
   created_at: string;
+  expense_type?: "work" | "personal"; // Make it optional to handle existing data
 };
 
 export type User = {

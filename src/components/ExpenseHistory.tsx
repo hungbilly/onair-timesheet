@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import {
   Table,
@@ -45,9 +44,15 @@ const ExpenseHistory = () => {
       return;
     }
 
-    setExpenses(data || []);
+    // Transform data to ensure expense_type is present
+    const transformedData = (data || []).map(expense => ({
+      ...expense,
+      expense_type: expense.expense_type || "work" // Default to "work" if expense_type is not present
+    })) as ExpenseEntry[];
 
-    const summary = (data || []).reduce(
+    setExpenses(transformedData);
+
+    const summary = transformedData.reduce(
       (acc, expense) => ({
         totalExpenses: acc.totalExpenses + Number(expense.amount),
         totalReceipts: acc.totalReceipts + (expense.receipt_path ? 1 : 0),
