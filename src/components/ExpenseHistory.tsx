@@ -52,9 +52,15 @@ const ExpenseHistory = ({ expenseType = 'work' }: ExpenseHistoryProps) => {
       return;
     }
 
-    setExpenses(data || []);
+    // Transform the data to ensure expense_type is properly set
+    const transformedData = (data || []).map(expense => ({
+      ...expense,
+      expense_type: expense.expense_type || expenseType // Use the provided type as fallback
+    })) as ExpenseEntry[];
 
-    const summary = (data || []).reduce(
+    setExpenses(transformedData);
+
+    const summary = transformedData.reduce(
       (acc, expense) => ({
         totalExpenses: acc.totalExpenses + Number(expense.amount),
         totalReceipts: acc.totalReceipts + (expense.receipt_path ? 1 : 0),
