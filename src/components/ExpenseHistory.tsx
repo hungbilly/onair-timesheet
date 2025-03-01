@@ -16,11 +16,7 @@ import { ExpenseCreateRow } from "./ExpenseCreateRow";
 import { ExpenseSummaryCards } from "./ExpenseSummaryCards";
 import { getMonthDateRange } from "@/utils/dateUtils";
 
-interface ExpenseHistoryProps {
-  expenseType?: 'work' | 'personal';
-}
-
-const ExpenseHistory = ({ expenseType = 'work' }: ExpenseHistoryProps) => {
+const ExpenseHistory = () => {
   const [expenses, setExpenses] = useState<ExpenseEntry[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7)
@@ -36,31 +32,22 @@ const ExpenseHistory = ({ expenseType = 'work' }: ExpenseHistoryProps) => {
 
     const { startDate, endDate } = getMonthDateRange(selectedMonth);
 
-    const query = supabase
+    const { data, error } = await supabase
       .from("expenses")
       .select("*")
       .eq("user_id", user.id)
-      .eq("expense_type", expenseType)
       .gte("date", startDate)
       .lte("date", endDate)
       .order("date", { ascending: false });
-
-    const { data, error } = await query;
 
     if (error) {
       console.error("Error fetching expenses:", error);
       return;
     }
 
-    // Transform the data to ensure expense_type is properly set
-    const transformedData = (data || []).map(expense => ({
-      ...expense,
-      expense_type: expense.expense_type || expenseType // Use the provided type as fallback
-    })) as ExpenseEntry[];
+    setExpenses(data || []);
 
-    setExpenses(transformedData);
-
-    const summary = transformedData.reduce(
+    const summary = (data || []).reduce(
       (acc, expense) => ({
         totalExpenses: acc.totalExpenses + Number(expense.amount),
         totalReceipts: acc.totalReceipts + (expense.receipt_path ? 1 : 0),
@@ -73,7 +60,7 @@ const ExpenseHistory = ({ expenseType = 'work' }: ExpenseHistoryProps) => {
 
   useEffect(() => {
     fetchExpenses();
-  }, [selectedMonth, expenseType]);
+  }, [selectedMonth]);
 
   const handleDelete = async (id: string) => {
     const expense = expenses.find(e => e.id === id);
@@ -134,7 +121,7 @@ const ExpenseHistory = ({ expenseType = 'work' }: ExpenseHistoryProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <ExpenseCreateRow onSave={fetchExpenses} expenseType={expenseType} />
+                <ExpenseCreateRow onSave={fetchExpenses} />
                 {expenses.map((expense) => (
                   <ExpenseRow
                     key={expense.id}
