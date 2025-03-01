@@ -16,7 +16,11 @@ import { ExpenseCreateRow } from "./ExpenseCreateRow";
 import { ExpenseSummaryCards } from "./ExpenseSummaryCards";
 import { getMonthDateRange } from "@/utils/dateUtils";
 
-const ExpenseHistory = () => {
+interface ExpenseHistoryProps {
+  expenseType?: 'work' | 'personal';
+}
+
+const ExpenseHistory = ({ expenseType = 'work' }: ExpenseHistoryProps) => {
   const [expenses, setExpenses] = useState<ExpenseEntry[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7)
@@ -32,13 +36,16 @@ const ExpenseHistory = () => {
 
     const { startDate, endDate } = getMonthDateRange(selectedMonth);
 
-    const { data, error } = await supabase
+    const query = supabase
       .from("expenses")
       .select("*")
       .eq("user_id", user.id)
+      .eq("expense_type", expenseType)
       .gte("date", startDate)
       .lte("date", endDate)
       .order("date", { ascending: false });
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Error fetching expenses:", error);
@@ -60,7 +67,7 @@ const ExpenseHistory = () => {
 
   useEffect(() => {
     fetchExpenses();
-  }, [selectedMonth]);
+  }, [selectedMonth, expenseType]);
 
   const handleDelete = async (id: string) => {
     const expense = expenses.find(e => e.id === id);
@@ -121,7 +128,7 @@ const ExpenseHistory = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <ExpenseCreateRow onSave={fetchExpenses} />
+                <ExpenseCreateRow onSave={fetchExpenses} expenseType={expenseType} />
                 {expenses.map((expense) => (
                   <ExpenseRow
                     key={expense.id}

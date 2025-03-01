@@ -1,7 +1,9 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import TimeEntryHistory from "@/components/TimeEntryHistory";
 import ExpenseHistory from "@/components/ExpenseHistory";
+import PersonalExpenses from "@/components/PersonalExpenses";
 import ProfileEditDialog from "@/components/ProfileEditDialog";
 import ChangePasswordDialog from "@/components/ChangePasswordDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +15,8 @@ import { useEffect, useState } from "react";
 const Index = () => {
   const navigate = useNavigate();
   const [fullName, setFullName] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [showPersonalExpenses, setShowPersonalExpenses] = useState(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -25,6 +29,12 @@ const Index = () => {
           .single();
         
         setFullName(profile?.full_name || null);
+        setUserEmail(user.email);
+        
+        // Check if the user should see personal expenses tab
+        if (user.email === "billy@billyhung.com") {
+          setShowPersonalExpenses(true);
+        }
       }
     };
 
@@ -66,7 +76,7 @@ const Index = () => {
       
       <div className="mt-8">
         <Tabs defaultValue="time-history" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className={`grid w-full ${showPersonalExpenses ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <TabsTrigger 
               value="time-history"
               className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
@@ -77,15 +87,28 @@ const Index = () => {
               value="expense-history"
               className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
             >
-              Expense History
+              Work Expenses
             </TabsTrigger>
+            {showPersonalExpenses && (
+              <TabsTrigger 
+                value="personal-expenses"
+                className="data-[state=active]:bg-green-500 data-[state=active]:text-white"
+              >
+                Personal Expenses
+              </TabsTrigger>
+            )}
           </TabsList>
           <TabsContent value="time-history" className="mt-6">
             <TimeEntryHistory />
           </TabsContent>
           <TabsContent value="expense-history" className="mt-6">
-            <ExpenseHistory />
+            <ExpenseHistory expenseType="work" />
           </TabsContent>
+          {showPersonalExpenses && (
+            <TabsContent value="personal-expenses" className="mt-6">
+              <PersonalExpenses />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>

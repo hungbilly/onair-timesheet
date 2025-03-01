@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -8,9 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface ExpenseCreateRowProps {
   onSave: () => void;
+  expenseType?: 'work' | 'personal';
 }
 
-export const ExpenseCreateRow = ({ onSave }: ExpenseCreateRowProps) => {
+export const ExpenseCreateRow = ({ onSave, expenseType = 'work' }: ExpenseCreateRowProps) => {
   const [isCreating, setIsCreating] = useState(false);
   const [expense, setExpense] = useState({
     date: new Date().toISOString().slice(0, 10),
@@ -47,6 +49,7 @@ export const ExpenseCreateRow = ({ onSave }: ExpenseCreateRowProps) => {
           description: expense.description,
           amount: Number(expense.amount),
           receipt_path: receiptPath,
+          expense_type: expenseType,
         });
 
       if (error) throw error;
