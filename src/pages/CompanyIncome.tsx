@@ -11,6 +11,7 @@ import { CompanyIncome } from "@/types";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
+import { ensureStorageBuckets, checkDatabasePermissions } from "@/utils/supabaseStorage";
 
 // List of brand names
 const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
@@ -67,6 +68,8 @@ const CompanyIncomePage = () => {
       }
 
       setIsAdmin(true);
+      ensureStorageBuckets(); // Ensure storage buckets exist
+      checkDatabasePermissions(); // Check database permissions
       fetchCompanyIncomes();
       fetchCompanies();
     };
@@ -174,12 +177,16 @@ const CompanyIncomePage = () => {
   const onSubmit = async (values: any) => {
     try {
       setLoading(true);
+      console.log("Starting form submission with values:", values);
+      
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
         toast.error("You must be logged in");
         return;
       }
+      
+      console.log("Authenticated user ID:", user.id);
       
       // Get the first company (or the one selected if we implement company selection later)
       const selectedCompany = companies[0];
@@ -188,18 +195,21 @@ const CompanyIncomePage = () => {
         toast.error("No company found. Please create a company first.");
         return;
       }
+      
+      console.log("Selected company:", selectedCompany);
 
       let paymentSlipPath = null;
       if (selectedFile) {
         try {
           paymentSlipPath = await uploadPaymentSlip(selectedFile);
+          console.log("Payment slip uploaded successfully:", paymentSlipPath);
         } catch (error: any) {
           toast.error(error.message || "Failed to upload payment slip");
           return;
         }
       }
 
-      // Ensure deposit value is correctly formatted and matches the database constraint
+      // Ensure deposit value is correctly formatted
       const depositValue = values.deposit;
       console.log("Original deposit value:", depositValue);
       
@@ -209,33 +219,47 @@ const CompanyIncomePage = () => {
       }
 
       console.log("Submitting with deposit value:", depositValue);
-      console.log("Full form values:", values);
 
-      const { error } = await supabase
+      // Prepare the data for insertion
+      const insertData = {
+        company_name: values.company_name,
+        client: values.client,
+        amount: parseFloat(values.amount),
+        deposit: depositValue,
+        payment_method: values.payment_method,
+        date: values.date,
+        created_by: user.id,
+        company_id: selectedCompany.id,
+        job_status: values.job_status,
+        job_completion_date: values.job_status === "completed" ? values.job_completion_date || values.date : null,
+        source: "direct",
+        type: "service",
+        job_type: values.job_type,
+        payment_slip_path: paymentSlipPath
+      };
+      
+      console.log("Attempting to insert data:", insertData);
+
+      // Perform the insert with detailed error logging
+      const { data, error } = await supabase
         .from("company_income")
-        .insert({
-          company_name: values.company_name,
-          client: values.client,
-          amount: parseFloat(values.amount),
-          deposit: depositValue,
-          payment_method: values.payment_method,
-          date: values.date,
-          created_by: user.id,
-          company_id: selectedCompany.id,
-          job_status: values.job_status,
-          job_completion_date: values.job_status === "completed" ? values.job_completion_date || values.date : null,
-          source: "direct",
-          type: "service",
-          job_type: values.job_type,
-          payment_slip_path: paymentSlipPath
-        });
+        .insert(insertData)
+        .select();
 
       if (error) {
-        console.error("Error adding company income:", error);
-        toast.error(`Failed to add company income: ${error.message}`);
+        console.error("Database error details:", error);
+        
+        if (error.code === "42501") {
+          toast.error("Permission denied. You don't have the necessary permissions to insert data.");
+        } else if (error.code === "23514") {
+          toast.error(`Constraint violation: ${error.message}. Please check your input values.`);
+        } else {
+          toast.error(`Failed to add company income: ${error.message}`);
+        }
         return;
       }
 
+      console.log("Insert successful, returned data:", data);
       toast.success("Company income added successfully");
       
       form.reset({
