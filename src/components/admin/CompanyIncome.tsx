@@ -12,20 +12,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarIcon, Plus, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { CompanyIncomeRecord } from "@/types";
 
-type CompanyIncomeRecord = {
-  id: string;
-  client: string;
-  amount: number;
-  date: string;
-  created_at: string;
-};
+const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
+const PAYMENT_TYPE_OPTIONS = ["Deposit", "Balance", "Full Payment"];
 
 const CompanyIncome = () => {
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [client, setClient] = useState("");
   const [amount, setAmount] = useState("");
+  const [brand, setBrand] = useState(BRAND_OPTIONS[0]);
+  const [paymentType, setPaymentType] = useState(PAYMENT_TYPE_OPTIONS[2]);
   const [isCreating, setIsCreating] = useState(false);
 
   // Fetch company income records
@@ -64,6 +69,8 @@ const CompanyIncome = () => {
         client: client.trim(),
         amount: numericAmount,
         date: format(selectedDate, "yyyy-MM-dd"),
+        brand,
+        payment_type: paymentType,
         created_by: (await supabase.auth.getUser()).data.user?.id,
       });
 
@@ -79,6 +86,8 @@ const CompanyIncome = () => {
       setClient("");
       setAmount("");
       setSelectedDate(new Date());
+      setBrand(BRAND_OPTIONS[0]);
+      setPaymentType(PAYMENT_TYPE_OPTIONS[2]);
       setIsCreating(false);
       toast.success("Income record added successfully");
     },
@@ -193,6 +202,40 @@ const CompanyIncome = () => {
                     </PopoverContent>
                   </Popover>
                 </div>
+                <div className="space-y-2">
+                  <label htmlFor="brand" className="text-sm font-medium">
+                    Brand
+                  </label>
+                  <Select value={brand} onValueChange={setBrand}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select brand" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BRAND_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="paymentType" className="text-sm font-medium">
+                    Payment Type
+                  </label>
+                  <Select value={paymentType} onValueChange={setPaymentType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select payment type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAYMENT_TYPE_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <Button type="submit" className="w-full" disabled={createMutation.isPending}>
                 {createMutation.isPending ? "Adding..." : "Add Income Record"}
@@ -219,6 +262,8 @@ const CompanyIncome = () => {
                   <TableRow>
                     <TableHead>Date</TableHead>
                     <TableHead>Client</TableHead>
+                    <TableHead>Brand</TableHead>
+                    <TableHead>Payment Type</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
                     <TableHead className="w-16"></TableHead>
                   </TableRow>
@@ -230,6 +275,8 @@ const CompanyIncome = () => {
                         {format(new Date(record.date), "MMM d, yyyy")}
                       </TableCell>
                       <TableCell>{record.client}</TableCell>
+                      <TableCell>{record.brand}</TableCell>
+                      <TableCell>{record.payment_type}</TableCell>
                       <TableCell className="text-right">
                         ${Number(record.amount).toFixed(2)}
                       </TableCell>
