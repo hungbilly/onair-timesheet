@@ -1,6 +1,6 @@
 import { useEffect, useState, ChangeEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -160,7 +160,11 @@ const CompanyIncomePage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        toast.error("You must be logged in");
+        toast({
+          title: "Error",
+          description: "You must be logged in",
+          variant: "destructive"
+        });
         return;
       }
       
@@ -168,7 +172,11 @@ const CompanyIncomePage = () => {
       const selectedCompany = companies[0];
       
       if (!selectedCompany) {
-        toast.error("No company found. Please create a company first.");
+        toast({
+          title: "Error",
+          description: "No company found. Please create a company first.",
+          variant: "destructive"
+        });
         return;
       }
 
@@ -177,10 +185,17 @@ const CompanyIncomePage = () => {
         try {
           paymentSlipPath = await uploadPaymentSlip(selectedFile);
         } catch (error) {
-          toast.error("Failed to upload payment slip");
+          toast({
+            title: "Error",
+            description: "Failed to upload payment slip",
+            variant: "destructive"
+          });
           return;
         }
       }
+
+      // Create a deposit value that matches the database constraint
+      const deposit = values.deposit;
 
       const { error } = await supabase
         .from("company_income")
@@ -188,7 +203,7 @@ const CompanyIncomePage = () => {
           company_name: values.company_name,
           client: values.client,
           amount: parseFloat(values.amount),
-          deposit: values.deposit,
+          deposit: deposit,
           payment_method: values.payment_method,
           date: values.date,
           created_by: user.id,
@@ -201,10 +216,15 @@ const CompanyIncomePage = () => {
         });
 
       if (error) {
+        console.error("Error adding company income:", error);
         throw error;
       }
 
-      toast.success("Company income added successfully");
+      toast({
+        title: "Success",
+        description: "Company income added successfully",
+      });
+      
       form.reset({
         company_name: BRAND_OPTIONS[0],
         client: "",
@@ -219,7 +239,11 @@ const CompanyIncomePage = () => {
       fetchCompanyIncomes();
     } catch (error) {
       console.error("Error adding company income:", error);
-      toast.error("Failed to add company income");
+      toast({
+        title: "Error",
+        description: "Failed to add company income",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
