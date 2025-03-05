@@ -16,11 +16,13 @@ import { CompanyIncomeRecord } from "@/types";
 import CompanyIncomeEditDialog from "./CompanyIncomeEditDialog";
 import { DateRange, getCurrentMonthRange, formatDateForSupabase, formatDateForDisplay, groupByBrand } from "@/utils/dateRangeUtils";
 import { generateIncomeRecordsCsv } from "@/utils/csvExport";
+
 const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
 const PAYMENT_TYPE_OPTIONS = ["Deposit", "Balance", "Full Payment"];
 const PAYMENT_METHOD_OPTIONS = ["Bank Transfer (Riano)", "Bank Transfer (Personal)", "Payme", "Cash"];
 const JOB_TYPE_OPTIONS = ["Shooting", "Upgrade", "Products", "Petty Cash"];
 const ALL_OPTION = "All";
+
 const CompanyIncome = () => {
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -135,6 +137,7 @@ const CompanyIncome = () => {
       toast.error("Failed to delete income record");
     }
   });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createMutation.mutate();
@@ -194,7 +197,9 @@ const CompanyIncome = () => {
     });
     return totals;
   }, [filteredRecords]);
+
   const totalIncome = filteredRecords.reduce((sum, record) => sum + Number(record.amount), 0);
+
   const handleDateRangeChange = (type: 'start' | 'end', date?: Date) => {
     if (!date) return;
     setDateRange(prev => ({
@@ -226,33 +231,51 @@ const CompanyIncome = () => {
     document.body.removeChild(link);
     toast.success("CSV file downloaded successfully");
   };
-  return <div className="space-y-6">
-      <div className="flex justify-between items-center">
+
+  return (
+    <div className="space-y-6">
+      {/* Header and action buttons - made more responsive */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h2 className="text-2xl font-bold">Company Income</h2>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowFilters(!showFilters)} 
+            className="gap-2 w-full sm:w-auto"
+            size="sm"
+          >
             <Filter className="h-4 w-4" />
             {showFilters ? "Hide Filters" : "Show Filters"}
           </Button>
-          <Button variant="outline" onClick={() => setIsCreating(!isCreating)} className="gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setIsCreating(!isCreating)} 
+            className="gap-2 w-full sm:w-auto"
+            size="sm"
+          >
             <Plus className="h-4 w-4" />
             {isCreating ? "Cancel" : "Add Income"}
           </Button>
         </div>
       </div>
 
-      {showFilters && <Card>
-          <CardHeader>
-            <CardTitle className="flex justify-between items-center">
+      {/* Filters section - improved for mobile */}
+      {showFilters && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex justify-between items-center flex-wrap gap-2">
               <span>Filters</span>
-              {hasActiveFilters && <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1">
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1">
                   <X className="h-4 w-4" />
-                  Reset Filters
-                </Button>}
+                  Reset
+                </Button>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {/* Date range filters - made more responsive */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Start Date</label>
                 <Popover>
@@ -283,7 +306,8 @@ const CompanyIncome = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Other filters - made more responsive */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Brand</label>
                 <Select value={filterBrand} onValueChange={setFilterBrand}>
@@ -292,9 +316,11 @@ const CompanyIncome = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={ALL_OPTION}>{ALL_OPTION}</SelectItem>
-                    {BRAND_OPTIONS.map(option => <SelectItem key={option} value={option}>
+                    {BRAND_OPTIONS.map(option => (
+                      <SelectItem key={option} value={option}>
                         {option}
-                      </SelectItem>)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -307,9 +333,11 @@ const CompanyIncome = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={ALL_OPTION}>{ALL_OPTION}</SelectItem>
-                    {JOB_TYPE_OPTIONS.map(option => <SelectItem key={option} value={option}>
+                    {JOB_TYPE_OPTIONS.map(option => (
+                      <SelectItem key={option} value={option}>
                         {option}
-                      </SelectItem>)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -322,9 +350,11 @@ const CompanyIncome = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={ALL_OPTION}>{ALL_OPTION}</SelectItem>
-                    {PAYMENT_TYPE_OPTIONS.map(option => <SelectItem key={option} value={option}>
+                    {PAYMENT_TYPE_OPTIONS.map(option => (
+                      <SelectItem key={option} value={option}>
                         {option}
-                      </SelectItem>)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -337,23 +367,28 @@ const CompanyIncome = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={ALL_OPTION}>{ALL_OPTION}</SelectItem>
-                    {PAYMENT_METHOD_OPTIONS.map(option => <SelectItem key={option} value={option}>
+                    {PAYMENT_METHOD_OPTIONS.map(option => (
+                      <SelectItem key={option} value={option}>
                         {option}
-                      </SelectItem>)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
           </CardContent>
-        </Card>}
+        </Card>
+      )}
 
-      {isCreating && <Card>
-          <CardHeader>
+      {/* Add income form - improved for mobile */}
+      {isCreating && (
+        <Card>
+          <CardHeader className="pb-3">
             <CardTitle>Add New Income</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <label htmlFor="client" className="text-sm font-medium">
                     Client
@@ -372,7 +407,7 @@ const CompanyIncome = () => {
                     <PopoverTrigger asChild>
                       <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !selectedDate && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                        {selectedDate ? format(selectedDate, "MMM d, yyyy") : <span>Pick a date</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -389,9 +424,11 @@ const CompanyIncome = () => {
                       <SelectValue placeholder="Select brand" />
                     </SelectTrigger>
                     <SelectContent>
-                      {BRAND_OPTIONS.map(option => <SelectItem key={option} value={option}>
+                      {BRAND_OPTIONS.map(option => (
+                        <SelectItem key={option} value={option}>
                           {option}
-                        </SelectItem>)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -404,9 +441,11 @@ const CompanyIncome = () => {
                       <SelectValue placeholder="Select payment type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {PAYMENT_TYPE_OPTIONS.map(option => <SelectItem key={option} value={option}>
+                      {PAYMENT_TYPE_OPTIONS.map(option => (
+                        <SelectItem key={option} value={option}>
                           {option}
-                        </SelectItem>)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -419,9 +458,11 @@ const CompanyIncome = () => {
                       <SelectValue placeholder="Select payment method" />
                     </SelectTrigger>
                     <SelectContent>
-                      {PAYMENT_METHOD_OPTIONS.map(option => <SelectItem key={option} value={option}>
+                      {PAYMENT_METHOD_OPTIONS.map(option => (
+                        <SelectItem key={option} value={option}>
                           {option}
-                        </SelectItem>)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -434,9 +475,11 @@ const CompanyIncome = () => {
                       <SelectValue placeholder="Select job type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {JOB_TYPE_OPTIONS.map(option => <SelectItem key={option} value={option}>
+                      {JOB_TYPE_OPTIONS.map(option => (
+                        <SelectItem key={option} value={option}>
                           {option}
-                        </SelectItem>)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -446,7 +489,7 @@ const CompanyIncome = () => {
                     <PopoverTrigger asChild>
                       <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !completionDate && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {completionDate ? format(completionDate, "PPP") : <span>Pick a date (optional)</span>}
+                        {completionDate ? format(completionDate, "MMM d, yyyy") : <span>Optional</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -460,86 +503,117 @@ const CompanyIncome = () => {
               </Button>
             </form>
           </CardContent>
-        </Card>}
+        </Card>
+      )}
 
+      {/* Income summary card - improved for mobile */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>
-            Income Summary ({formatDateForDisplay(dateRange.startDate)} - {formatDateForDisplay(dateRange.endDate)})
-            {hasActiveFilters && <span className="ml-2 text-sm font-normal text-muted-foreground">
-                (Filtered)
-              </span>}
+        <CardHeader className="flex flex-col sm:flex-row justify-between pb-3">
+          <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <span>Income Summary</span>
+            <span className="text-sm font-normal text-muted-foreground">
+              ({formatDateForDisplay(dateRange.startDate)} - {formatDateForDisplay(dateRange.endDate)})
+              {hasActiveFilters && <span className="ml-1">(Filtered)</span>}
+            </span>
           </CardTitle>
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" className="gap-2" onClick={handleDownloadCsv} disabled={!filteredRecords || filteredRecords.length === 0}>
+          <div className="flex flex-col xs:flex-row items-start sm:items-center gap-3 mt-2 sm:mt-0">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2 w-full xs:w-auto"
+              onClick={handleDownloadCsv} 
+              disabled={!filteredRecords || filteredRecords.length === 0}
+            >
               <Download className="h-4 w-4" />
               Export CSV
             </Button>
-            <div className="text-lg font-semibold">
+            <div className="text-lg font-semibold whitespace-nowrap">
               Total: ${totalIncome.toFixed(2)}
             </div>
           </div>
         </CardHeader>
         <CardContent>
+          {/* Brand totals cards - improved for mobile */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-3">Totals by Brand</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {Object.entries(brandTotals).map(([brandName, total]) => <Card key={brandName}>
-                  <CardContent className="pt-6 bg-sky-800">
-                    <div className="text-center space-y-2">
-                      <div className="text-lg font-medium bg-red-300">{brandName}</div>
-                      <div className="text-2xl font-bold bg-zinc-200">${total.toFixed(2)}</div>
-                    </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {Object.entries(brandTotals).map(([brandName, total]) => (
+                <Card key={brandName} className="overflow-hidden">
+                  <div className="bg-primary/10 p-3 text-center">
+                    <div className="text-base font-medium truncate">{brandName}</div>
+                  </div>
+                  <CardContent className="p-4 text-center">
+                    <div className="text-xl sm:text-2xl font-bold">${total.toFixed(2)}</div>
                   </CardContent>
-                </Card>)}
+                </Card>
+              ))}
             </div>
           </div>
 
-          {isLoading ? <div className="text-center py-4">Loading income records...</div> : filteredRecords.length > 0 ? <div className="rounded-md border overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="bg-red-400">Date</TableHead>
-                    <TableHead className="bg-red-400">Client</TableHead>
-                    <TableHead className="bg-red-400">Brand</TableHead>
-                    <TableHead className="bg-red-400">Job Type</TableHead>
-                    <TableHead className="bg-red-400">Payment Type</TableHead>
-                    <TableHead className="bg-red-400">Payment Method</TableHead>
-                    <TableHead className="bg-red-400">Completion Date</TableHead>
-                    <TableHead className="text-right bg-red-400">Amount</TableHead>
-                    <TableHead className="w-24 bg-red-400">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredRecords.map(record => <TableRow key={record.id}>
-                      <TableCell>
-                        {format(new Date(record.date), "MMM d, yyyy")}
-                      </TableCell>
-                      <TableCell>{record.client}</TableCell>
-                      <TableCell>{record.brand}</TableCell>
-                      <TableCell>{record.job_type ? record.job_type.charAt(0).toUpperCase() + record.job_type.slice(1) : "-"}</TableCell>
-                      <TableCell>{record.payment_type}</TableCell>
-                      <TableCell>{record.payment_method}</TableCell>
-                      <TableCell>
-                        {record.completion_date ? format(new Date(record.completion_date), "MMM d, yyyy") : "-"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        ${Number(record.amount).toFixed(2)}
-                      </TableCell>
-                      <TableCell className="flex items-center space-x-1">
-                        <CompanyIncomeEditDialog record={record} />
-                        <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(record.id)} disabled={deleteMutation.isPending} className="h-8 w-8">
-                          <Trash className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>)}
-                </TableBody>
-              </Table>
-            </div> : <div className="text-center py-4 text-muted-foreground">
+          {/* Income records table - improved for mobile with horizontal scroll */}
+          {isLoading ? (
+            <div className="text-center py-4">Loading income records...</div>
+          ) : filteredRecords.length > 0 ? (
+            <div className="overflow-auto -mx-6 sm:mx-0 px-6 sm:px-0">
+              <div className="min-w-[800px] rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[100px]">Date</TableHead>
+                      <TableHead>Client</TableHead>
+                      <TableHead>Brand</TableHead>
+                      <TableHead>Job Type</TableHead>
+                      <TableHead>Payment Type</TableHead>
+                      <TableHead>Payment Method</TableHead>
+                      <TableHead>Completion</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="w-[80px]">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredRecords.map(record => (
+                      <TableRow key={record.id}>
+                        <TableCell className="font-medium">
+                          {format(new Date(record.date), "MMM d, yyyy")}
+                        </TableCell>
+                        <TableCell>{record.client}</TableCell>
+                        <TableCell>{record.brand}</TableCell>
+                        <TableCell>{record.job_type ? record.job_type.charAt(0).toUpperCase() + record.job_type.slice(1) : "-"}</TableCell>
+                        <TableCell>{record.payment_type}</TableCell>
+                        <TableCell>{record.payment_method}</TableCell>
+                        <TableCell>
+                          {record.completion_date ? format(new Date(record.completion_date), "MMM d, yyyy") : "-"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          ${Number(record.amount).toFixed(2)}
+                        </TableCell>
+                        <TableCell className="flex items-center space-x-1">
+                          <CompanyIncomeEditDialog record={record} />
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => deleteMutation.mutate(record.id)} 
+                            disabled={deleteMutation.isPending} 
+                            className="h-8 w-8"
+                          >
+                            <Trash className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-4 text-muted-foreground">
               No income records found for the selected criteria
-            </div>}
+            </div>
+          )}
         </CardContent>
       </Card>
-    </div>;
+    </div>
+  );
 };
+
 export default CompanyIncome;
