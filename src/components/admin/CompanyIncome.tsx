@@ -499,15 +499,15 @@ const CompanyIncome = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Brand</TableHead>
-                    <TableHead>Job Type</TableHead>
-                    <TableHead>Payment Type</TableHead>
-                    <TableHead>Payment Method</TableHead>
-                    <TableHead>Completion Date</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="w-24">Actions</TableHead>
+                    <TableHead className="bg-red-400">Date</TableHead>
+                    <TableHead className="bg-red-400">Client</TableHead>
+                    <TableHead className="bg-red-400">Brand</TableHead>
+                    <TableHead className="bg-red-400">Job Type</TableHead>
+                    <TableHead className="bg-red-400">Payment Type</TableHead>
+                    <TableHead className="bg-red-400">Payment Method</TableHead>
+                    <TableHead className="bg-red-400">Completion Date</TableHead>
+                    <TableHead className="text-right bg-red-400">Amount</TableHead>
+                    <TableHead className="w-24 bg-red-400">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
