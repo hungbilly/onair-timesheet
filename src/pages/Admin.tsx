@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,6 +9,7 @@ import UserManagement from "@/components/admin/UserManagement";
 import EmployeeStats from "@/components/admin/EmployeeStats";
 import VendorBills from "@/components/admin/VendorBills";
 import VendorManagement from "@/components/admin/VendorManagement";
+import CompanyIncome from "@/components/admin/CompanyIncome";
 import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -77,6 +79,7 @@ const Admin = () => {
           <TabsTrigger value="stats">Employee Stats</TabsTrigger>
           <TabsTrigger value="bills">Vendor Bills</TabsTrigger>
           <TabsTrigger value="vendors">Vendors</TabsTrigger>
+          <TabsTrigger value="income">Company Income</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -93,6 +96,10 @@ const Admin = () => {
 
         <TabsContent value="vendors">
           <VendorManagement />
+        </TabsContent>
+
+        <TabsContent value="income">
+          <CompanyIncome />
         </TabsContent>
       </Tabs>
     </div>
