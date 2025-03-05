@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, Plus, Trash } from "lucide-react";
+import { CalendarIcon, Plus, Trash, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { CompanyIncomeRecord } from "@/types";
 import CompanyIncomeEditDialog from "./CompanyIncomeEditDialog";
+import { DateRange, getCurrentMonthRange, formatDateForSupabase, formatDateForDisplay, groupByBrand } from "@/utils/dateRangeUtils";
 
 const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
 const PAYMENT_TYPE_OPTIONS = ["Deposit", "Balance", "Full Payment"];
@@ -38,6 +39,8 @@ const CompanyIncome = () => {
   const [completionDate, setCompletionDate] = useState<Date | undefined>(undefined);
   const [jobType, setJobType] = useState(JOB_TYPE_OPTIONS[0]);
   const [isCreating, setIsCreating] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>(getCurrentMonthRange());
 
   // Fetch company income records
   const { data: incomeRecords, isLoading } = useQuery({
@@ -132,23 +135,117 @@ const CompanyIncome = () => {
     createMutation.mutate();
   };
 
-  const totalIncome = incomeRecords
-    ? incomeRecords.reduce((sum, record) => sum + Number(record.amount), 0)
-    : 0;
+  // Filter records based on date range
+  const filteredRecords = useMemo(() => {
+    if (!incomeRecords) return [];
+    
+    return incomeRecords.filter(record => {
+      const recordDate = new Date(record.date);
+      return recordDate >= dateRange.startDate && recordDate <= dateRange.endDate;
+    });
+  }, [incomeRecords, dateRange]);
+
+  // Calculate totals by brand
+  const brandTotals = useMemo(() => {
+    if (!incomeRecords) return {};
+    
+    return groupByBrand(incomeRecords, dateRange);
+  }, [incomeRecords, dateRange]);
+
+  const totalIncome = filteredRecords.reduce((sum, record) => sum + Number(record.amount), 0);
+
+  const handleDateRangeChange = (type: 'start' | 'end', date?: Date) => {
+    if (!date) return;
+    
+    setDateRange(prev => ({
+      ...prev,
+      [type === 'start' ? 'startDate' : 'endDate']: date
+    }));
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Company Income</h2>
-        <Button
-          variant="outline"
-          onClick={() => setIsCreating(!isCreating)}
-          className="gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          {isCreating ? "Cancel" : "Add Income"}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            className="gap-2"
+          >
+            <Filter className="h-4 w-4" />
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setIsCreating(!isCreating)}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            {isCreating ? "Cancel" : "Add Income"}
+          </Button>
+        </div>
       </div>
+
+      {showFilters && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Date Range Filter</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Start Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formatDateForDisplay(dateRange.startDate)}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={dateRange.startDate}
+                      onSelect={(date) => handleDateRangeChange('start', date)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">End Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formatDateForDisplay(dateRange.endDate)}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={dateRange.endDate}
+                      onSelect={(date) => handleDateRangeChange('end', date)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {isCreating && (
         <Card>
@@ -322,15 +419,31 @@ const CompanyIncome = () => {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Income Records</CardTitle>
+          <CardTitle>Income Summary ({formatDateForDisplay(dateRange.startDate)} - {formatDateForDisplay(dateRange.endDate)})</CardTitle>
           <div className="text-lg font-semibold">
             Total: ${totalIncome.toFixed(2)}
           </div>
         </CardHeader>
         <CardContent>
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3">Totals by Brand</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {Object.entries(brandTotals).map(([brandName, total]) => (
+                <Card key={brandName}>
+                  <CardContent className="pt-6">
+                    <div className="text-center space-y-2">
+                      <div className="text-lg font-medium">{brandName}</div>
+                      <div className="text-2xl font-bold">${total.toFixed(2)}</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
           {isLoading ? (
             <div className="text-center py-4">Loading income records...</div>
-          ) : incomeRecords && incomeRecords.length > 0 ? (
+          ) : filteredRecords.length > 0 ? (
             <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -347,7 +460,7 @@ const CompanyIncome = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {incomeRecords.map((record) => (
+                  {filteredRecords.map((record) => (
                     <TableRow key={record.id}>
                       <TableCell>
                         {format(new Date(record.date), "MMM d, yyyy")}
@@ -384,7 +497,7 @@ const CompanyIncome = () => {
             </div>
           ) : (
             <div className="text-center py-4 text-muted-foreground">
-              No income records found
+              No income records found for the selected date range
             </div>
           )}
         </CardContent>
