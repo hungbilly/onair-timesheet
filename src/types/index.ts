@@ -1,3 +1,4 @@
+
 export type TimeEntry = {
   id: string;
   user_id: string;
