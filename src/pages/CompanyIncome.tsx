@@ -1,4 +1,3 @@
-
 import { useEffect, useState, ChangeEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
@@ -147,7 +146,15 @@ const CompanyIncomePage = () => {
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
       const filePath = `payment-slips/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      // Check if bucket exists before uploading
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(bucket => bucket.name === 'company-income');
+      
+      if (!bucketExists) {
+        throw new Error("The 'company-income' storage bucket doesn't exist. Please create it in the Supabase dashboard.");
+      }
+
+      const { error: uploadError, data } = await supabase.storage
         .from('company-income')
         .upload(filePath, file);
 
@@ -186,13 +193,13 @@ const CompanyIncomePage = () => {
       if (selectedFile) {
         try {
           paymentSlipPath = await uploadPaymentSlip(selectedFile);
-        } catch (error) {
-          toast.error("Failed to upload payment slip");
+        } catch (error: any) {
+          toast.error(error.message || "Failed to upload payment slip");
           return;
         }
       }
 
-      // Make sure deposit value is strictly one of the allowed values from the database constraint
+      // Ensure deposit value is correctly formatted and matches the database constraint
       const depositValue = values.deposit;
       console.log("Original deposit value:", depositValue);
       
@@ -244,9 +251,9 @@ const CompanyIncomePage = () => {
       });
       setSelectedFile(null);
       fetchCompanyIncomes();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding company income:", error);
-      toast.error("Failed to add company income");
+      toast.error(error.message || "Failed to add company income");
     } finally {
       setLoading(false);
     }

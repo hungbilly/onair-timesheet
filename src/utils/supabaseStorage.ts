@@ -18,24 +18,9 @@ export const ensureStorageBuckets = async () => {
     const companyIncomeBucket = buckets?.find(bucket => bucket.name === 'company-income');
     
     if (!companyIncomeBucket) {
-      const { error: createError } = await supabase.storage.createBucket('company-income', {
-        public: false,
-        fileSizeLimit: 10485760, // 10MB
-      });
-      
-      if (createError) {
-        console.error("Error creating company-income bucket:", createError);
-      } else {
-        console.log("Created company-income bucket successfully");
-        
-        // Set the bucket policy to allow authenticated users to upload
-        const { error: policyError } = await supabase.storage.from('company-income')
-          .createSignedUploadUrl('dummy-test-file');
-          
-        if (policyError) {
-          console.error("Error setting bucket policy:", policyError);
-        }
-      }
+      // Creating bucket requires admin privileges - we'll skip this if the user doesn't have them
+      // The bucket should be created by an administrator in the Supabase dashboard
+      console.log("The 'company-income' bucket doesn't exist. Please create it in the Supabase dashboard.");
     }
   } catch (error) {
     console.error("Unexpected error ensuring storage buckets:", error);
