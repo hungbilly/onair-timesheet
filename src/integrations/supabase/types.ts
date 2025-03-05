@@ -9,60 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      company_income: {
-        Row: {
-          amount: number
-          client: string | null
-          company_name: string
-          created_at: string
-          created_by: string
-          date: string
-          deposit: string
-          id: string
-          job_completion_date: string | null
-          job_status: string
-          job_type: string | null
-          payment_method: string
-          payment_slip_path: string | null
-          source: string
-          type: string
-        }
-        Insert: {
-          amount: number
-          client?: string | null
-          company_name: string
-          created_at?: string
-          created_by?: string
-          date: string
-          deposit: string
-          id?: string
-          job_completion_date?: string | null
-          job_status: string
-          job_type?: string | null
-          payment_method?: string
-          payment_slip_path?: string | null
-          source: string
-          type: string
-        }
-        Update: {
-          amount?: number
-          client?: string | null
-          company_name?: string
-          created_at?: string
-          created_by?: string
-          date?: string
-          deposit?: string
-          id?: string
-          job_completion_date?: string | null
-          job_status?: string
-          job_type?: string | null
-          payment_method?: string
-          payment_slip_path?: string | null
-          source?: string
-          type?: string
-        }
-        Relationships: []
-      }
       expenses: {
         Row: {
           amount: number

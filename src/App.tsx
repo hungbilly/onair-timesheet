@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,7 +10,6 @@ import Index from "./pages/Index";
 import Manager from "./pages/Manager";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
-import CompanyIncome from "./pages/CompanyIncome";
 
 const queryClient = new QueryClient();
 
@@ -99,14 +97,6 @@ const App = () => {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <Admin />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/company-income"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <CompanyIncome />
                 </ProtectedRoute>
               }
             />

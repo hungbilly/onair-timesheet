@@ -1,3 +1,4 @@
+
 export type TimeEntry = {
   id: string;
   user_id: string;
@@ -29,23 +30,4 @@ export type User = {
   name: string;
   role: 'staff' | 'manager';
   hourlyRate: number;
-};
-
-export type CompanyIncome = {
-  id: string;
-  user_id: string;
-  company_name: string;
-  amount: number;
-  deposit: "full" | "partial" | "balance";
-  payment_method: "cash" | "bank_transfer_riano" | "bank_transfer_personal" | "payme";
-  date: string;
-  job_status: "in_progress" | "completed";
-  source: string;
-  type: string;
-  job_type: "shooting" | "upgrade" | "product";
-  job_completion_date: string | null;
-  created_at: string;
-  created_by: string;
-  client: string | null;
-  payment_slip_path: string | null;
 };
