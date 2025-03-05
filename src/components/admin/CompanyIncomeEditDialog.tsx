@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Pencil, UploadIcon } from "lucide-react";
+import { CalendarIcon, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -53,8 +53,6 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
     record.completion_date ? new Date(record.completion_date) : undefined
   );
   const [jobType, setJobType] = useState(record.job_type || JOB_TYPE_OPTIONS[0].toLowerCase());
-  const [paymentSlipFile, setPaymentSlipFile] = useState<File | null>(null);
-  const [hasExistingSlip, setHasExistingSlip] = useState(!!record.payment_slip_path);
   
   const queryClient = useQueryClient();
 
@@ -70,37 +68,8 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
       setJobStatus(record.job_status);
       setCompletionDate(record.completion_date ? new Date(record.completion_date) : undefined);
       setJobType(record.job_type || JOB_TYPE_OPTIONS[0].toLowerCase());
-      setHasExistingSlip(!!record.payment_slip_path);
-      setPaymentSlipFile(null);
     }
   }, [record, open]);
-
-  // Handle file upload
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setPaymentSlipFile(e.target.files[0]);
-    }
-  };
-
-  // Upload file to storage
-  const uploadPaymentSlip = async (file: File) => {
-    if (!file) return null;
-
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${crypto.randomUUID()}.${fileExt}`;
-    const filePath = `payment_slips/${fileName}`;
-
-    const { data, error } = await supabase.storage
-      .from('payment_slips')
-      .upload(filePath, file);
-
-    if (error) {
-      toast.error("Failed to upload payment slip");
-      throw error;
-    }
-
-    return filePath;
-  };
 
   const updateMutation = useMutation({
     mutationFn: async () => {
@@ -115,11 +84,6 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
         return;
       }
 
-      let paymentSlipPath = record.payment_slip_path;
-      if (paymentSlipFile) {
-        paymentSlipPath = await uploadPaymentSlip(paymentSlipFile);
-      }
-
       const { error } = await supabase
         .from("company_income")
         .update({
@@ -132,7 +96,6 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
           job_status: jobStatus,
           completion_date: completionDate ? format(completionDate, "yyyy-MM-dd") : null,
           job_type: jobType.toLowerCase(),
-          payment_slip_path: paymentSlipPath,
         })
         .eq("id", record.id);
 
@@ -154,15 +117,6 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateMutation.mutate();
-  };
-
-  const viewPaymentSlip = async () => {
-    if (record.payment_slip_path) {
-      const { data } = await supabase.storage
-        .from('payment_slips')
-        .getPublicUrl(record.payment_slip_path);
-      window.open(data.publicUrl, '_blank');
-    }
   };
 
   return (
@@ -349,37 +303,6 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
                     />
                   </PopoverContent>
                 </Popover>
-              </div>
-
-              <div className="space-y-2 col-span-2">
-                <Label htmlFor="paymentSlip">Payment Slip</Label>
-                <div className="flex flex-col gap-2">
-                  {hasExistingSlip && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">Current payment slip:</span>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={viewPaymentSlip}
-                      >
-                        <UploadIcon className="h-4 w-4 mr-1" /> View
-                      </Button>
-                    </div>
-                  )}
-                  <Input
-                    id="paymentSlip"
-                    type="file"
-                    onChange={handleFileChange}
-                    className="flex-1"
-                    accept="image/*,.pdf"
-                  />
-                  {paymentSlipFile && (
-                    <div className="text-sm text-green-600">
-                      New file selected: {paymentSlipFile.name}
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
 

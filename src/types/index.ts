@@ -45,5 +45,4 @@ export type CompanyIncomeRecord = {
   job_status: string;
   completion_date: string | null;
   job_type: string;
-  payment_slip_path: string | null;
 };

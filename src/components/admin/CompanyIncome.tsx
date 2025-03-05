@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, Plus, Trash, UploadIcon } from "lucide-react";
+import { CalendarIcon, Plus, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -39,7 +39,6 @@ const CompanyIncome = () => {
   const [jobStatus, setJobStatus] = useState(JOB_STATUS_OPTIONS[0]);
   const [completionDate, setCompletionDate] = useState<Date | undefined>(undefined);
   const [jobType, setJobType] = useState(JOB_TYPE_OPTIONS[0]);
-  const [paymentSlipFile, setPaymentSlipFile] = useState<File | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   // Fetch company income records
@@ -60,33 +59,6 @@ const CompanyIncome = () => {
     },
   });
 
-  // Handle file upload
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setPaymentSlipFile(e.target.files[0]);
-    }
-  };
-
-  // Upload file to storage
-  const uploadPaymentSlip = async (file: File) => {
-    if (!file) return null;
-
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${crypto.randomUUID()}.${fileExt}`;
-    const filePath = `payment_slips/${fileName}`;
-
-    const { data, error } = await supabase.storage
-      .from('payment_slips')
-      .upload(filePath, file);
-
-    if (error) {
-      toast.error("Failed to upload payment slip");
-      throw error;
-    }
-
-    return filePath;
-  };
-
   // Add new income record
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -101,11 +73,6 @@ const CompanyIncome = () => {
         return;
       }
 
-      let paymentSlipPath = null;
-      if (paymentSlipFile) {
-        paymentSlipPath = await uploadPaymentSlip(paymentSlipFile);
-      }
-
       const { data, error } = await supabase.from("company_income").insert({
         client: client.trim(),
         amount: numericAmount,
@@ -116,7 +83,6 @@ const CompanyIncome = () => {
         job_status: jobStatus,
         completion_date: completionDate ? format(completionDate, "yyyy-MM-dd") : null,
         job_type: jobType.toLowerCase(),
-        payment_slip_path: paymentSlipPath,
         created_by: (await supabase.auth.getUser()).data.user?.id,
       });
 
@@ -138,7 +104,6 @@ const CompanyIncome = () => {
       setJobStatus(JOB_STATUS_OPTIONS[0]);
       setCompletionDate(undefined);
       setJobType(JOB_TYPE_OPTIONS[0]);
-      setPaymentSlipFile(null);
       setIsCreating(false);
       toast.success("Income record added successfully");
     },
@@ -367,25 +332,6 @@ const CompanyIncome = () => {
                     </PopoverContent>
                   </Popover>
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="paymentSlip" className="text-sm font-medium">
-                    Payment Slip (optional)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="paymentSlip"
-                      type="file"
-                      onChange={handleFileChange}
-                      className="flex-1"
-                      accept="image/*,.pdf"
-                    />
-                    {paymentSlipFile && (
-                      <div className="text-sm text-green-600">
-                        File selected: {paymentSlipFile.name}
-                      </div>
-                    )}
-                  </div>
-                </div>
               </div>
               <Button type="submit" className="w-full" disabled={createMutation.isPending}>
                 {createMutation.isPending ? "Adding..." : "Add Income Record"}
@@ -418,7 +364,6 @@ const CompanyIncome = () => {
                     <TableHead>Payment Method</TableHead>
                     <TableHead>Job Status</TableHead>
                     <TableHead>Completion Date</TableHead>
-                    <TableHead>Payment Slip</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
                     <TableHead className="w-24">Actions</TableHead>
                   </TableRow>
@@ -439,24 +384,6 @@ const CompanyIncome = () => {
                         {record.completion_date 
                           ? format(new Date(record.completion_date), "MMM d, yyyy") 
                           : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {record.payment_slip_path ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={async () => {
-                              const { data } = await supabase.storage
-                                .from('payment_slips')
-                                .getPublicUrl(record.payment_slip_path!);
-                              window.open(data.publicUrl, '_blank');
-                            }}
-                          >
-                            <UploadIcon className="h-4 w-4 mr-1" /> View
-                          </Button>
-                        ) : (
-                          "-"
-                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         ${Number(record.amount).toFixed(2)}
