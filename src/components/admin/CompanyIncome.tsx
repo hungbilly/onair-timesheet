@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -138,10 +139,15 @@ const CompanyIncome = () => {
   const filteredRecords = useMemo(() => {
     if (!incomeRecords) return [];
     
-    return incomeRecords.filter(record => {
-      const recordDate = new Date(record.date);
-      return recordDate >= dateRange.startDate && recordDate <= dateRange.endDate;
-    });
+    return incomeRecords
+      .filter(record => {
+        const recordDate = new Date(record.date);
+        return recordDate >= dateRange.startDate && recordDate <= dateRange.endDate;
+      })
+      .sort((a, b) => {
+        // Sort by date in descending order (newest first)
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
   }, [incomeRecords, dateRange]);
 
   // Calculate totals by brand
