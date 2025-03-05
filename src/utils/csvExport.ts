@@ -1,3 +1,4 @@
+
 interface TimeEntry {
   date: string;
   work_type: string;
@@ -61,5 +62,51 @@ export const generateDetailedCsv = (employeeData: EmployeeData[]) => {
     csvRows.push(""); // Empty row for separation
   });
 
+  return csvRows.join("\n");
+};
+
+// New function for exporting company income records
+export const generateIncomeRecordsCsv = (records: any[], dateRange: { startDate: Date, endDate: Date }) => {
+  const csvRows: string[] = [];
+  
+  // Add header row
+  csvRows.push("Date,Client,Brand,Job Type,Payment Type,Payment Method,Completion Date,Amount");
+  
+  // Add data rows
+  records.forEach((record) => {
+    const completionDate = record.completion_date 
+      ? new Date(record.completion_date).toLocaleDateString() 
+      : "-";
+    
+    csvRows.push(
+      `${new Date(record.date).toLocaleDateString()},"${record.client}","${record.brand}","${
+        record.job_type ? record.job_type.charAt(0).toUpperCase() + record.job_type.slice(1) : "-"
+      }","${record.payment_type}","${record.payment_method}","${completionDate}",${Number(record.amount).toFixed(2)}`
+    );
+  });
+  
+  // Add summary rows
+  csvRows.push("");
+  
+  // Group and sum by brand
+  const brandTotals: Record<string, number> = {};
+  records.forEach(record => {
+    if (!brandTotals[record.brand]) {
+      brandTotals[record.brand] = 0;
+    }
+    brandTotals[record.brand] += Number(record.amount);
+  });
+  
+  // Add brand totals
+  csvRows.push("Brand Totals:");
+  Object.entries(brandTotals).forEach(([brand, total]) => {
+    csvRows.push(`${brand},,,,,,,${total.toFixed(2)}`);
+  });
+  
+  // Add grand total
+  const totalIncome = records.reduce((sum, record) => sum + Number(record.amount), 0);
+  csvRows.push("");
+  csvRows.push(`Total Income (${dateRange.startDate.toLocaleDateString()} - ${dateRange.endDate.toLocaleDateString()}),,,,,,,${totalIncome.toFixed(2)}`);
+  
   return csvRows.join("\n");
 };

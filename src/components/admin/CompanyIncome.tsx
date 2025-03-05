@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, Plus, Trash, Filter, X } from "lucide-react";
+import { CalendarIcon, Plus, Trash, Filter, X, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -21,6 +21,7 @@ import {
 import { CompanyIncomeRecord } from "@/types";
 import CompanyIncomeEditDialog from "./CompanyIncomeEditDialog";
 import { DateRange, getCurrentMonthRange, formatDateForSupabase, formatDateForDisplay, groupByBrand } from "@/utils/dateRangeUtils";
+import { generateIncomeRecordsCsv } from "@/utils/csvExport";
 
 const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
 const PAYMENT_TYPE_OPTIONS = ["Deposit", "Balance", "Full Payment"];
@@ -218,6 +219,32 @@ const CompanyIncome = () => {
       ...prev,
       [type === 'start' ? 'startDate' : 'endDate']: date
     }));
+  };
+
+  // Download CSV function
+  const handleDownloadCsv = () => {
+    if (!filteredRecords || filteredRecords.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+    
+    const csv = generateIncomeRecordsCsv(filteredRecords, dateRange);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    
+    // Create filename with date range
+    const startFormatted = format(dateRange.startDate, "yyyy-MM-dd");
+    const endFormatted = format(dateRange.endDate, "yyyy-MM-dd");
+    link.setAttribute("download", `company-income_${startFormatted}_to_${endFormatted}.csv`);
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success("CSV file downloaded successfully");
   };
 
   return (
@@ -562,8 +589,20 @@ const CompanyIncome = () => {
               </span>
             )}
           </CardTitle>
-          <div className="text-lg font-semibold">
-            Total: ${totalIncome.toFixed(2)}
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={handleDownloadCsv}
+              disabled={!filteredRecords || filteredRecords.length === 0}
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
+            <div className="text-lg font-semibold">
+              Total: ${totalIncome.toFixed(2)}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
