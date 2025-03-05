@@ -1,3 +1,4 @@
+
 import { useEffect, useState, ChangeEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
@@ -14,6 +15,8 @@ import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
 
 // List of brand names
 const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
+// List of job types
+const JOB_TYPE_OPTIONS = ["shooting", "upgrade", "product"];
 
 const CompanyIncomePage = () => {
   const navigate = useNavigate();
@@ -33,7 +36,8 @@ const CompanyIncomePage = () => {
       payment_method: "cash" as "cash" | "bank_transfer_riano" | "bank_transfer_personal" | "payme",
       date: new Date().toISOString().split('T')[0],
       job_status: "completed" as "in_progress" | "completed",
-      job_completion_date: ""
+      job_completion_date: "",
+      job_type: "shooting" as "shooting" | "upgrade" | "product"
     },
   });
 
@@ -200,6 +204,7 @@ const CompanyIncomePage = () => {
           job_completion_date: values.job_status === "completed" ? values.job_completion_date || values.date : null,
           source: "direct",  // Default value
           type: "service",   // Default value
+          job_type: values.job_type,
           payment_slip_path: paymentSlipPath
         });
 
@@ -218,7 +223,8 @@ const CompanyIncomePage = () => {
         payment_method: "cash",
         date: new Date().toISOString().split('T')[0],
         job_status: "completed",
-        job_completion_date: ""
+        job_completion_date: "",
+        job_type: "shooting"
       });
       setSelectedFile(null);
       fetchCompanyIncomes();
@@ -324,6 +330,34 @@ const CompanyIncomePage = () => {
                           onChange={(e) => field.onChange(parseFloat(e.target.value))}
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="job_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Type</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select job type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {JOB_TYPE_OPTIONS.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type.charAt(0).toUpperCase() + type.slice(1)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -508,6 +542,12 @@ const CompanyIncomePage = () => {
                       }`}>
                         {income.job_status === "in_progress" ? "In Progress" : "Completed"}
                       </span>
+
+                      {income.job_type && (
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-800 capitalize">
+                          {income.job_type}
+                        </span>
+                      )}
 
                       {income.payment_slip_path && (
                         <Button 

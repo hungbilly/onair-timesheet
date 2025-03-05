@@ -44,6 +44,7 @@ export type CompanyIncome = {
   job_status: "in_progress" | "completed";
   source: string;
   type: string;
+  job_type: "shooting" | "upgrade" | "product";
   job_completion_date: string | null;
   created_at: string;
   created_by: string;
