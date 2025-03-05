@@ -1,3 +1,4 @@
+
 export type TimeEntry = {
   id: string;
   user_id: string;
@@ -29,4 +30,15 @@ export type User = {
   name: string;
   role: 'staff' | 'manager';
   hourlyRate: number;
+};
+
+export type CompanyIncome = {
+  id: string;
+  company_name: string;
+  amount: number;
+  deposit: "full" | "partial";
+  payment_method: "cash" | "bank_transfer" | "payme";
+  date: string;
+  created_at: string;
+  created_by: string;
 };

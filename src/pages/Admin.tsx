@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +11,7 @@ import VendorBills from "@/components/admin/VendorBills";
 import VendorManagement from "@/components/admin/VendorManagement";
 import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -59,6 +61,9 @@ const Admin = () => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <div className="flex items-center gap-4">
+          <Link to="/company-income">
+            <Button variant="outline">Company Income</Button>
+          </Link>
           <ChangePasswordDialog />
           <Button 
             variant="outline" 

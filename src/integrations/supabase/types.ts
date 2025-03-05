@@ -9,6 +9,80 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      companies: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          industry: string | null
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          industry?: string | null
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          industry?: string | null
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      company_income: {
+        Row: {
+          amount: number
+          company_id: string
+          created_at: string
+          date: string
+          deposit: string
+          id: string
+          job_completion_date: string | null
+          job_status: string
+          source: string
+          type: string
+        }
+        Insert: {
+          amount: number
+          company_id: string
+          created_at?: string
+          date: string
+          deposit: string
+          id?: string
+          job_completion_date?: string | null
+          job_status: string
+          source: string
+          type: string
+        }
+        Update: {
+          amount?: number
+          company_id?: string
+          created_at?: string
+          date?: string
+          deposit?: string
+          id?: string
+          job_completion_date?: string | null
+          job_status?: string
+          source?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_income_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           amount: number
@@ -59,6 +133,42 @@ export type Database = {
           approved_by?: string
           id?: string
           month?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      personal_expenses: {
+        Row: {
+          amount: number
+          created_at: string
+          date: string
+          description: string
+          expense_type: string
+          id: string
+          payment_method: string
+          receipt_path: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          date: string
+          description: string
+          expense_type: string
+          id?: string
+          payment_method?: string
+          receipt_path?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          date?: string
+          description?: string
+          expense_type?: string
+          id?: string
+          payment_method?: string
+          receipt_path?: string | null
           user_id?: string
         }
         Relationships: []
