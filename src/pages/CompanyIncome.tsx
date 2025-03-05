@@ -17,6 +17,12 @@ import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
 const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
 // List of job types
 const JOB_TYPE_OPTIONS = ["shooting", "upgrade", "product"];
+// List of deposit types to enforce consistent values
+const DEPOSIT_OPTIONS = ["full", "partial", "balance"];
+// List of payment methods
+const PAYMENT_METHOD_OPTIONS = ["cash", "bank_transfer_riano", "bank_transfer_personal", "payme"];
+// List of job statuses
+const JOB_STATUS_OPTIONS = ["in_progress", "completed"];
 
 const CompanyIncomePage = () => {
   const navigate = useNavigate();
@@ -188,8 +194,13 @@ const CompanyIncomePage = () => {
 
       // Ensure deposit value is one of the allowed values
       const deposit = values.deposit;
+      if (!DEPOSIT_OPTIONS.includes(deposit)) {
+        toast.error(`Invalid deposit value. Must be one of: ${DEPOSIT_OPTIONS.join(', ')}`);
+        return;
+      }
       
       console.log("Submitting with deposit value:", deposit);
+      console.log("Full form values:", values);
 
       const { error } = await supabase
         .from("company_income")
@@ -212,7 +223,8 @@ const CompanyIncomePage = () => {
 
       if (error) {
         console.error("Error adding company income:", error);
-        throw error;
+        toast.error(`Failed to add company income: ${error.message}`);
+        return;
       }
 
       toast.success("Company income added successfully");
@@ -381,9 +393,12 @@ const CompanyIncomePage = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="full">Full Payment</SelectItem>
-                          <SelectItem value="partial">Deposit</SelectItem>
-                          <SelectItem value="balance">Balance</SelectItem>
+                          {DEPOSIT_OPTIONS.map(option => (
+                            <SelectItem key={option} value={option}>
+                              {option === "full" ? "Full Payment" : 
+                               option === "partial" ? "Deposit" : "Balance"}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -407,10 +422,13 @@ const CompanyIncomePage = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="cash">Cash</SelectItem>
-                          <SelectItem value="bank_transfer_riano">Bank Transfer (Riano)</SelectItem>
-                          <SelectItem value="bank_transfer_personal">Bank Transfer (Personal)</SelectItem>
-                          <SelectItem value="payme">PayMe</SelectItem>
+                          {PAYMENT_METHOD_OPTIONS.map(method => (
+                            <SelectItem key={method} value={method}>
+                              {method === "cash" ? "Cash" :
+                               method === "bank_transfer_riano" ? "Bank Transfer (Riano)" :
+                               method === "bank_transfer_personal" ? "Bank Transfer (Personal)" : "PayMe"}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -448,8 +466,11 @@ const CompanyIncomePage = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="in_progress">In Progress</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
+                          {JOB_STATUS_OPTIONS.map(status => (
+                            <SelectItem key={status} value={status}>
+                              {status === "in_progress" ? "In Progress" : "Completed"}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
