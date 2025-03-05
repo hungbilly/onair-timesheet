@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -12,6 +13,9 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { useForm } from "react-hook-form";
 import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
 
+// List of brand names
+const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
+
 const CompanyIncomePage = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -21,7 +25,8 @@ const CompanyIncomePage = () => {
 
   const form = useForm({
     defaultValues: {
-      company_name: "",
+      company_name: BRAND_OPTIONS[0],
+      client: "",
       amount: 0,
       deposit: "full" as "full" | "partial" | "balance",
       payment_method: "cash" as "cash" | "bank_transfer" | "payme",
@@ -138,6 +143,7 @@ const CompanyIncomePage = () => {
         .from("company_income")
         .insert({
           company_name: values.company_name,
+          client: values.client,
           amount: parseFloat(values.amount),
           deposit: values.deposit,
           payment_method: values.payment_method,
@@ -155,7 +161,8 @@ const CompanyIncomePage = () => {
 
       toast.success("Company income added successfully");
       form.reset({
-        company_name: "",
+        company_name: BRAND_OPTIONS[0],
+        client: "",
         amount: 0,
         deposit: "full",
         payment_method: "cash",
@@ -211,9 +218,37 @@ const CompanyIncomePage = () => {
                   name="company_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Company Name</FormLabel>
+                      <FormLabel>Brand</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select brand" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {BRAND_OPTIONS.map((brand) => (
+                            <SelectItem key={brand} value={brand}>
+                              {brand}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="client"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Client Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter company name" {...field} />
+                        <Input placeholder="Enter client name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -332,6 +367,11 @@ const CompanyIncomePage = () => {
                       <span className="font-medium">{income.company_name}</span>
                       <span className="text-green-600 font-medium">${income.amount.toFixed(2)}</span>
                     </div>
+                    {income.client && (
+                      <div className="text-sm mt-1">
+                        <span className="text-muted-foreground">Client:</span> {income.client}
+                      </div>
+                    )}
                     <div className="flex justify-between mt-2 text-sm text-muted-foreground">
                       <span>{new Date(income.date).toLocaleDateString()}</span>
                       <span className="capitalize">{income.payment_method.replace('_', ' ')}</span>

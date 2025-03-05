@@ -39,6 +39,7 @@ export type Database = {
       company_income: {
         Row: {
           amount: number
+          client: string | null
           company_id: string
           company_name: string
           created_at: string
@@ -54,6 +55,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          client?: string | null
           company_id: string
           company_name: string
           created_at?: string
@@ -69,6 +71,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          client?: string | null
           company_id?: string
           company_name?: string
           created_at?: string

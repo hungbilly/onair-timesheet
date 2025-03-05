@@ -46,4 +46,5 @@ export type CompanyIncome = {
   job_completion_date: string | null;
   created_at: string;
   created_by: string;
+  client: string | null;
 };
