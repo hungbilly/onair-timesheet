@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 /**
  * Creates the necessary storage buckets if they don't exist
@@ -24,6 +25,7 @@ export const ensureStorageBuckets = async () => {
       // Creating bucket requires admin privileges - we'll skip this if the user doesn't have them
       // The bucket should be created by an administrator in the Supabase dashboard
       console.log("The 'company-income' bucket doesn't exist. Please create it in the Supabase dashboard.");
+      toast.warning("Storage bucket 'company-income' not found. Please create it in the Supabase dashboard.");
     } else {
       console.log("Found company-income bucket:", companyIncomeBucket);
     }
@@ -45,6 +47,7 @@ export const checkDatabasePermissions = async () => {
     
     if (readError) {
       console.error("Read permission error:", readError);
+      toast.error(`Database read permission error: ${readError.message}`);
     } else {
       console.log("Read permission check passed:", readData);
     }
@@ -54,6 +57,28 @@ export const checkDatabasePermissions = async () => {
     
     if (!user) {
       console.error("No authenticated user found");
+      toast.error("You need to be logged in to perform database operations");
+      return;
+    }
+    
+    // Get user role from profiles
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+      
+    if (profileError) {
+      console.error("Error fetching user profile:", profileError);
+      toast.error(`Could not verify user role: ${profileError.message}`);
+      return;
+    }
+    
+    console.log("User role:", profile?.role);
+    
+    if (profile?.role !== "admin") {
+      console.error("User does not have admin role");
+      toast.error("You need admin privileges to perform this operation");
       return;
     }
     
@@ -76,18 +101,25 @@ export const checkDatabasePermissions = async () => {
     
     if (insertError) {
       console.error("Insert permission test failed:", insertError);
+      toast.error(`Database insert permission error: ${insertError.message}`);
       
       if (insertError.code === "42501") {
         console.error("Permission denied. RLS policy may be blocking inserts.");
+        toast.error("You don't have permission to insert data. Please check RLS policies in the Supabase dashboard.");
       } else if (insertError.code === "23503") {
         console.log("Foreign key constraint failed as expected, but insert permission seems to exist");
+      } else if (insertError.code === "23514") {
+        console.error("Check constraint violation:", insertError.message);
+        toast.error(`Data validation error: ${insertError.message}`);
       } else {
         console.error("Other insert error:", insertError);
       }
     } else {
       console.log("Insert permission test passed");
+      toast.success("Database permissions verified successfully");
     }
   } catch (error) {
     console.error("Error checking permissions:", error);
+    toast.error(`Unexpected error checking permissions: ${error}`);
   }
 };
