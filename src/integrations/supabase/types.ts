@@ -20,7 +20,9 @@ export type Database = {
           date: string
           id: string
           job_status: string
+          job_type: string
           payment_method: string
+          payment_slip_path: string | null
           payment_type: string
         }
         Insert: {
@@ -33,7 +35,9 @@ export type Database = {
           date: string
           id?: string
           job_status?: string
+          job_type?: string
           payment_method?: string
+          payment_slip_path?: string | null
           payment_type?: string
         }
         Update: {
@@ -46,7 +50,9 @@ export type Database = {
           date?: string
           id?: string
           job_status?: string
+          job_type?: string
           payment_method?: string
+          payment_slip_path?: string | null
           payment_type?: string
         }
         Relationships: []
