@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -20,6 +19,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { CompanyIncomeRecord } from "@/types";
+import CompanyIncomeEditDialog from "./CompanyIncomeEditDialog";
 
 const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
 const PAYMENT_TYPE_OPTIONS = ["Deposit", "Balance", "Full Payment"];
@@ -265,7 +265,7 @@ const CompanyIncome = () => {
                     <TableHead>Brand</TableHead>
                     <TableHead>Payment Type</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="w-16"></TableHead>
+                    <TableHead className="w-24">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -280,12 +280,14 @@ const CompanyIncome = () => {
                       <TableCell className="text-right">
                         ${Number(record.amount).toFixed(2)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="flex items-center space-x-1">
+                        <CompanyIncomeEditDialog record={record} />
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => deleteMutation.mutate(record.id)}
                           disabled={deleteMutation.isPending}
+                          className="h-8 w-8"
                         >
                           <Trash className="h-4 w-4 text-destructive" />
                         </Button>
