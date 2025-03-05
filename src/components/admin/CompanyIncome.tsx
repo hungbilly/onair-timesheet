@@ -487,8 +487,8 @@ const CompanyIncome = () => {
               {Object.entries(brandTotals).map(([brandName, total]) => <Card key={brandName}>
                   <CardContent className="pt-6 bg-cyan-950">
                     <div className="text-center space-y-2">
-                      <div className="text-lg font-medium">{brandName}</div>
-                      <div className="text-2xl font-bold">${total.toFixed(2)}</div>
+                      <div className="text-lg font-medium bg-red-300">{brandName}</div>
+                      <div className="text-2xl font-bold bg-zinc-200">${total.toFixed(2)}</div>
                     </div>
                   </CardContent>
                 </Card>)}
