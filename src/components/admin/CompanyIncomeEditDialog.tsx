@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
@@ -120,19 +121,19 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
         variant="ghost"
         size="icon"
         onClick={() => setOpen(true)}
-        className="h-8 w-8"
+        className="h-7 w-7 sm:h-8 sm:w-8"
       >
-        <Pencil className="h-4 w-4" />
+        <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[550px]">
+        <DialogContent className="max-w-[95vw] sm:max-w-[550px]">
           <DialogHeader>
             <DialogTitle>Edit Income Record</DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-4 py-2 sm:py-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="client">Client</Label>
                 <Input
@@ -193,7 +194,7 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
                   <SelectTrigger>
                     <SelectValue placeholder="Select brand" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" align="start">
                     {BRAND_OPTIONS.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
@@ -212,7 +213,7 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
                   <SelectTrigger>
                     <SelectValue placeholder="Select job type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" align="start">
                     {JOB_TYPE_OPTIONS.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
@@ -228,7 +229,7 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
                   <SelectTrigger>
                     <SelectValue placeholder="Select payment type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" align="start">
                     {PAYMENT_TYPE_OPTIONS.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
@@ -244,7 +245,7 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
                   <SelectTrigger>
                     <SelectValue placeholder="Select payment method" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" align="start">
                     {PAYMENT_METHOD_OPTIONS.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
@@ -285,15 +286,16 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
               </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 pt-2">
               <DialogClose asChild>
-                <Button type="button" variant="outline">
+                <Button type="button" variant="outline" className="w-full sm:w-auto">
                   Cancel
                 </Button>
               </DialogClose>
               <Button 
                 type="submit" 
                 disabled={updateMutation.isPending}
+                className="w-full sm:w-auto"
               >
                 {updateMutation.isPending ? "Updating..." : "Update"}
               </Button>
