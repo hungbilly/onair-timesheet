@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -23,6 +24,8 @@ import CompanyIncomeEditDialog from "./CompanyIncomeEditDialog";
 
 const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
 const PAYMENT_TYPE_OPTIONS = ["Deposit", "Balance", "Full Payment"];
+const PAYMENT_METHOD_OPTIONS = ["Bank Transfer (Riano)", "Bank Transfer (Personal)", "Payme", "Cash"];
+const JOB_STATUS_OPTIONS = ["In Progress", "Complete"];
 
 const CompanyIncome = () => {
   const queryClient = useQueryClient();
@@ -31,6 +34,9 @@ const CompanyIncome = () => {
   const [amount, setAmount] = useState("");
   const [brand, setBrand] = useState(BRAND_OPTIONS[0]);
   const [paymentType, setPaymentType] = useState(PAYMENT_TYPE_OPTIONS[2]);
+  const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHOD_OPTIONS[0]);
+  const [jobStatus, setJobStatus] = useState(JOB_STATUS_OPTIONS[0]);
+  const [completionDate, setCompletionDate] = useState<Date | undefined>(undefined);
   const [isCreating, setIsCreating] = useState(false);
 
   // Fetch company income records
@@ -55,7 +61,7 @@ const CompanyIncome = () => {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!client.trim() || !amount.trim() || !selectedDate) {
-        toast.error("Please fill in all fields");
+        toast.error("Please fill in all required fields");
         return;
       }
 
@@ -71,6 +77,9 @@ const CompanyIncome = () => {
         date: format(selectedDate, "yyyy-MM-dd"),
         brand,
         payment_type: paymentType,
+        payment_method: paymentMethod,
+        job_status: jobStatus,
+        completion_date: completionDate ? format(completionDate, "yyyy-MM-dd") : null,
         created_by: (await supabase.auth.getUser()).data.user?.id,
       });
 
@@ -88,6 +97,9 @@ const CompanyIncome = () => {
       setSelectedDate(new Date());
       setBrand(BRAND_OPTIONS[0]);
       setPaymentType(PAYMENT_TYPE_OPTIONS[2]);
+      setPaymentMethod(PAYMENT_METHOD_OPTIONS[0]);
+      setJobStatus(JOB_STATUS_OPTIONS[0]);
+      setCompletionDate(undefined);
       setIsCreating(false);
       toast.success("Income record added successfully");
     },
@@ -236,6 +248,69 @@ const CompanyIncome = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <label htmlFor="paymentMethod" className="text-sm font-medium">
+                    Payment Method
+                  </label>
+                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select payment method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAYMENT_METHOD_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="jobStatus" className="text-sm font-medium">
+                    Job Status
+                  </label>
+                  <Select value={jobStatus} onValueChange={setJobStatus}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select job status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {JOB_STATUS_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Completion Date (optional)</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !completionDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {completionDate ? (
+                          format(completionDate, "PPP")
+                        ) : (
+                          <span>Pick a date (optional)</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={completionDate}
+                        onSelect={setCompletionDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
               <Button type="submit" className="w-full" disabled={createMutation.isPending}>
                 {createMutation.isPending ? "Adding..." : "Add Income Record"}
@@ -256,7 +331,7 @@ const CompanyIncome = () => {
           {isLoading ? (
             <div className="text-center py-4">Loading income records...</div>
           ) : incomeRecords && incomeRecords.length > 0 ? (
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -264,6 +339,9 @@ const CompanyIncome = () => {
                     <TableHead>Client</TableHead>
                     <TableHead>Brand</TableHead>
                     <TableHead>Payment Type</TableHead>
+                    <TableHead>Payment Method</TableHead>
+                    <TableHead>Job Status</TableHead>
+                    <TableHead>Completion Date</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
                     <TableHead className="w-24">Actions</TableHead>
                   </TableRow>
@@ -277,6 +355,13 @@ const CompanyIncome = () => {
                       <TableCell>{record.client}</TableCell>
                       <TableCell>{record.brand}</TableCell>
                       <TableCell>{record.payment_type}</TableCell>
+                      <TableCell>{record.payment_method}</TableCell>
+                      <TableCell>{record.job_status}</TableCell>
+                      <TableCell>
+                        {record.completion_date 
+                          ? format(new Date(record.completion_date), "MMM d, yyyy") 
+                          : "-"}
+                      </TableCell>
                       <TableCell className="text-right">
                         ${Number(record.amount).toFixed(2)}
                       </TableCell>

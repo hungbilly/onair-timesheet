@@ -14,30 +14,39 @@ export type Database = {
           amount: number
           brand: string
           client: string
+          completion_date: string | null
           created_at: string
           created_by: string
           date: string
           id: string
+          job_status: string
+          payment_method: string
           payment_type: string
         }
         Insert: {
           amount: number
           brand?: string
           client: string
+          completion_date?: string | null
           created_at?: string
           created_by: string
           date: string
           id?: string
+          job_status?: string
+          payment_method?: string
           payment_type?: string
         }
         Update: {
           amount?: number
           brand?: string
           client?: string
+          completion_date?: string | null
           created_at?: string
           created_by?: string
           date?: string
           id?: string
+          job_status?: string
+          payment_method?: string
           payment_type?: string
         }
         Relationships: []

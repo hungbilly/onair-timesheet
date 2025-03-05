@@ -30,6 +30,8 @@ import { CompanyIncomeRecord } from "@/types";
 
 const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
 const PAYMENT_TYPE_OPTIONS = ["Deposit", "Balance", "Full Payment"];
+const PAYMENT_METHOD_OPTIONS = ["Bank Transfer (Riano)", "Bank Transfer (Personal)", "Payme", "Cash"];
+const JOB_STATUS_OPTIONS = ["In Progress", "Complete"];
 
 interface CompanyIncomeEditDialogProps {
   record: CompanyIncomeRecord;
@@ -44,6 +46,11 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
   );
   const [brand, setBrand] = useState(record.brand);
   const [paymentType, setPaymentType] = useState(record.payment_type);
+  const [paymentMethod, setPaymentMethod] = useState(record.payment_method);
+  const [jobStatus, setJobStatus] = useState(record.job_status);
+  const [completionDate, setCompletionDate] = useState<Date | undefined>(
+    record.completion_date ? new Date(record.completion_date) : undefined
+  );
   
   const queryClient = useQueryClient();
 
@@ -55,13 +62,16 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
       setSelectedDate(record.date ? new Date(record.date) : undefined);
       setBrand(record.brand);
       setPaymentType(record.payment_type);
+      setPaymentMethod(record.payment_method);
+      setJobStatus(record.job_status);
+      setCompletionDate(record.completion_date ? new Date(record.completion_date) : undefined);
     }
   }, [record, open]);
 
   const updateMutation = useMutation({
     mutationFn: async () => {
       if (!client.trim() || !amount.trim() || !selectedDate) {
-        toast.error("Please fill in all fields");
+        toast.error("Please fill in all required fields");
         return;
       }
 
@@ -79,6 +89,9 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
           date: format(selectedDate, "yyyy-MM-dd"),
           brand,
           payment_type: paymentType,
+          payment_method: paymentMethod,
+          job_status: jobStatus,
+          completion_date: completionDate ? format(completionDate, "yyyy-MM-dd") : null,
         })
         .eq("id", record.id);
 
@@ -114,7 +127,7 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
             <DialogTitle>Edit Income Record</DialogTitle>
           </DialogHeader>
@@ -205,6 +218,68 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="paymentMethod">Payment Method</Label>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select payment method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAYMENT_METHOD_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="jobStatus">Job Status</Label>
+                <Select value={jobStatus} onValueChange={setJobStatus}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select job status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {JOB_STATUS_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Completion Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !completionDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {completionDate ? (
+                        format(completionDate, "PPP")
+                      ) : (
+                        <span>Pick a date (optional)</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={completionDate}
+                      onSelect={setCompletionDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
