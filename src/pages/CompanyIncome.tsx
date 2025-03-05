@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ const CompanyIncomePage = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [incomes, setIncomes] = useState<CompanyIncome[]>([]);
   const [loading, setLoading] = useState(false);
+  const [companies, setCompanies] = useState<{ id: string, name: string }[]>([]);
 
   const form = useForm({
     defaultValues: {
@@ -50,10 +52,39 @@ const CompanyIncomePage = () => {
 
       setIsAdmin(true);
       fetchCompanyIncomes();
+      fetchCompanies();
     };
 
     checkAdminStatus();
   }, [navigate]);
+
+  const fetchCompanies = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("companies")
+        .select("id, name");
+
+      if (error) throw error;
+      
+      setCompanies(data || []);
+      
+      // If no companies exist, create a default one
+      if (data && data.length === 0) {
+        const { error: createError } = await supabase
+          .from("companies")
+          .insert({
+            name: "Default Company",
+            user_id: (await supabase.auth.getUser()).data.user?.id as string
+          });
+          
+        if (createError) throw createError;
+        
+        fetchCompanies();
+      }
+    } catch (error) {
+      console.error("Error fetching companies:", error);
+    }
+  };
 
   const fetchCompanyIncomes = async () => {
     try {
@@ -67,19 +98,7 @@ const CompanyIncomePage = () => {
         throw error;
       }
 
-      // Convert the database rows to our CompanyIncome type
-      const typedIncomes: CompanyIncome[] = data.map(item => ({
-        id: item.id,
-        company_name: item.company_name,
-        amount: item.amount,
-        deposit: item.deposit as "full" | "partial",
-        payment_method: item.payment_method as "cash" | "bank_transfer" | "payme",
-        date: item.date,
-        created_at: item.created_at,
-        created_by: item.created_by
-      }));
-
-      setIncomes(typedIncomes);
+      setIncomes(data as CompanyIncome[]);
     } catch (error) {
       console.error("Error fetching company incomes:", error);
       toast.error("Failed to load company incomes");
@@ -107,16 +126,28 @@ const CompanyIncomePage = () => {
         toast.error("You must be logged in");
         return;
       }
+      
+      // Get the first company (or the one selected if we implement company selection later)
+      const selectedCompany = companies[0];
+      
+      if (!selectedCompany) {
+        toast.error("No company found. Please create a company first.");
+        return;
+      }
 
       const { error } = await supabase
         .from("company_income")
         .insert({
           company_name: values.company_name,
-          amount: values.amount,
+          amount: parseFloat(values.amount),
           deposit: values.deposit,
           payment_method: values.payment_method,
           date: values.date,
-          created_by: user.id
+          created_by: user.id,
+          company_id: selectedCompany.id,
+          job_status: "completed",  // Default value
+          source: "direct",  // Default value
+          type: "service"  // Default value
         });
 
       if (error) {
