@@ -160,11 +160,7 @@ const CompanyIncomePage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in",
-          variant: "destructive"
-        });
+        toast.error("You must be logged in");
         return;
       }
       
@@ -172,11 +168,7 @@ const CompanyIncomePage = () => {
       const selectedCompany = companies[0];
       
       if (!selectedCompany) {
-        toast({
-          title: "Error",
-          description: "No company found. Please create a company first.",
-          variant: "destructive"
-        });
+        toast.error("No company found. Please create a company first.");
         return;
       }
 
@@ -185,11 +177,7 @@ const CompanyIncomePage = () => {
         try {
           paymentSlipPath = await uploadPaymentSlip(selectedFile);
         } catch (error) {
-          toast({
-            title: "Error",
-            description: "Failed to upload payment slip",
-            variant: "destructive"
-          });
+          toast.error("Failed to upload payment slip");
           return;
         }
       }
@@ -220,10 +208,7 @@ const CompanyIncomePage = () => {
         throw error;
       }
 
-      toast({
-        title: "Success",
-        description: "Company income added successfully",
-      });
+      toast.success("Company income added successfully");
       
       form.reset({
         company_name: BRAND_OPTIONS[0],
@@ -239,11 +224,7 @@ const CompanyIncomePage = () => {
       fetchCompanyIncomes();
     } catch (error) {
       console.error("Error adding company income:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add company income",
-        variant: "destructive"
-      });
+      toast.error("Failed to add company income");
     } finally {
       setLoading(false);
     }
