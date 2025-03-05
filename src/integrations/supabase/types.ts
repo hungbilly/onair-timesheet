@@ -63,42 +63,6 @@ export type Database = {
         }
         Relationships: []
       }
-      personal_expenses: {
-        Row: {
-          amount: number
-          created_at: string
-          date: string
-          description: string
-          expense_type: string
-          id: string
-          payment_method: string
-          receipt_path: string | null
-          user_id: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          date: string
-          description: string
-          expense_type: string
-          id?: string
-          payment_method?: string
-          receipt_path?: string | null
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          date?: string
-          description?: string
-          expense_type?: string
-          id?: string
-          payment_method?: string
-          receipt_path?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           created_at: string

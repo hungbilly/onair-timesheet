@@ -1,19 +1,16 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { LogOut, BarChart3 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LogOut } from "lucide-react";
 import { toast } from "sonner";
-import UserManagement from "@/components/admin/UserManagement";
-import EmployeeStats from "@/components/admin/EmployeeStats";
-import VendorBills from "@/components/admin/VendorBills";
-import VendorManagement from "@/components/admin/VendorManagement";
-import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import CompanyIncomeList from "@/components/admin/CompanyIncomeList";
+import AddCompanyIncomeDialog from "@/components/admin/AddCompanyIncomeDialog";
 
-const Admin = () => {
+const CompanyIncome = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -59,15 +56,11 @@ const Admin = () => {
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold">Company Income</h1>
         <div className="flex items-center gap-4">
-          <Link to="/company-income">
-            <Button variant="outline" className="gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Company Income
-            </Button>
+          <Link to="/admin">
+            <Button variant="outline">Back to Admin Dashboard</Button>
           </Link>
-          <ChangePasswordDialog />
           <Button 
             variant="outline" 
             onClick={handleSignOut}
@@ -79,32 +72,33 @@ const Admin = () => {
         </div>
       </div>
       
-      <Tabs defaultValue="users" className="space-y-4">
+      <div className="flex justify-end mb-4">
+        <AddCompanyIncomeDialog />
+      </div>
+
+      <Tabs defaultValue="all" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="users">User Management</TabsTrigger>
-          <TabsTrigger value="stats">Employee Stats</TabsTrigger>
-          <TabsTrigger value="bills">Vendor Bills</TabsTrigger>
-          <TabsTrigger value="vendors">Vendors</TabsTrigger>
+          <TabsTrigger value="all">All Income</TabsTrigger>
+          <TabsTrigger value="billy">Billy ONAIR</TabsTrigger>
+          <TabsTrigger value="onair">ONAIR Studio</TabsTrigger>
+          <TabsTrigger value="sonnet">Sonnet Moment</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="users">
-          <UserManagement />
+        <TabsContent value="all">
+          <CompanyIncomeList filter="all" />
         </TabsContent>
-
-        <TabsContent value="stats">
-          <EmployeeStats />
+        <TabsContent value="billy">
+          <CompanyIncomeList filter="Billy ONAIR" />
         </TabsContent>
-
-        <TabsContent value="bills">
-          <VendorBills />
+        <TabsContent value="onair">
+          <CompanyIncomeList filter="ONAIR Studio" />
         </TabsContent>
-
-        <TabsContent value="vendors">
-          <VendorManagement />
+        <TabsContent value="sonnet">
+          <CompanyIncomeList filter="Sonnet Moment" />
         </TabsContent>
       </Tabs>
     </div>
   );
 };
 
-export default Admin;
+export default CompanyIncome;
