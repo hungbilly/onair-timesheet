@@ -1,12 +1,11 @@
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, ChangeEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { LogOut, ArrowLeft } from "lucide-react";
+import { LogOut, ArrowLeft, Upload } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CompanyIncome } from "@/types";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -22,6 +21,8 @@ const CompanyIncomePage = () => {
   const [incomes, setIncomes] = useState<CompanyIncome[]>([]);
   const [loading, setLoading] = useState(false);
   const [companies, setCompanies] = useState<{ id: string, name: string }[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileUploading, setFileUploading] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -31,6 +32,8 @@ const CompanyIncomePage = () => {
       deposit: "full" as "full" | "partial" | "balance",
       payment_method: "cash" as "cash" | "bank_transfer" | "payme",
       date: new Date().toISOString().split('T')[0],
+      job_status: "completed" as "in_progress" | "completed",
+      job_completion_date: ""
     },
   });
 
@@ -121,6 +124,36 @@ const CompanyIncomePage = () => {
     }
   };
 
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const uploadPaymentSlip = async (file: File) => {
+    try {
+      setFileUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      const filePath = `payment-slips/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('company-income')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      return filePath;
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      throw error;
+    } finally {
+      setFileUploading(false);
+    }
+  };
+
   const onSubmit = async (values: any) => {
     try {
       setLoading(true);
@@ -139,6 +172,16 @@ const CompanyIncomePage = () => {
         return;
       }
 
+      let paymentSlipPath = null;
+      if (selectedFile) {
+        try {
+          paymentSlipPath = await uploadPaymentSlip(selectedFile);
+        } catch (error) {
+          toast.error("Failed to upload payment slip");
+          return;
+        }
+      }
+
       const { error } = await supabase
         .from("company_income")
         .insert({
@@ -150,9 +193,11 @@ const CompanyIncomePage = () => {
           date: values.date,
           created_by: user.id,
           company_id: selectedCompany.id,
-          job_status: "completed",  // Default value
+          job_status: values.job_status,
+          job_completion_date: values.job_status === "completed" ? values.job_completion_date || values.date : null,
           source: "direct",  // Default value
-          type: "service"  // Default value
+          type: "service",   // Default value
+          payment_slip_path: paymentSlipPath
         });
 
       if (error) {
@@ -167,7 +212,10 @@ const CompanyIncomePage = () => {
         deposit: "full",
         payment_method: "cash",
         date: new Date().toISOString().split('T')[0],
+        job_status: "completed",
+        job_completion_date: ""
       });
+      setSelectedFile(null);
       fetchCompanyIncomes();
     } catch (error) {
       console.error("Error adding company income:", error);
@@ -342,7 +390,65 @@ const CompanyIncomePage = () => {
                   )}
                 />
 
-                <Button type="submit" disabled={loading} className="w-full">
+                <FormField
+                  control={form.control}
+                  name="job_status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Status</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select job status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="in_progress">In Progress</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch("job_status") === "completed" && (
+                  <FormField
+                    control={form.control}
+                    name="job_completion_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Completion Date</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                <div className="space-y-2">
+                  <FormLabel>Payment Slip (Optional)</FormLabel>
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      type="file" 
+                      onChange={handleFileChange}
+                      accept="image/*,.pdf"
+                      className="flex-1"
+                    />
+                    {selectedFile && (
+                      <div className="text-sm text-muted-foreground">
+                        {selectedFile.name}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <Button type="submit" disabled={loading || fileUploading} className="w-full">
                   {loading ? "Adding..." : "Add Income"}
                 </Button>
               </form>
@@ -376,12 +482,42 @@ const CompanyIncomePage = () => {
                       <span>{new Date(income.date).toLocaleDateString()}</span>
                       <span className="capitalize">{income.payment_method.replace('_', ' ')}</span>
                     </div>
-                    <div className="mt-1 text-sm">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${
+                        income.deposit === "full" ? "bg-blue-100 text-blue-800" : 
+                        income.deposit === "partial" ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800"
+                      }`}>
                         {income.deposit === "full" ? "Full Payment" : 
-                         income.deposit === "partial" ? "Deposit" : "Balance"}
+                        income.deposit === "partial" ? "Deposit" : "Balance"}
                       </span>
+
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${
+                        income.job_status === "in_progress" ? "bg-orange-100 text-orange-800" : "bg-green-100 text-green-800"
+                      }`}>
+                        {income.job_status === "in_progress" ? "In Progress" : "Completed"}
+                      </span>
+
+                      {income.payment_slip_path && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-5 text-xs flex items-center gap-1 px-2"
+                          onClick={() => window.open(
+                            `${supabase.storage.from('company-income').getPublicUrl(income.payment_slip_path as string).data.publicUrl}`,
+                            '_blank'
+                          )}
+                        >
+                          <Upload className="h-3 w-3" />
+                          View Slip
+                        </Button>
+                      )}
                     </div>
+                    
+                    {income.job_completion_date && (
+                      <div className="text-xs mt-1 text-muted-foreground">
+                        Completed: {new Date(income.job_completion_date).toLocaleDateString()}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
