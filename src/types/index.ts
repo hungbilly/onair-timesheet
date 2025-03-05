@@ -39,7 +39,7 @@ export type CompanyIncome = {
   company_name: string;
   amount: number;
   deposit: "full" | "partial" | "balance";
-  payment_method: "cash" | "bank_transfer" | "payme";
+  payment_method: "cash" | "bank_transfer_riano" | "bank_transfer_personal" | "payme";
   date: string;
   job_status: "in_progress" | "completed";
   source: string;

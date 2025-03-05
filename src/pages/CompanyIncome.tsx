@@ -30,7 +30,7 @@ const CompanyIncomePage = () => {
       client: "",
       amount: 0,
       deposit: "full" as "full" | "partial" | "balance",
-      payment_method: "cash" as "cash" | "bank_transfer" | "payme",
+      payment_method: "cash" as "cash" | "bank_transfer_riano" | "bank_transfer_personal" | "payme",
       date: new Date().toISOString().split('T')[0],
       job_status: "completed" as "in_progress" | "completed",
       job_completion_date: ""
@@ -367,7 +367,8 @@ const CompanyIncomePage = () => {
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="cash">Cash</SelectItem>
-                          <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                          <SelectItem value="bank_transfer_riano">Bank Transfer (Riano)</SelectItem>
+                          <SelectItem value="bank_transfer_personal">Bank Transfer (Personal)</SelectItem>
                           <SelectItem value="payme">PayMe</SelectItem>
                         </SelectContent>
                       </Select>
@@ -480,7 +481,13 @@ const CompanyIncomePage = () => {
                     )}
                     <div className="flex justify-between mt-2 text-sm text-muted-foreground">
                       <span>{new Date(income.date).toLocaleDateString()}</span>
-                      <span className="capitalize">{income.payment_method.replace('_', ' ')}</span>
+                      <span className="capitalize">
+                        {income.payment_method === "bank_transfer_riano" 
+                          ? "Bank Transfer (Riano)" 
+                          : income.payment_method === "bank_transfer_personal" 
+                            ? "Bank Transfer (Personal)" 
+                            : income.payment_method.replace('_', ' ')}
+                      </span>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2">
                       <span className={`px-2 py-0.5 rounded-full text-xs ${
