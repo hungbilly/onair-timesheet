@@ -25,7 +25,6 @@ import CompanyIncomeEditDialog from "./CompanyIncomeEditDialog";
 const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
 const PAYMENT_TYPE_OPTIONS = ["Deposit", "Balance", "Full Payment"];
 const PAYMENT_METHOD_OPTIONS = ["Bank Transfer (Riano)", "Bank Transfer (Personal)", "Payme", "Cash"];
-const JOB_STATUS_OPTIONS = ["In Progress", "Complete"];
 const JOB_TYPE_OPTIONS = ["Shooting", "Upgrade", "Products"];
 
 const CompanyIncome = () => {
@@ -36,7 +35,6 @@ const CompanyIncome = () => {
   const [brand, setBrand] = useState(BRAND_OPTIONS[0]);
   const [paymentType, setPaymentType] = useState(PAYMENT_TYPE_OPTIONS[2]);
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHOD_OPTIONS[0]);
-  const [jobStatus, setJobStatus] = useState(JOB_STATUS_OPTIONS[0]);
   const [completionDate, setCompletionDate] = useState<Date | undefined>(undefined);
   const [jobType, setJobType] = useState(JOB_TYPE_OPTIONS[0]);
   const [isCreating, setIsCreating] = useState(false);
@@ -80,7 +78,6 @@ const CompanyIncome = () => {
         brand,
         payment_type: paymentType,
         payment_method: paymentMethod,
-        job_status: jobStatus,
         completion_date: completionDate ? format(completionDate, "yyyy-MM-dd") : null,
         job_type: jobType.toLowerCase(),
         created_by: (await supabase.auth.getUser()).data.user?.id,
@@ -101,7 +98,6 @@ const CompanyIncome = () => {
       setBrand(BRAND_OPTIONS[0]);
       setPaymentType(PAYMENT_TYPE_OPTIONS[2]);
       setPaymentMethod(PAYMENT_METHOD_OPTIONS[0]);
-      setJobStatus(JOB_STATUS_OPTIONS[0]);
       setCompletionDate(undefined);
       setJobType(JOB_TYPE_OPTIONS[0]);
       setIsCreating(false);
@@ -287,23 +283,6 @@ const CompanyIncome = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="jobStatus" className="text-sm font-medium">
-                    Job Status
-                  </label>
-                  <Select value={jobStatus} onValueChange={setJobStatus}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select job status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {JOB_STATUS_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
                   <label className="text-sm font-medium">Completion Date (optional)</label>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -362,7 +341,6 @@ const CompanyIncome = () => {
                     <TableHead>Job Type</TableHead>
                     <TableHead>Payment Type</TableHead>
                     <TableHead>Payment Method</TableHead>
-                    <TableHead>Job Status</TableHead>
                     <TableHead>Completion Date</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
                     <TableHead className="w-24">Actions</TableHead>
@@ -379,7 +357,6 @@ const CompanyIncome = () => {
                       <TableCell>{record.job_type ? record.job_type.charAt(0).toUpperCase() + record.job_type.slice(1) : "-"}</TableCell>
                       <TableCell>{record.payment_type}</TableCell>
                       <TableCell>{record.payment_method}</TableCell>
-                      <TableCell>{record.job_status}</TableCell>
                       <TableCell>
                         {record.completion_date 
                           ? format(new Date(record.completion_date), "MMM d, yyyy") 

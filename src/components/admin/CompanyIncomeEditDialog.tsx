@@ -31,7 +31,6 @@ import { CompanyIncomeRecord } from "@/types";
 const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
 const PAYMENT_TYPE_OPTIONS = ["Deposit", "Balance", "Full Payment"];
 const PAYMENT_METHOD_OPTIONS = ["Bank Transfer (Riano)", "Bank Transfer (Personal)", "Payme", "Cash"];
-const JOB_STATUS_OPTIONS = ["In Progress", "Complete"];
 const JOB_TYPE_OPTIONS = ["Shooting", "Upgrade", "Products"];
 
 interface CompanyIncomeEditDialogProps {
@@ -48,7 +47,6 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
   const [brand, setBrand] = useState(record.brand);
   const [paymentType, setPaymentType] = useState(record.payment_type);
   const [paymentMethod, setPaymentMethod] = useState(record.payment_method);
-  const [jobStatus, setJobStatus] = useState(record.job_status);
   const [completionDate, setCompletionDate] = useState<Date | undefined>(
     record.completion_date ? new Date(record.completion_date) : undefined
   );
@@ -65,7 +63,6 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
       setBrand(record.brand);
       setPaymentType(record.payment_type);
       setPaymentMethod(record.payment_method);
-      setJobStatus(record.job_status);
       setCompletionDate(record.completion_date ? new Date(record.completion_date) : undefined);
       setJobType(record.job_type || JOB_TYPE_OPTIONS[0].toLowerCase());
     }
@@ -93,7 +90,6 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
           brand,
           payment_type: paymentType,
           payment_method: paymentMethod,
-          job_status: jobStatus,
           completion_date: completionDate ? format(completionDate, "yyyy-MM-dd") : null,
           job_type: jobType.toLowerCase(),
         })
@@ -251,22 +247,6 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
                   </SelectTrigger>
                   <SelectContent>
                     {PAYMENT_METHOD_OPTIONS.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="jobStatus">Job Status</Label>
-                <Select value={jobStatus} onValueChange={setJobStatus}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select job status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {JOB_STATUS_OPTIONS.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>

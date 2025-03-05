@@ -19,7 +19,6 @@ export type Database = {
           created_by: string
           date: string
           id: string
-          job_status: string
           job_type: string
           payment_method: string
           payment_type: string
@@ -33,7 +32,6 @@ export type Database = {
           created_by: string
           date: string
           id?: string
-          job_status?: string
           job_type?: string
           payment_method?: string
           payment_type?: string
@@ -47,7 +45,6 @@ export type Database = {
           created_by?: string
           date?: string
           id?: string
-          job_status?: string
           job_type?: string
           payment_method?: string
           payment_type?: string

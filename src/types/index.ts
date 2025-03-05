@@ -42,7 +42,6 @@ export type CompanyIncomeRecord = {
   created_at: string;
   created_by: string;
   payment_method: string;
-  job_status: string;
-  completion_date: string | null;
   job_type: string;
+  completion_date: string | null;
 };
