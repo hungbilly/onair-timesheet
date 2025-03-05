@@ -29,7 +29,6 @@ const CompanyIncomePage = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [incomes, setIncomes] = useState<CompanyIncome[]>([]);
   const [loading, setLoading] = useState(false);
-  const [companies, setCompanies] = useState<{ id: string, name: string }[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileUploading, setFileUploading] = useState(false);
 
@@ -71,39 +70,10 @@ const CompanyIncomePage = () => {
       ensureStorageBuckets(); // Ensure storage buckets exist
       checkDatabasePermissions(); // Check database permissions
       fetchCompanyIncomes();
-      fetchCompanies();
     };
 
     checkAdminStatus();
   }, [navigate]);
-
-  const fetchCompanies = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("companies")
-        .select("id, name");
-
-      if (error) throw error;
-      
-      setCompanies(data || []);
-      
-      // If no companies exist, create a default one
-      if (data && data.length === 0) {
-        const { error: createError } = await supabase
-          .from("companies")
-          .insert({
-            name: "Default Company",
-            user_id: (await supabase.auth.getUser()).data.user?.id as string
-          });
-          
-        if (createError) throw createError;
-        
-        fetchCompanies();
-      }
-    } catch (error) {
-      console.error("Error fetching companies:", error);
-    }
-  };
 
   const fetchCompanyIncomes = async () => {
     try {
@@ -187,16 +157,6 @@ const CompanyIncomePage = () => {
       }
       
       console.log("Authenticated user ID:", user.id);
-      
-      // Get the first company (or the one selected if we implement company selection later)
-      const selectedCompany = companies[0];
-      
-      if (!selectedCompany) {
-        toast.error("No company found. Please create a company first.");
-        return;
-      }
-      
-      console.log("Selected company:", selectedCompany);
 
       let paymentSlipPath = null;
       if (selectedFile) {
@@ -229,7 +189,6 @@ const CompanyIncomePage = () => {
         payment_method: values.payment_method,
         date: values.date,
         created_by: user.id,
-        company_id: selectedCompany.id,
         job_status: values.job_status,
         job_completion_date: values.job_status === "completed" ? values.job_completion_date || values.date : null,
         source: "direct",

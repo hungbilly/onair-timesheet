@@ -9,38 +9,10 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      companies: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          industry: string | null
-          name: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          industry?: string | null
-          name: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          industry?: string | null
-          name?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       company_income: {
         Row: {
           amount: number
           client: string | null
-          company_id: string
           company_name: string
           created_at: string
           created_by: string
@@ -58,7 +30,6 @@ export type Database = {
         Insert: {
           amount: number
           client?: string | null
-          company_id: string
           company_name: string
           created_at?: string
           created_by?: string
@@ -76,7 +47,6 @@ export type Database = {
         Update: {
           amount?: number
           client?: string | null
-          company_id?: string
           company_name?: string
           created_at?: string
           created_by?: string
@@ -91,15 +61,7 @@ export type Database = {
           source?: string
           type?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "company_income_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       expenses: {
         Row: {

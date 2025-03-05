@@ -1,4 +1,3 @@
-
 export type TimeEntry = {
   id: string;
   user_id: string;
@@ -35,7 +34,6 @@ export type User = {
 export type CompanyIncome = {
   id: string;
   user_id: string;
-  company_id: string;
   company_name: string;
   amount: number;
   deposit: "full" | "partial" | "balance";

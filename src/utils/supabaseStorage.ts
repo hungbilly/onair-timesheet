@@ -89,7 +89,6 @@ export const checkDatabasePermissions = async () => {
       company_name: "TEST PERMISSION CHECK - DELETE ME",
       amount: 0.01,
       date: new Date().toISOString().split('T')[0],
-      company_id: "00000000-0000-0000-0000-000000000000", // This will fail, but will show permission errors
       created_by: user.id,
       deposit: "full", // Using a valid value that should pass the check constraint
       job_status: "completed",
@@ -109,9 +108,9 @@ export const checkDatabasePermissions = async () => {
         console.error("Permission denied. RLS policy may be blocking inserts.");
         toast.error("You don't have permission to insert data. Please check RLS policies in the Supabase dashboard.");
       } else if (insertError.code === "23503") {
-        // This is expected due to the invalid company_id, but permissions seem to be working
-        console.log("Foreign key constraint failed as expected, but insert permission seems to exist");
-        toast.success("Database permissions verified successfully");
+        // Foreign key constraint error is no longer applicable since company_id is removed
+        console.error("Other constraint error:", insertError);
+        toast.error(`Database constraint error: ${insertError.message}`);
       } else if (insertError.code === "23514") {
         console.error("Check constraint violation:", insertError.message);
         toast.error(`Data validation error: ${insertError.message}`);
