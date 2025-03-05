@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
@@ -31,7 +30,7 @@ import { CompanyIncomeRecord } from "@/types";
 const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
 const PAYMENT_TYPE_OPTIONS = ["Deposit", "Balance", "Full Payment"];
 const PAYMENT_METHOD_OPTIONS = ["Bank Transfer (Riano)", "Bank Transfer (Personal)", "Payme", "Cash"];
-const JOB_TYPE_OPTIONS = ["Shooting", "Upgrade", "Products"];
+const JOB_TYPE_OPTIONS = ["Shooting", "Upgrade", "Products", "Petty Cash"];
 
 interface CompanyIncomeEditDialogProps {
   record: CompanyIncomeRecord;
