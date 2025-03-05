@@ -1,3 +1,4 @@
+
 import { useEffect, useState, ChangeEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
@@ -191,14 +192,16 @@ const CompanyIncomePage = () => {
         }
       }
 
-      // Ensure deposit value is one of the allowed values
-      const deposit = values.deposit;
-      if (!DEPOSIT_OPTIONS.includes(deposit)) {
+      // Make sure deposit value is strictly one of the allowed values from the database constraint
+      const depositValue = values.deposit;
+      console.log("Original deposit value:", depositValue);
+      
+      if (!DEPOSIT_OPTIONS.includes(depositValue)) {
         toast.error(`Invalid deposit value. Must be one of: ${DEPOSIT_OPTIONS.join(', ')}`);
         return;
       }
-      
-      console.log("Submitting with deposit value:", deposit);
+
+      console.log("Submitting with deposit value:", depositValue);
       console.log("Full form values:", values);
 
       const { error } = await supabase
@@ -207,15 +210,15 @@ const CompanyIncomePage = () => {
           company_name: values.company_name,
           client: values.client,
           amount: parseFloat(values.amount),
-          deposit: deposit,
+          deposit: depositValue,
           payment_method: values.payment_method,
           date: values.date,
           created_by: user.id,
           company_id: selectedCompany.id,
           job_status: values.job_status,
           job_completion_date: values.job_status === "completed" ? values.job_completion_date || values.date : null,
-          source: "direct",  // Default value
-          type: "service",   // Default value
+          source: "direct",
+          type: "service",
           job_type: values.job_type,
           payment_slip_path: paymentSlipPath
         });
