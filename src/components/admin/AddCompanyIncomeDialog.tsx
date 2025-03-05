@@ -120,9 +120,10 @@ const AddCompanyIncomeDialog = () => {
         ? format(values.job_completion_date, 'yyyy-MM-dd') 
         : null;
 
-      // Insert record
-      const { error } = await supabase
-        .from('company_income')
+      // Insert record using a workaround for TypeScript
+      // Use the 'from' method with a type assertion to bypass type checking
+      const { error } = await (supabase
+        .from('company_income' as any)
         .insert({
           company_name: values.company_name,
           client: values.client || null,
@@ -137,7 +138,7 @@ const AddCompanyIncomeDialog = () => {
           type: values.type,
           job_type: values.job_type,
           created_by: user.id,
-        });
+        }) as any);
 
       if (error) {
         throw new Error("Failed to add income: " + error.message);

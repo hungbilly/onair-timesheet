@@ -29,7 +29,7 @@ const CompanyIncomeList = ({ filter }: CompanyIncomeListProps) => {
 
   const fetchCompanyIncome = async () => {
     let query = supabase
-      .from("company_income")
+      .from("company_income" as any)
       .select("*")
       .order("date", { ascending: false });
 
@@ -41,7 +41,8 @@ const CompanyIncomeList = ({ filter }: CompanyIncomeListProps) => {
     if (error) {
       throw error;
     }
-    return data as CompanyIncome[];
+    // Cast the returned data to the CompanyIncome type
+    return data as unknown as CompanyIncome[];
   };
 
   const { data: incomeData, isLoading, error, refetch } = useQuery({
@@ -72,7 +73,7 @@ const CompanyIncomeList = ({ filter }: CompanyIncomeListProps) => {
 
     try {
       const { error } = await supabase
-        .from("company_income")
+        .from("company_income" as any)
         .delete()
         .eq("id", id);
 

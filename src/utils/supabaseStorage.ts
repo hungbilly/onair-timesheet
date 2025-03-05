@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 /**
  * Creates the necessary storage buckets if they don't exist
@@ -25,7 +25,7 @@ export const ensureStorageBuckets = async () => {
       // Creating bucket requires admin privileges - we'll skip this if the user doesn't have them
       // The bucket should be created by an administrator in the Supabase dashboard
       console.log("The 'company-income' bucket doesn't exist. Please create it in the Supabase dashboard.");
-      toast.warning("Storage bucket 'company-income' not found. Please create it in the Supabase dashboard.");
+      toast("Storage bucket 'company-income' not found. Please create it in the Supabase dashboard.");
     } else {
       console.log("Found company-income bucket:", companyIncomeBucket);
     }
@@ -44,7 +44,7 @@ export const checkDatabasePermissions = async () => {
     
     if (!user) {
       console.error("No authenticated user found");
-      toast.error("You need to be logged in to perform database operations");
+      toast("You need to be logged in to perform database operations");
       return;
     }
     
@@ -57,7 +57,7 @@ export const checkDatabasePermissions = async () => {
       
     if (profileError) {
       console.error("Error fetching user profile:", profileError);
-      toast.error(`Could not verify user role: ${profileError.message}`);
+      toast(`Could not verify user role: ${profileError.message}`);
       return;
     }
     
@@ -65,19 +65,19 @@ export const checkDatabasePermissions = async () => {
     
     if (profile?.role !== "admin") {
       console.error("User does not have admin role");
-      toast.error("You need admin privileges to perform this operation");
+      toast("You need admin privileges to perform this operation");
       return;
     }
     
     // Try to read from the company_income table to check read permissions
-    const { data: readData, error: readError } = await supabase
-      .from("company_income")
+    const { data: readData, error: readError } = await (supabase
+      .from("company_income" as any)
       .select("id")
-      .limit(1);
+      .limit(1) as any);
     
     if (readError) {
       console.error("Read permission error:", readError);
-      toast.error(`Database read permission error: ${readError.message}`);
+      toast(`Database read permission error: ${readError.message}`);
       return;
     }
     
@@ -97,44 +97,44 @@ export const checkDatabasePermissions = async () => {
       job_type: "shooting"
     };
     
-    const { error: insertError } = await supabase
-      .from("company_income")
-      .insert(testData);
+    const { error: insertError } = await (supabase
+      .from("company_income" as any)
+      .insert(testData) as any);
     
     if (insertError) {
       console.error("Insert permission test failed:", insertError);
       
       if (insertError.code === "42501") {
         console.error("Permission denied. RLS policy may be blocking inserts.");
-        toast.error("You don't have permission to insert data. Please check RLS policies in the Supabase dashboard.");
+        toast("You don't have permission to insert data. Please check RLS policies in the Supabase dashboard.");
       } else if (insertError.code === "23503") {
         // Foreign key constraint error is no longer applicable since company_id is removed
         console.error("Other constraint error:", insertError);
-        toast.error(`Database constraint error: ${insertError.message}`);
+        toast(`Database constraint error: ${insertError.message}`);
       } else if (insertError.code === "23514") {
         console.error("Check constraint violation:", insertError.message);
-        toast.error(`Data validation error: ${insertError.message}`);
+        toast(`Data validation error: ${insertError.message}`);
       } else {
         console.error("Other insert error:", insertError);
-        toast.error(`Insert error: ${insertError.message}`);
+        toast(`Insert error: ${insertError.message}`);
       }
     } else {
       console.log("Insert permission test passed");
-      toast.success("Database permissions verified successfully");
+      toast("Database permissions verified successfully");
       
       // Clean up the test data
       try {
-        await supabase
-          .from("company_income")
+        await (supabase
+          .from("company_income" as any)
           .delete()
           .eq("company_name", "TEST PERMISSION CHECK - DELETE ME")
-          .eq("created_by", user.id);
+          .eq("created_by", user.id) as any);
       } catch (cleanupError) {
         console.error("Failed to clean up test data:", cleanupError);
       }
     }
   } catch (error) {
     console.error("Error checking permissions:", error);
-    toast.error(`Unexpected error checking permissions: ${error}`);
+    toast(`Unexpected error checking permissions: ${error}`);
   }
 };
