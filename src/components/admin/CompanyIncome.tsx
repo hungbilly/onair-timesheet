@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -147,7 +146,7 @@ const CompanyIncome = () => {
 
   // Calculate totals by brand
   const brandTotals = useMemo(() => {
-    if (!incomeRecords) return {};
+    if (!incomeRecords) return {} as Record<string, number>;
     
     return groupByBrand(incomeRecords, dateRange);
   }, [incomeRecords, dateRange]);

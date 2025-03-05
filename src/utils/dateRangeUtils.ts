@@ -1,5 +1,6 @@
 
 import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
+import { CompanyIncomeRecord } from "@/types";
 
 export type DateRange = {
   startDate: Date;
@@ -27,7 +28,10 @@ export const isWithinRange = (dateStr: string, range: DateRange): boolean => {
   return date >= range.startDate && date <= range.endDate;
 };
 
-export const groupByBrand = (records: any[], dateRange: DateRange) => {
+export const groupByBrand = (
+  records: CompanyIncomeRecord[], 
+  dateRange: DateRange
+): Record<string, number> => {
   const filtered = records.filter(record => 
     isWithinRange(record.date, dateRange)
   );
