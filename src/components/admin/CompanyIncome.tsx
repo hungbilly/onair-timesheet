@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, Plus, Trash, Filter } from "lucide-react";
+import { CalendarIcon, Plus, Trash, Filter, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -26,6 +26,7 @@ const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
 const PAYMENT_TYPE_OPTIONS = ["Deposit", "Balance", "Full Payment"];
 const PAYMENT_METHOD_OPTIONS = ["Bank Transfer (Riano)", "Bank Transfer (Personal)", "Payme", "Cash"];
 const JOB_TYPE_OPTIONS = ["Shooting", "Upgrade", "Products", "Petty Cash"];
+const ALL_OPTION = "All";
 
 const CompanyIncome = () => {
   const queryClient = useQueryClient();
@@ -40,6 +41,12 @@ const CompanyIncome = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange>(getCurrentMonthRange());
+  
+  // Filter states
+  const [filterBrand, setFilterBrand] = useState<string>(ALL_OPTION);
+  const [filterJobType, setFilterJobType] = useState<string>(ALL_OPTION);
+  const [filterPaymentType, setFilterPaymentType] = useState<string>(ALL_OPTION);
+  const [filterPaymentMethod, setFilterPaymentMethod] = useState<string>(ALL_OPTION);
 
   // Fetch company income records
   const { data: incomeRecords, isLoading } = useQuery({
@@ -134,27 +141,73 @@ const CompanyIncome = () => {
     createMutation.mutate();
   };
 
-  // Filter records based on date range
+  // Reset all filters
+  const resetFilters = () => {
+    setFilterBrand(ALL_OPTION);
+    setFilterJobType(ALL_OPTION);
+    setFilterPaymentType(ALL_OPTION);
+    setFilterPaymentMethod(ALL_OPTION);
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = 
+    filterBrand !== ALL_OPTION || 
+    filterJobType !== ALL_OPTION || 
+    filterPaymentType !== ALL_OPTION || 
+    filterPaymentMethod !== ALL_OPTION;
+
+  // Filter records based on date range and other filters
   const filteredRecords = useMemo(() => {
     if (!incomeRecords) return [];
     
     return incomeRecords
       .filter(record => {
         const recordDate = new Date(record.date);
-        return recordDate >= dateRange.startDate && recordDate <= dateRange.endDate;
+        
+        // Date range filter
+        const dateInRange = recordDate >= dateRange.startDate && recordDate <= dateRange.endDate;
+        if (!dateInRange) return false;
+        
+        // Brand filter
+        if (filterBrand !== ALL_OPTION && record.brand !== filterBrand) return false;
+        
+        // Job type filter
+        if (filterJobType !== ALL_OPTION) {
+          const recordJobType = record.job_type 
+            ? record.job_type.charAt(0).toUpperCase() + record.job_type.slice(1) 
+            : "";
+          if (recordJobType !== filterJobType) return false;
+        }
+        
+        // Payment type filter
+        if (filterPaymentType !== ALL_OPTION && record.payment_type !== filterPaymentType) return false;
+        
+        // Payment method filter
+        if (filterPaymentMethod !== ALL_OPTION && record.payment_method !== filterPaymentMethod) return false;
+        
+        return true;
       })
       .sort((a, b) => {
         // Sort by date in descending order (newest first)
         return new Date(b.date).getTime() - new Date(a.date).getTime();
       });
-  }, [incomeRecords, dateRange]);
+  }, [incomeRecords, dateRange, filterBrand, filterJobType, filterPaymentType, filterPaymentMethod]);
 
   // Calculate totals by brand
   const brandTotals = useMemo(() => {
-    if (!incomeRecords) return {} as Record<string, number>;
+    if (!filteredRecords.length) return {} as Record<string, number>;
     
-    return groupByBrand(incomeRecords, dateRange);
-  }, [incomeRecords, dateRange]);
+    const totals: Record<string, number> = {};
+    
+    filteredRecords.forEach(record => {
+      if (!totals[record.brand]) {
+        totals[record.brand] = 0;
+      }
+      totals[record.brand] += Number(record.amount);
+    });
+    
+    return totals;
+  }, [filteredRecords]);
 
   const totalIncome = filteredRecords.reduce((sum, record) => sum + Number(record.amount), 0);
 
@@ -194,10 +247,18 @@ const CompanyIncome = () => {
       {showFilters && (
         <Card>
           <CardHeader>
-            <CardTitle>Date Range Filter</CardTitle>
+            <CardTitle className="flex justify-between items-center">
+              <span>Filters</span>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1">
+                  <X className="h-4 w-4" />
+                  Reset Filters
+                </Button>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Start Date</label>
                 <Popover>
@@ -245,6 +306,76 @@ const CompanyIncome = () => {
                     />
                   </PopoverContent>
                 </Popover>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Brand</label>
+                <Select value={filterBrand} onValueChange={setFilterBrand}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select brand" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ALL_OPTION}>{ALL_OPTION}</SelectItem>
+                    {BRAND_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Job Type</label>
+                <Select value={filterJobType} onValueChange={setFilterJobType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select job type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ALL_OPTION}>{ALL_OPTION}</SelectItem>
+                    {JOB_TYPE_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Payment Type</label>
+                <Select value={filterPaymentType} onValueChange={setFilterPaymentType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select payment type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ALL_OPTION}>{ALL_OPTION}</SelectItem>
+                    {PAYMENT_TYPE_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Payment Method</label>
+                <Select value={filterPaymentMethod} onValueChange={setFilterPaymentMethod}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select payment method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ALL_OPTION}>{ALL_OPTION}</SelectItem>
+                    {PAYMENT_METHOD_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>
@@ -423,7 +554,14 @@ const CompanyIncome = () => {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Income Summary ({formatDateForDisplay(dateRange.startDate)} - {formatDateForDisplay(dateRange.endDate)})</CardTitle>
+          <CardTitle>
+            Income Summary ({formatDateForDisplay(dateRange.startDate)} - {formatDateForDisplay(dateRange.endDate)})
+            {hasActiveFilters && (
+              <span className="ml-2 text-sm font-normal text-muted-foreground">
+                (Filtered)
+              </span>
+            )}
+          </CardTitle>
           <div className="text-lg font-semibold">
             Total: ${totalIncome.toFixed(2)}
           </div>
@@ -501,7 +639,7 @@ const CompanyIncome = () => {
             </div>
           ) : (
             <div className="text-center py-4 text-muted-foreground">
-              No income records found for the selected date range
+              No income records found for the selected criteria
             </div>
           )}
         </CardContent>
