@@ -186,8 +186,10 @@ const CompanyIncomePage = () => {
         }
       }
 
-      // Create a deposit value that matches the database constraint
+      // Ensure deposit value is one of the allowed values
       const deposit = values.deposit;
+      
+      console.log("Submitting with deposit value:", deposit);
 
       const { error } = await supabase
         .from("company_income")

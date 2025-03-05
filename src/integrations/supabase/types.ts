@@ -49,6 +49,7 @@ export type Database = {
           id: string
           job_completion_date: string | null
           job_status: string
+          job_type: string | null
           payment_method: string
           payment_slip_path: string | null
           source: string
@@ -66,6 +67,7 @@ export type Database = {
           id?: string
           job_completion_date?: string | null
           job_status: string
+          job_type?: string | null
           payment_method?: string
           payment_slip_path?: string | null
           source: string
@@ -83,6 +85,7 @@ export type Database = {
           id?: string
           job_completion_date?: string | null
           job_status?: string
+          job_type?: string | null
           payment_method?: string
           payment_slip_path?: string | null
           source?: string
