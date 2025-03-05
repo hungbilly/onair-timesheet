@@ -84,16 +84,18 @@ export const checkDatabasePermissions = async () => {
     console.log("Read permission check passed:", readData);
     
     // Test insert with minimal data to check write permissions
+    // Making sure to use a valid value for deposit: "full", "partial", or "balance"
     const testData = {
       company_name: "TEST PERMISSION CHECK - DELETE ME",
       amount: 0.01,
       date: new Date().toISOString().split('T')[0],
       company_id: "00000000-0000-0000-0000-000000000000", // This will fail, but will show permission errors
       created_by: user.id,
-      deposit: "full",
+      deposit: "full", // Using a valid value that should pass the check constraint
       job_status: "completed",
       source: "test",
-      type: "test"
+      type: "test",
+      job_type: "shooting"
     };
     
     const { error: insertError } = await supabase
