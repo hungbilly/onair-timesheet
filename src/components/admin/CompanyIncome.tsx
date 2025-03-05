@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, Plus, Trash, Filter, X, Download, Menu } from "lucide-react";
+import { CalendarIcon, Plus, Trash, Filter, X, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,14 +16,11 @@ import { CompanyIncomeRecord } from "@/types";
 import CompanyIncomeEditDialog from "./CompanyIncomeEditDialog";
 import { DateRange, getCurrentMonthRange, formatDateForSupabase, formatDateForDisplay, groupByBrand } from "@/utils/dateRangeUtils";
 import { generateIncomeRecordsCsv } from "@/utils/csvExport";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
 const BRAND_OPTIONS = ["Billy ONAIR", "ONAIR Studio", "Sonnet Moment"];
 const PAYMENT_TYPE_OPTIONS = ["Deposit", "Balance", "Full Payment"];
 const PAYMENT_METHOD_OPTIONS = ["Bank Transfer (Riano)", "Bank Transfer (Personal)", "Payme", "Cash"];
 const JOB_TYPE_OPTIONS = ["Shooting", "Upgrade", "Products", "Petty Cash"];
 const ALL_OPTION = "All";
-
 const CompanyIncome = () => {
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -230,15 +227,15 @@ const CompanyIncome = () => {
     toast.success("CSV file downloaded successfully");
   };
   return <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+      <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Company Income</h2>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="gap-2 text-xs sm:text-sm">
-            <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="gap-2">
+            <Filter className="h-4 w-4" />
             {showFilters ? "Hide Filters" : "Show Filters"}
           </Button>
-          <Button variant="outline" onClick={() => setIsCreating(!isCreating)} className="gap-2 text-xs sm:text-sm">
-            <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+          <Button variant="outline" onClick={() => setIsCreating(!isCreating)} className="gap-2">
+            <Plus className="h-4 w-4" />
             {isCreating ? "Cancel" : "Add Income"}
           </Button>
         </div>
@@ -286,7 +283,7 @@ const CompanyIncome = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Brand</label>
                 <Select value={filterBrand} onValueChange={setFilterBrand}>
@@ -356,7 +353,7 @@ const CompanyIncome = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <label htmlFor="client" className="text-sm font-medium">
                     Client
@@ -439,7 +436,7 @@ const CompanyIncome = () => {
                     <SelectContent>
                       {JOB_TYPE_OPTIONS.map(option => <SelectItem key={option} value={option}>
                           {option}
-                        SelectItem>)}
+                        </SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -466,101 +463,83 @@ const CompanyIncome = () => {
         </Card>}
 
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
-          <CardTitle className="text-base sm:text-xl">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>
             Income Summary ({formatDateForDisplay(dateRange.startDate)} - {formatDateForDisplay(dateRange.endDate)})
             {hasActiveFilters && <span className="ml-2 text-sm font-normal text-muted-foreground">
                 (Filtered)
               </span>}
           </CardTitle>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-            <Button variant="outline" size="sm" className="gap-1 text-xs sm:text-sm" onClick={handleDownloadCsv} disabled={!filteredRecords || filteredRecords.length === 0}>
-              <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="sm" className="gap-2" onClick={handleDownloadCsv} disabled={!filteredRecords || filteredRecords.length === 0}>
+              <Download className="h-4 w-4" />
               Export CSV
             </Button>
-            <div className="text-base sm:text-lg font-semibold">
+            <div className="text-lg font-semibold">
               Total: ${totalIncome.toFixed(2)}
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="mb-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-3">Totals by Brand</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {Object.entries(brandTotals).map(([brandName, total]) => (
-                <Card key={brandName}>
-                  <CardContent className="pt-4 sm:pt-6">
+            <h3 className="text-lg font-semibold mb-3">Totals by Brand</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {Object.entries(brandTotals).map(([brandName, total]) => <Card key={brandName}>
+                  <CardContent className="pt-6 bg-sky-800">
                     <div className="text-center space-y-2">
-                      <div className="text-sm sm:text-lg font-medium">{brandName}</div>
-                      <div className="text-xl sm:text-2xl font-bold">${total.toFixed(2)}</div>
+                      <div className="text-lg font-medium bg-red-300">{brandName}</div>
+                      <div className="text-2xl font-bold bg-zinc-200">${total.toFixed(2)}</div>
                     </div>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </div>
 
-          {isLoading ? <div className="text-center py-4">Loading income records...</div> : 
-          filteredRecords.length > 0 ? (
-            <div className="rounded-md border">
-              <ScrollArea className="w-full overflow-auto">
-                <div className="min-w-[800px]">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Client</TableHead>
-                        <TableHead>Brand</TableHead>
-                        <TableHead>Job Type</TableHead>
-                        <TableHead>Payment Type</TableHead>
-                        <TableHead>Payment Method</TableHead>
-                        <TableHead>Completion Date</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
-                        <TableHead className="w-[80px]">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredRecords.map(record => (
-                        <TableRow key={record.id}>
-                          <TableCell className="whitespace-nowrap">
-                            {format(new Date(record.date), "MMM d, yyyy")}
-                          </TableCell>
-                          <TableCell className="max-w-[120px] truncate" title={record.client}>
-                            {record.client}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">{record.brand}</TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {record.job_type ? record.job_type.charAt(0).toUpperCase() + record.job_type.slice(1) : "-"}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">{record.payment_type}</TableCell>
-                          <TableCell className="whitespace-nowrap">{record.payment_method}</TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {record.completion_date ? format(new Date(record.completion_date), "MMM d, yyyy") : "-"}
-                          </TableCell>
-                          <TableCell className="text-right whitespace-nowrap">
-                            ${Number(record.amount).toFixed(2)}
-                          </TableCell>
-                          <TableCell className="flex items-center space-x-1">
-                            <CompanyIncomeEditDialog record={record} />
-                            <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(record.id)} disabled={deleteMutation.isPending} className="h-7 w-7 sm:h-8 sm:w-8">
-                              <Trash className="h-3 w-3 sm:h-4 sm:w-4 text-destructive" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </ScrollArea>
-            </div>
-          ) : (
-            <div className="text-center py-4 text-muted-foreground">
+          {isLoading ? <div className="text-center py-4">Loading income records...</div> : filteredRecords.length > 0 ? <div className="rounded-md border overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="bg-red-400">Date</TableHead>
+                    <TableHead className="bg-red-400">Client</TableHead>
+                    <TableHead className="bg-red-400">Brand</TableHead>
+                    <TableHead className="bg-red-400">Job Type</TableHead>
+                    <TableHead className="bg-red-400">Payment Type</TableHead>
+                    <TableHead className="bg-red-400">Payment Method</TableHead>
+                    <TableHead className="bg-red-400">Completion Date</TableHead>
+                    <TableHead className="text-right bg-red-400">Amount</TableHead>
+                    <TableHead className="w-24 bg-red-400">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredRecords.map(record => <TableRow key={record.id}>
+                      <TableCell>
+                        {format(new Date(record.date), "MMM d, yyyy")}
+                      </TableCell>
+                      <TableCell>{record.client}</TableCell>
+                      <TableCell>{record.brand}</TableCell>
+                      <TableCell>{record.job_type ? record.job_type.charAt(0).toUpperCase() + record.job_type.slice(1) : "-"}</TableCell>
+                      <TableCell>{record.payment_type}</TableCell>
+                      <TableCell>{record.payment_method}</TableCell>
+                      <TableCell>
+                        {record.completion_date ? format(new Date(record.completion_date), "MMM d, yyyy") : "-"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        ${Number(record.amount).toFixed(2)}
+                      </TableCell>
+                      <TableCell className="flex items-center space-x-1">
+                        <CompanyIncomeEditDialog record={record} />
+                        <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(record.id)} disabled={deleteMutation.isPending} className="h-8 w-8">
+                          <Trash className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>)}
+                </TableBody>
+              </Table>
+            </div> : <div className="text-center py-4 text-muted-foreground">
               No income records found for the selected criteria
-            </div>
-          )}
+            </div>}
         </CardContent>
       </Card>
     </div>;
 };
-
 export default CompanyIncome;
