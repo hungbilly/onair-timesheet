@@ -40,36 +40,45 @@ export type Database = {
         Row: {
           amount: number
           company_id: string
+          company_name: string
           created_at: string
+          created_by: string
           date: string
           deposit: string
           id: string
           job_completion_date: string | null
           job_status: string
+          payment_method: string
           source: string
           type: string
         }
         Insert: {
           amount: number
           company_id: string
+          company_name: string
           created_at?: string
+          created_by?: string
           date: string
           deposit: string
           id?: string
           job_completion_date?: string | null
           job_status: string
+          payment_method?: string
           source: string
           type: string
         }
         Update: {
           amount?: number
           company_id?: string
+          company_name?: string
           created_at?: string
+          created_by?: string
           date?: string
           deposit?: string
           id?: string
           job_completion_date?: string | null
           job_status?: string
+          payment_method?: string
           source?: string
           type?: string
         }

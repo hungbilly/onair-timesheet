@@ -1,4 +1,5 @@
 
+
 export type TimeEntry = {
   id: string;
   user_id: string;
@@ -42,3 +43,4 @@ export type CompanyIncome = {
   created_at: string;
   created_by: string;
 };
+

@@ -1,14 +1,12 @@
-
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { LogOut } from "lucide-react";
+import { LogOut, ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { CompanyIncome } from "@/types";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -69,7 +67,19 @@ const CompanyIncomePage = () => {
         throw error;
       }
 
-      setIncomes(data || []);
+      // Convert the database rows to our CompanyIncome type
+      const typedIncomes: CompanyIncome[] = data.map(item => ({
+        id: item.id,
+        company_name: item.company_name,
+        amount: item.amount,
+        deposit: item.deposit as "full" | "partial",
+        payment_method: item.payment_method as "cash" | "bank_transfer" | "payme",
+        date: item.date,
+        created_at: item.created_at,
+        created_by: item.created_by
+      }));
+
+      setIncomes(typedIncomes);
     } catch (error) {
       console.error("Error fetching company incomes:", error);
       toast.error("Failed to load company incomes");
@@ -137,7 +147,14 @@ const CompanyIncomePage = () => {
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Company Income</h1>
+        <div className="flex items-center gap-3">
+          <Link to="/admin">
+            <Button variant="outline" size="icon" className="h-10 w-10">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <h1 className="text-3xl font-bold">Company Income</h1>
+        </div>
         <div className="flex items-center gap-4">
           <ChangePasswordDialog />
           <Button 
