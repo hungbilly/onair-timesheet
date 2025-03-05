@@ -37,7 +37,7 @@ export type CompanyIncome = {
   company_id: string;
   company_name: string;
   amount: number;
-  deposit: "full" | "partial";
+  deposit: "full" | "partial" | "balance";
   payment_method: "cash" | "bank_transfer" | "payme";
   date: string;
   job_status: string;

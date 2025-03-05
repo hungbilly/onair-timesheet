@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -24,7 +23,7 @@ const CompanyIncomePage = () => {
     defaultValues: {
       company_name: "",
       amount: 0,
-      deposit: "full" as "full" | "partial",
+      deposit: "full" as "full" | "partial" | "balance",
       payment_method: "cash" as "cash" | "bank_transfer" | "payme",
       date: new Date().toISOString().split('T')[0],
     },
@@ -247,19 +246,20 @@ const CompanyIncomePage = () => {
                   name="deposit"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Deposit</FormLabel>
+                      <FormLabel>Payment Type</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select deposit type" />
+                            <SelectValue placeholder="Select payment type" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="full">Full Payment</SelectItem>
-                          <SelectItem value="partial">Partial Payment</SelectItem>
+                          <SelectItem value="partial">Deposit</SelectItem>
+                          <SelectItem value="balance">Balance</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -338,7 +338,8 @@ const CompanyIncomePage = () => {
                     </div>
                     <div className="mt-1 text-sm">
                       <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
-                        {income.deposit === "full" ? "Full Payment" : "Partial Payment"}
+                        {income.deposit === "full" ? "Full Payment" : 
+                         income.deposit === "partial" ? "Deposit" : "Balance"}
                       </span>
                     </div>
                   </div>
