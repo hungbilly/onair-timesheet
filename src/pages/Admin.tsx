@@ -1,9 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { LogOut, BarChart3 } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 import UserManagement from "@/components/admin/UserManagement";
 import EmployeeStats from "@/components/admin/EmployeeStats";
@@ -11,7 +10,6 @@ import VendorBills from "@/components/admin/VendorBills";
 import VendorManagement from "@/components/admin/VendorManagement";
 import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -61,12 +59,6 @@ const Admin = () => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <div className="flex items-center gap-4">
-          <Link to="/company-income">
-            <Button variant="outline" className="gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Company Income
-            </Button>
-          </Link>
           <ChangePasswordDialog />
           <Button 
             variant="outline" 
