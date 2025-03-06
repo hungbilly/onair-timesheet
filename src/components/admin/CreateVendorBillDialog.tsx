@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +35,7 @@ const CreateVendorBillDialog = ({ onBillCreated }: CreateVendorBillDialogProps) 
     amount: "",
     description: "",
     dueDate: new Date().toISOString().slice(0, 7), // Default to current month
+    method: "",
   });
   const [file, setFile] = useState<File | null>(null);
 
@@ -82,6 +84,7 @@ const CreateVendorBillDialog = ({ onBillCreated }: CreateVendorBillDialogProps) 
         invoice_path: invoicePath,
         created_by: user.id,
         due_date: dueDate,
+        method: formData.method || null,
       });
 
       if (error) throw error;
@@ -94,6 +97,7 @@ const CreateVendorBillDialog = ({ onBillCreated }: CreateVendorBillDialogProps) 
         amount: "",
         description: "",
         dueDate: new Date().toISOString().slice(0, 7),
+        method: "",
       });
       setFile(null);
     } catch (error) {
@@ -162,6 +166,24 @@ const CreateVendorBillDialog = ({ onBillCreated }: CreateVendorBillDialogProps) 
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="method">Payment Method</Label>
+            <Select
+              value={formData.method}
+              onValueChange={(value) => setFormData({ ...formData, method: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select payment method" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Bank Transfer (Riano)">Bank Transfer (Riano)</SelectItem>
+                <SelectItem value="Bank Transfer (Personal)">Bank Transfer (Personal)</SelectItem>
+                <SelectItem value="PayMe">PayMe</SelectItem>
+                <SelectItem value="Cash">Cash</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

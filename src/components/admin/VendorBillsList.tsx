@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import {
   Table,
@@ -23,6 +24,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type VendorBill = Database["public"]["Tables"]["vendor_bills"]["Row"] & {
   vendors: { name: string } | null;
@@ -41,6 +49,7 @@ const VendorBillsList = ({ refreshTrigger, selectedMonth }: VendorBillsListProps
   const [editFormData, setEditFormData] = useState({
     amount: "",
     description: "",
+    method: "",
   });
 
   const fetchBills = async () => {
@@ -120,6 +129,7 @@ const VendorBillsList = ({ refreshTrigger, selectedMonth }: VendorBillsListProps
     setEditFormData({
       amount: bill.amount.toString(),
       description: bill.description || "",
+      method: bill.method || "",
     });
   };
 
@@ -132,6 +142,7 @@ const VendorBillsList = ({ refreshTrigger, selectedMonth }: VendorBillsListProps
         .update({
           amount: Number(editFormData.amount),
           description: editFormData.description,
+          method: editFormData.method,
         })
         .eq("id", editingBill.id);
 
@@ -156,12 +167,13 @@ const VendorBillsList = ({ refreshTrigger, selectedMonth }: VendorBillsListProps
           Total Amount for {selectedMonth}: ${totalAmount.toFixed(2)}
         </p>
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Vendor</TableHead>
               <TableHead>Amount</TableHead>
+              <TableHead>Method</TableHead>
               <TableHead>Remarks</TableHead>
               <TableHead>Invoice</TableHead>
               <TableHead>Actions</TableHead>
@@ -172,6 +184,7 @@ const VendorBillsList = ({ refreshTrigger, selectedMonth }: VendorBillsListProps
               <TableRow key={bill.id}>
                 <TableCell>{bill.vendors?.name}</TableCell>
                 <TableCell>${bill.amount.toFixed(2)}</TableCell>
+                <TableCell>{bill.method || "Not specified"}</TableCell>
                 <TableCell>{bill.description}</TableCell>
                 <TableCell>
                   {bill.invoice_path && (
@@ -224,6 +237,25 @@ const VendorBillsList = ({ refreshTrigger, selectedMonth }: VendorBillsListProps
                 onChange={(e) => setEditFormData({ ...editFormData, amount: e.target.value })}
               />
             </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="method">Payment Method</Label>
+              <Select
+                value={editFormData.method}
+                onValueChange={(value) => setEditFormData({ ...editFormData, method: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select payment method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Bank Transfer (Riano)">Bank Transfer (Riano)</SelectItem>
+                  <SelectItem value="Bank Transfer (Personal)">Bank Transfer (Personal)</SelectItem>
+                  <SelectItem value="PayMe">PayMe</SelectItem>
+                  <SelectItem value="Cash">Cash</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="description">Remarks</Label>
               <Textarea
