@@ -132,6 +132,39 @@ export type Database = {
         }
         Relationships: []
       }
+      studio_expenses: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          date: string
+          details: string | null
+          id: string
+          merchant: string
+          method: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by: string
+          date: string
+          details?: string | null
+          id?: string
+          merchant: string
+          method: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          date?: string
+          details?: string | null
+          id?: string
+          merchant?: string
+          method?: string
+        }
+        Relationships: []
+      }
       timesheet_entries: {
         Row: {
           created_at: string
