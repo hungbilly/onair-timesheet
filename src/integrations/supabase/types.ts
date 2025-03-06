@@ -189,6 +189,7 @@ export type Database = {
           due_date: string
           id: string
           invoice_path: string | null
+          method: string | null
           paid_at: string | null
           paid_by: string | null
           status: Database["public"]["Enums"]["bill_status"]
@@ -202,6 +203,7 @@ export type Database = {
           due_date: string
           id?: string
           invoice_path?: string | null
+          method?: string | null
           paid_at?: string | null
           paid_by?: string | null
           status?: Database["public"]["Enums"]["bill_status"]
@@ -215,6 +217,7 @@ export type Database = {
           due_date?: string
           id?: string
           invoice_path?: string | null
+          method?: string | null
           paid_at?: string | null
           paid_by?: string | null
           status?: Database["public"]["Enums"]["bill_status"]
