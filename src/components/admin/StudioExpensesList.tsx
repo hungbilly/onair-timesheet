@@ -35,6 +35,7 @@ const StudioExpensesList = ({ refreshTrigger, selectedMonth }: StudioExpensesLis
   const [expenses, setExpenses] = useState<StudioExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingExpense, setEditingExpense] = useState<StudioExpense | null>(null);
+  const [totalAmount, setTotalAmount] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -52,6 +53,10 @@ const StudioExpensesList = ({ refreshTrigger, selectedMonth }: StudioExpensesLis
 
         if (error) throw error;
         setExpenses(data || []);
+        
+        // Calculate total amount
+        const total = (data || []).reduce((sum, expense) => sum + expense.amount, 0);
+        setTotalAmount(total);
       } catch (error) {
         console.error("Error fetching studio expenses:", error);
         toast({
@@ -112,6 +117,12 @@ const StudioExpensesList = ({ refreshTrigger, selectedMonth }: StudioExpensesLis
           onExpenseUpdated={handleExpenseUpdated}
         />
       )}
+      
+      <div className="p-4 bg-muted rounded-lg mb-4">
+        <p className="text-lg font-semibold">
+          Total Amount for {selectedMonth}: {formatCurrency(totalAmount)}
+        </p>
+      </div>
       
       {loading ? (
         <div className="py-8 text-center">Loading expenses...</div>

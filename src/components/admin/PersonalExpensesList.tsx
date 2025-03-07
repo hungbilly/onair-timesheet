@@ -36,6 +36,7 @@ const PersonalExpensesList = ({ refreshTrigger, selectedMonth }: PersonalExpense
   const [expenses, setExpenses] = useState<PersonalExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingExpense, setEditingExpense] = useState<PersonalExpense | null>(null);
+  const [totalAmount, setTotalAmount] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -53,6 +54,10 @@ const PersonalExpensesList = ({ refreshTrigger, selectedMonth }: PersonalExpense
 
         if (error) throw error;
         setExpenses(data || []);
+        
+        // Calculate total amount
+        const total = (data || []).reduce((sum, expense) => sum + expense.amount, 0);
+        setTotalAmount(total);
       } catch (error) {
         console.error("Error fetching personal expenses:", error);
         toast({
@@ -113,6 +118,12 @@ const PersonalExpensesList = ({ refreshTrigger, selectedMonth }: PersonalExpense
           onExpenseUpdated={handleExpenseUpdated}
         />
       )}
+      
+      <div className="p-4 bg-muted rounded-lg mb-4">
+        <p className="text-lg font-semibold">
+          Total Amount for {selectedMonth}: {formatCurrency(totalAmount)}
+        </p>
+      </div>
       
       {loading ? (
         <div className="py-8 text-center">Loading expenses...</div>
