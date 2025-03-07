@@ -115,6 +115,7 @@ export type Database = {
           id: string
           merchant: string
           method: string
+          paid_by: string
         }
         Insert: {
           amount: number
@@ -125,6 +126,7 @@ export type Database = {
           id?: string
           merchant: string
           method: string
+          paid_by?: string
         }
         Update: {
           amount?: number
@@ -135,6 +137,7 @@ export type Database = {
           id?: string
           merchant?: string
           method?: string
+          paid_by?: string
         }
         Relationships: []
       }

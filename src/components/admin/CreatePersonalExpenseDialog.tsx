@@ -37,6 +37,7 @@ type FormValues = {
   amount: string;
   method: string;
   date: string;
+  paid_by: string;
 };
 
 interface CreatePersonalExpenseDialogProps {
@@ -52,6 +53,8 @@ const paymentMethods = [
   "Octopus"
 ];
 
+const paidByOptions = ["Billy", "Jasmine"];
+
 const CreatePersonalExpenseDialog = ({ onExpenseCreated }: CreatePersonalExpenseDialogProps) => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
@@ -63,6 +66,7 @@ const CreatePersonalExpenseDialog = ({ onExpenseCreated }: CreatePersonalExpense
       amount: "",
       method: "",
       date: new Date().toISOString().split('T')[0],
+      paid_by: "Billy",
     },
   });
 
@@ -79,6 +83,7 @@ const CreatePersonalExpenseDialog = ({ onExpenseCreated }: CreatePersonalExpense
         amount: parseFloat(data.amount),
         method: data.method,
         date: data.date,
+        paid_by: data.paid_by,
         created_by: userData.user.id,
       });
 
@@ -188,19 +193,49 @@ const CreatePersonalExpenseDialog = ({ onExpenseCreated }: CreatePersonalExpense
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date*</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} required />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date*</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} required />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="paid_by"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Paid By*</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Billy" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {paidByOptions.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <DialogFooter>
               <Button type="submit">Add Expense</Button>

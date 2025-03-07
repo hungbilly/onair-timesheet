@@ -35,6 +35,7 @@ type PersonalExpense = {
   amount: number;
   method: string;
   date: string;
+  paid_by: string;
   created_at: string;
   created_by: string;
 };
@@ -45,6 +46,7 @@ type FormValues = {
   amount: string;
   method: string;
   date: string;
+  paid_by: string;
 };
 
 interface EditPersonalExpenseDialogProps {
@@ -62,6 +64,8 @@ const paymentMethods = [
   "Octopus"
 ];
 
+const paidByOptions = ["Billy", "Jasmine"];
+
 const EditPersonalExpenseDialog = ({
   expense,
   onClose,
@@ -76,6 +80,7 @@ const EditPersonalExpenseDialog = ({
       amount: expense.amount.toString(),
       method: expense.method,
       date: expense.date,
+      paid_by: expense.paid_by || "Billy",
     },
   });
 
@@ -89,6 +94,7 @@ const EditPersonalExpenseDialog = ({
           amount: parseFloat(data.amount),
           method: data.method,
           date: data.date,
+          paid_by: data.paid_by,
         })
         .eq("id", expense.id)
         .select()
@@ -192,19 +198,49 @@ const EditPersonalExpenseDialog = ({
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date*</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} required />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date*</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} required />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="paid_by"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Paid By*</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Billy" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {paidByOptions.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose} className="mr-2">

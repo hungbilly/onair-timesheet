@@ -22,6 +22,7 @@ type PersonalExpense = {
   amount: number;
   method: string;
   date: string;
+  paid_by: string;
   created_at: string;
   created_by: string;
 };
@@ -125,6 +126,7 @@ const PersonalExpensesList = ({ refreshTrigger, selectedMonth }: PersonalExpense
               <TableHead>Merchant</TableHead>
               <TableHead>Details</TableHead>
               <TableHead>Method</TableHead>
+              <TableHead>Paid By</TableHead>
               <TableHead>Amount</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -136,6 +138,7 @@ const PersonalExpensesList = ({ refreshTrigger, selectedMonth }: PersonalExpense
                 <TableCell>{expense.merchant}</TableCell>
                 <TableCell>{expense.details || "-"}</TableCell>
                 <TableCell>{expense.method}</TableCell>
+                <TableCell>{expense.paid_by}</TableCell>
                 <TableCell>{formatCurrency(expense.amount)}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
