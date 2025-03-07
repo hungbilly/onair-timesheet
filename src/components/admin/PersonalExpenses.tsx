@@ -1,11 +1,11 @@
 
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import StudioExpensesList from "./StudioExpensesList";
-import CreateStudioExpenseDialog from "./CreateStudioExpenseDialog";
-import { Building2 } from "lucide-react";
+import PersonalExpensesList from "./PersonalExpensesList";
+import CreatePersonalExpenseDialog from "./CreatePersonalExpenseDialog";
+import { Wallet } from "lucide-react";
 
-const StudioExpenses = () => {
+const PersonalExpenses = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
 
@@ -18,8 +18,8 @@ const StudioExpenses = () => {
       <div className="flex justify-between items-center">
         <div className="space-y-2">
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Studio Expenses
+            <Wallet className="h-5 w-5" />
+            Personal Expenses
           </h2>
           <div className="flex items-center gap-2">
             <label htmlFor="expense-month" className="font-medium">
@@ -34,14 +34,14 @@ const StudioExpenses = () => {
             />
           </div>
         </div>
-        <CreateStudioExpenseDialog onExpenseCreated={handleExpenseCreated} />
+        <CreatePersonalExpenseDialog onExpenseCreated={handleExpenseCreated} />
       </div>
 
       <Card>
-        <StudioExpensesList refreshTrigger={refreshTrigger} selectedMonth={selectedMonth} />
+        <PersonalExpensesList refreshTrigger={refreshTrigger} selectedMonth={selectedMonth} />
       </Card>
     </div>
   );
 };
 
-export default StudioExpenses;
+export default PersonalExpenses;

@@ -11,6 +11,7 @@ import VendorBills from "@/components/admin/VendorBills";
 import VendorManagement from "@/components/admin/VendorManagement";
 import CompanyIncome from "@/components/admin/CompanyIncome";
 import StudioExpenses from "@/components/admin/StudioExpenses";
+import PersonalExpenses from "@/components/admin/PersonalExpenses";
 import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -81,7 +82,8 @@ const Admin = () => {
           <TabsTrigger value="bills">Vendor Bills</TabsTrigger>
           <TabsTrigger value="vendors">Vendors</TabsTrigger>
           <TabsTrigger value="income">Company Income</TabsTrigger>
-          <TabsTrigger value="expenses">Studio Expenses</TabsTrigger>
+          <TabsTrigger value="studio">Studio Expenses</TabsTrigger>
+          <TabsTrigger value="personal">Personal Expenses</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -104,8 +106,12 @@ const Admin = () => {
           <CompanyIncome />
         </TabsContent>
 
-        <TabsContent value="expenses">
+        <TabsContent value="studio">
           <StudioExpenses />
+        </TabsContent>
+
+        <TabsContent value="personal">
+          <PersonalExpenses />
         </TabsContent>
       </Tabs>
     </div>
