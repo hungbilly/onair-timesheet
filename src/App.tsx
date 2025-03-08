@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -69,8 +70,9 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/" element={<AuthRedirect />} />
           <Route
-            path="/"
+            path="/staff"
             element={
               <ProtectedRoute requiredRole="staff">
                 <Index />
@@ -93,10 +95,46 @@ const App = () => (
               </ProtectedRoute>
             }
           />
+          {/* Catch all route to handle 404s */}
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
+
+// This component will redirect users based on their authentication status
+const AuthRedirect = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", session.user.id)
+          .single();
+        
+        setUserRole(profile?.role || null);
+      }
+      setIsAuthenticated(!!session);
+    };
+
+    checkAuth();
+  }, []);
+
+  if (isAuthenticated === null) {
+    return <div className="h-screen w-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+
+  return <Navigate to={userRole === 'admin' ? '/admin' : '/staff'} />;
+};
 
 export default App;
