@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -33,5 +34,12 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Custom styles for TabsList to support mobile layouts */
+@layer components {
+  .flex-wrap .TabsTrigger {
+    flex-grow: 0;
   }
 }

@@ -59,10 +59,10 @@ const Admin = () => {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="container mx-auto py-8 px-4 sm:px-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 w-full sm:w-auto">
           <ChangePasswordDialog />
           <Button 
             variant="outline" 
@@ -76,14 +76,14 @@ const Admin = () => {
       </div>
       
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="users">User Management</TabsTrigger>
-          <TabsTrigger value="stats">Employee Stats</TabsTrigger>
-          <TabsTrigger value="bills">Vendor Bills</TabsTrigger>
-          <TabsTrigger value="vendors">Vendors</TabsTrigger>
-          <TabsTrigger value="income">Company Income</TabsTrigger>
-          <TabsTrigger value="studio">Studio Expenses</TabsTrigger>
-          <TabsTrigger value="personal">Personal Expenses</TabsTrigger>
+        <TabsList className="flex flex-wrap gap-1 h-auto">
+          <TabsTrigger value="users" className="mb-1">User Management</TabsTrigger>
+          <TabsTrigger value="stats" className="mb-1">Employee Stats</TabsTrigger>
+          <TabsTrigger value="bills" className="mb-1">Vendor Bills</TabsTrigger>
+          <TabsTrigger value="vendors" className="mb-1">Vendors</TabsTrigger>
+          <TabsTrigger value="income" className="mb-1">Company Income</TabsTrigger>
+          <TabsTrigger value="studio" className="mb-1">Studio Expenses</TabsTrigger>
+          <TabsTrigger value="personal" className="mb-1">Personal Expenses</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
