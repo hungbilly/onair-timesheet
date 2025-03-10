@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -102,6 +103,11 @@ const StatsTable = ({ stats, selectedMonth }: StatsTableProps) => {
     }
   };
 
+  // Calculate totals
+  const totalSalary = stats.reduce((sum, stat) => sum + stat.total_salary, 0);
+  const totalExpenses = stats.reduce((sum, stat) => sum + stat.total_expenses, 0);
+  const grandTotal = totalSalary + totalExpenses;
+
   return (
     <Table>
       <TableHeader>
@@ -112,6 +118,19 @@ const StatsTable = ({ stats, selectedMonth }: StatsTableProps) => {
         </TableRow>
       </TableHeader>
       <TableBody>
+        {stats.length > 0 && (
+          <TableRow className="bg-muted/30">
+            <TableCell className="font-bold">Total</TableCell>
+            <TableCell>
+              <div className="flex flex-col gap-1">
+                <div>Salary: <span className="font-bold">${totalSalary.toFixed(2)}</span></div>
+                <div>Expenses: <span className="font-bold">${totalExpenses.toFixed(2)}</span></div>
+                <div>Total: <span className="font-bold">${grandTotal.toFixed(2)}</span></div>
+              </div>
+            </TableCell>
+            <TableCell />
+          </TableRow>
+        )}
         {stats.map((stat) => (
           <TableRow key={stat.id}>
             <TableCell>
@@ -140,19 +159,6 @@ const StatsTable = ({ stats, selectedMonth }: StatsTableProps) => {
             </TableCell>
           </TableRow>
         ))}
-        {stats.length > 0 && (
-          <TableRow>
-            <TableCell className="font-bold">Total</TableCell>
-            <TableCell>
-              <div className="flex flex-col gap-1">
-                <div>Salary: <span className="font-bold">${stats.reduce((sum, stat) => sum + stat.total_salary, 0).toFixed(2)}</span></div>
-                <div>Expenses: <span className="font-bold">${stats.reduce((sum, stat) => sum + stat.total_expenses, 0).toFixed(2)}</span></div>
-                <div>Total: <span className="font-bold">${stats.reduce((sum, stat) => sum + (stat.total_salary + stat.total_expenses), 0).toFixed(2)}</span></div>
-              </div>
-            </TableCell>
-            <TableCell />
-          </TableRow>
-        )}
       </TableBody>
     </Table>
   );
