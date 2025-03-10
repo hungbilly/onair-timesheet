@@ -176,7 +176,7 @@ const CreatePersonalExpenseDialog = ({ onExpenseCreated }: CreatePersonalExpense
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select method" />
+                          <SelectValue placeholder="Credit Card (Master)" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
