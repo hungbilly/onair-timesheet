@@ -1,3 +1,4 @@
+
 import { format } from "date-fns";
 import {
   Select,
@@ -6,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import MonthSelector from "./MonthSelector";
 
 interface EmployeeFiltersProps {
   selectedMonth: string;
@@ -23,16 +25,12 @@ const EmployeeFilters = ({
   employees,
 }: EmployeeFiltersProps) => {
   return (
-    <div className="flex gap-4 items-center">
-      <div>
-        <label className="block text-sm font-medium mb-1">Month</label>
-        <input
-          type="month"
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
-          className="border rounded px-2 py-1"
-        />
-      </div>
+    <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+      <MonthSelector
+        selectedMonth={selectedMonth}
+        onChange={setSelectedMonth}
+        label="Month"
+      />
 
       <div>
         <label className="block text-sm font-medium mb-1">Employee</label>
