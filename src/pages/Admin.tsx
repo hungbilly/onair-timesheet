@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import UserManagement from "@/components/admin/UserManagement";
 import EmployeeStats from "@/components/admin/EmployeeStats";
@@ -12,6 +12,7 @@ import VendorManagement from "@/components/admin/VendorManagement";
 import CompanyIncome from "@/components/admin/CompanyIncome";
 import StudioExpenses from "@/components/admin/StudioExpenses";
 import PersonalExpenses from "@/components/admin/PersonalExpenses";
+import ProfitLoss from "@/components/admin/ProfitLoss";
 import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -84,6 +85,7 @@ const Admin = () => {
           <TabsTrigger value="income" className="mb-1">Company Income</TabsTrigger>
           <TabsTrigger value="studio" className="mb-1">Studio Expenses</TabsTrigger>
           <TabsTrigger value="personal" className="mb-1">Personal Expenses</TabsTrigger>
+          <TabsTrigger value="profitloss" className="mb-1">Profit/Loss</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -112,6 +114,10 @@ const Admin = () => {
 
         <TabsContent value="personal">
           <PersonalExpenses />
+        </TabsContent>
+
+        <TabsContent value="profitloss">
+          <ProfitLoss />
         </TabsContent>
       </Tabs>
     </div>
