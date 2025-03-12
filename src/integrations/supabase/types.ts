@@ -342,6 +342,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_auth_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_month_end_date: {
         Args: {
           year: number
