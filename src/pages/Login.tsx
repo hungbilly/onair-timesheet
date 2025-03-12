@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
@@ -17,7 +18,7 @@ const Login = () => {
           .eq("id", session.user.id)
           .single();
 
-        if (profile?.role === "admin") {
+        if (profile?.role === "admin" || profile?.role === "manager") {
           navigate("/admin");
         } else {
           navigate("/");

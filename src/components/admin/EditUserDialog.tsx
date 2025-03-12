@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +23,7 @@ interface EditUserDialogProps {
   user: {
     id: string;
     email: string;
-    role: "admin" | "staff";
+    role: "admin" | "manager" | "staff";
     full_name: string | null;
   };
   onUserUpdated: () => void;
@@ -30,7 +31,7 @@ interface EditUserDialogProps {
 
 const EditUserDialog = ({ user, onUserUpdated }: EditUserDialogProps) => {
   const [fullName, setFullName] = useState(user.full_name || "");
-  const [role, setRole] = useState<"admin" | "staff">(user.role);
+  const [role, setRole] = useState<"admin" | "manager" | "staff">(user.role);
   const [newPassword, setNewPassword] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -105,12 +106,13 @@ const EditUserDialog = ({ user, onUserUpdated }: EditUserDialogProps) => {
           </div>
           <div>
             <label className="text-sm font-medium">Role</label>
-            <Select value={role} onValueChange={(value: "admin" | "staff") => setRole(value)}>
+            <Select value={role} onValueChange={(value: "admin" | "manager" | "staff") => setRole(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="manager">Manager</SelectItem>
                 <SelectItem value="staff">Staff</SelectItem>
               </SelectContent>
             </Select>

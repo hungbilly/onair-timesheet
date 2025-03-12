@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +27,7 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"admin" | "staff">("staff");
+  const [role, setRole] = useState<"admin" | "manager" | "staff">("staff");
   const [isOpen, setIsOpen] = useState(false);
 
   const handleCreateUser = async () => {
@@ -112,12 +113,13 @@ const CreateUserDialog = ({ onUserCreated }: CreateUserDialogProps) => {
           </div>
           <div>
             <label className="text-sm font-medium">Role</label>
-            <Select value={role} onValueChange={(value: "admin" | "staff") => setRole(value)}>
+            <Select value={role} onValueChange={(value: "admin" | "manager" | "staff") => setRole(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="manager">Manager</SelectItem>
                 <SelectItem value="staff">Staff</SelectItem>
               </SelectContent>
             </Select>

@@ -28,7 +28,7 @@ export type ExpenseEntry = {
 export type User = {
   id: string;
   name: string;
-  role: 'staff' | 'manager';
+  role: 'staff' | 'manager' | 'admin';
   hourlyRate: number;
 };
 

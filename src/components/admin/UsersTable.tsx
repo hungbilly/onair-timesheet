@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -19,13 +20,13 @@ import EditUserDialog from "./EditUserDialog";
 interface User {
   id: string;
   email: string;
-  role: "admin" | "staff";
+  role: "admin" | "manager" | "staff";
   full_name: string | null;
 }
 
 interface UsersTableProps {
   users: User[];
-  onUpdateRole: (userId: string, newRole: "admin" | "staff") => void;
+  onUpdateRole: (userId: string, newRole: "admin" | "manager" | "staff") => void;
   onDeleteUser: (userId: string) => void;
   onUserUpdated: () => void;
 }
@@ -54,7 +55,7 @@ const UsersTable = ({ users, onUpdateRole, onDeleteUser, onUserUpdated }: UsersT
             <TableCell>
               <Select
                 value={user.role}
-                onValueChange={(value: "admin" | "staff") =>
+                onValueChange={(value: "admin" | "manager" | "staff") =>
                   onUpdateRole(user.id, value)
                 }
               >
@@ -63,6 +64,7 @@ const UsersTable = ({ users, onUpdateRole, onDeleteUser, onUserUpdated }: UsersT
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
                   <SelectItem value="staff">Staff</SelectItem>
                 </SelectContent>
               </Select>

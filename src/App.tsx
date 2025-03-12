@@ -15,10 +15,11 @@ const queryClient = new QueryClient();
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: "admin" | "staff";
+  requiredRole?: "admin" | "manager" | "staff";
+  allowMultipleRoles?: ("admin" | "manager" | "staff")[];
 }
 
-const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, requiredRole, allowMultipleRoles }: ProtectedRouteProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
 
@@ -55,8 +56,17 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     return <Navigate to="/login" />;
   }
 
-  if (requiredRole && userRole !== requiredRole) {
+  // Check if user has one of multiple allowed roles
+  if (allowMultipleRoles && allowMultipleRoles.length > 0) {
+    if (userRole && allowMultipleRoles.includes(userRole as any)) {
+      return <>{children}</>;
+    }
     return <Navigate to={userRole === 'admin' ? '/admin' : '/'} />;
+  }
+
+  // Check specific required role
+  if (requiredRole && userRole !== requiredRole) {
+    return <Navigate to={userRole === 'admin' || userRole === 'manager' ? '/admin' : '/'} />;
   }
 
   return <>{children}</>;
@@ -90,7 +100,7 @@ const App = () => (
           <Route
             path="/admin"
             element={
-              <ProtectedRoute requiredRole="admin">
+              <ProtectedRoute allowMultipleRoles={["admin", "manager"]}>
                 <Admin />
               </ProtectedRoute>
             }
@@ -134,7 +144,11 @@ const AuthRedirect = () => {
     return <Navigate to="/login" />;
   }
 
-  return <Navigate to={userRole === 'admin' ? '/admin' : '/staff'} />;
+  if (userRole === 'admin' || userRole === 'manager') {
+    return <Navigate to="/admin" />;
+  }
+  
+  return <Navigate to="/staff" />;
 };
 
 export default App;

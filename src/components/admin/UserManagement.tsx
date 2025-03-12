@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +8,7 @@ import UsersTable from "./UsersTable";
 interface User {
   id: string;
   email: string;
-  role: "admin" | "staff";
+  role: "admin" | "manager" | "staff";
   full_name: string | null;
 }
 
@@ -38,7 +39,7 @@ const UserManagement = () => {
     fetchUsers();
   }, []);
 
-  const handleUpdateRole = async (userId: string, newRole: "admin" | "staff") => {
+  const handleUpdateRole = async (userId: string, newRole: "admin" | "manager" | "staff") => {
     try {
       const { error } = await supabase
         .from("profiles")

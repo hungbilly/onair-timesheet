@@ -18,10 +18,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Admin = () => {
   const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState<"admin" | "manager" | "staff" | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAdminStatus = async () => {
+    const checkUserAccess = async () => {
+      setIsLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         navigate("/login");
@@ -34,15 +36,16 @@ const Admin = () => {
         .eq("id", user.id)
         .single();
 
-      if (!profile || profile.role !== "admin") {
+      if (!profile || (profile.role !== "admin" && profile.role !== "manager")) {
         navigate("/");
         return;
       }
 
-      setIsAdmin(true);
+      setUserRole(profile.role);
+      setIsLoading(false);
     };
 
-    checkAdminStatus();
+    checkUserAccess();
   }, [navigate]);
 
   const handleSignOut = async () => {
@@ -55,14 +58,16 @@ const Admin = () => {
     }
   };
 
-  if (!isAdmin) {
+  if (isLoading) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold">
+          {userRole === "admin" ? "Admin" : "Manager"} Dashboard
+        </h1>
         <div className="flex items-center gap-4 w-full sm:w-auto">
           <ChangePasswordDialog />
           <Button 
@@ -76,21 +81,29 @@ const Admin = () => {
         </div>
       </div>
       
-      <Tabs defaultValue="users" className="space-y-4">
+      <Tabs defaultValue="stats" className="space-y-4">
         <TabsList className="flex flex-wrap gap-1 h-auto">
-          <TabsTrigger value="users" className="mb-1">User Management</TabsTrigger>
+          {userRole === "admin" && (
+            <TabsTrigger value="users" className="mb-1">User Management</TabsTrigger>
+          )}
           <TabsTrigger value="stats" className="mb-1">Employee Stats</TabsTrigger>
           <TabsTrigger value="bills" className="mb-1">Vendor Bills</TabsTrigger>
           <TabsTrigger value="vendors" className="mb-1">Vendors</TabsTrigger>
           <TabsTrigger value="income" className="mb-1">Company Income</TabsTrigger>
           <TabsTrigger value="studio" className="mb-1">Studio Expenses</TabsTrigger>
-          <TabsTrigger value="personal" className="mb-1">Personal Expenses</TabsTrigger>
-          <TabsTrigger value="profitloss" className="mb-1">Profit/Loss</TabsTrigger>
+          {userRole === "admin" && (
+            <>
+              <TabsTrigger value="personal" className="mb-1">Personal Expenses</TabsTrigger>
+              <TabsTrigger value="profitloss" className="mb-1">Profit/Loss</TabsTrigger>
+            </>
+          )}
         </TabsList>
 
-        <TabsContent value="users">
-          <UserManagement />
-        </TabsContent>
+        {userRole === "admin" && (
+          <TabsContent value="users">
+            <UserManagement />
+          </TabsContent>
+        )}
 
         <TabsContent value="stats">
           <EmployeeStats />
@@ -112,13 +125,17 @@ const Admin = () => {
           <StudioExpenses />
         </TabsContent>
 
-        <TabsContent value="personal">
-          <PersonalExpenses />
-        </TabsContent>
+        {userRole === "admin" && (
+          <>
+            <TabsContent value="personal">
+              <PersonalExpenses />
+            </TabsContent>
 
-        <TabsContent value="profitloss">
-          <ProfitLoss />
-        </TabsContent>
+            <TabsContent value="profitloss">
+              <ProfitLoss />
+            </TabsContent>
+          </>
+        )}
       </Tabs>
     </div>
   );
