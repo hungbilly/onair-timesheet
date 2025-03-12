@@ -352,7 +352,7 @@ export type Database = {
     }
     Enums: {
       bill_status: "pending" | "paid"
-      user_role: "admin" | "staff"
+      user_role: "admin" | "staff" | "manager"
       work_type: "hourly" | "job"
     }
     CompositeTypes: {
