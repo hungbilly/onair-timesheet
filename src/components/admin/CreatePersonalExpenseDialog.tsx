@@ -65,7 +65,7 @@ const CreatePersonalExpenseDialog = ({ onExpenseCreated }: CreatePersonalExpense
       merchant: "",
       details: "",
       amount: "",
-      method: "",
+      method: "Credit Card (Master)",
       date: new Date().toISOString().split('T')[0],
       paid_by: "Billy",
     },
@@ -97,7 +97,14 @@ const CreatePersonalExpenseDialog = ({ onExpenseCreated }: CreatePersonalExpense
 
       onExpenseCreated();
       setOpen(false);
-      form.reset();
+      form.reset({
+        merchant: "",
+        details: "",
+        amount: "",
+        method: "Credit Card (Master)",
+        date: new Date().toISOString().split('T')[0],
+        paid_by: "Billy",
+      });
     } catch (error) {
       console.error("Error creating personal expense:", error);
       toast({

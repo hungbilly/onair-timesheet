@@ -62,7 +62,7 @@ const CreateStudioExpenseDialog = ({ onExpenseCreated }: CreateStudioExpenseDial
       merchant: "",
       details: "",
       amount: "",
-      method: "",
+      method: "Credit Card (Master)",
       date: new Date().toISOString().split('T')[0],
     },
   });
@@ -92,7 +92,13 @@ const CreateStudioExpenseDialog = ({ onExpenseCreated }: CreateStudioExpenseDial
 
       onExpenseCreated();
       setOpen(false);
-      form.reset();
+      form.reset({
+        merchant: "",
+        details: "",
+        amount: "",
+        method: "Credit Card (Master)",
+        date: new Date().toISOString().split('T')[0],
+      });
     } catch (error) {
       console.error("Error creating studio expense:", error);
       toast({
@@ -172,7 +178,7 @@ const CreateStudioExpenseDialog = ({ onExpenseCreated }: CreateStudioExpenseDial
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select method" />
+                          <SelectValue placeholder="Credit Card (Master)" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
