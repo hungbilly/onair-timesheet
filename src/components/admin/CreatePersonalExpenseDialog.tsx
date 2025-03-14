@@ -45,6 +45,7 @@ interface CreatePersonalExpenseDialogProps {
 }
 
 const paymentMethods = [
+  "Cash",
   "Credit Card (Master)",
   "Credit Card (Visa)",
   "Bank Transfer (Riano)",
