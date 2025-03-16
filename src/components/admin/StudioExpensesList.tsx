@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +13,7 @@ import { getMonthDateRange } from "@/utils/dateUtils";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 import EditStudioExpenseDialog from "./EditStudioExpenseDialog";
+import DeleteConfirmationDialog from "@/components/DeleteConfirmationDialog";
 
 type StudioExpense = {
   id: string;
@@ -37,6 +37,8 @@ const StudioExpensesList = ({ refreshTrigger, selectedMonth }: StudioExpensesLis
   const [editingExpense, setEditingExpense] = useState<StudioExpense | null>(null);
   const [totalAmount, setTotalAmount] = useState(0);
   const { toast } = useToast();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -54,7 +56,6 @@ const StudioExpensesList = ({ refreshTrigger, selectedMonth }: StudioExpensesLis
         if (error) throw error;
         setExpenses(data || []);
         
-        // Calculate total amount
         const total = (data || []).reduce((sum, expense) => sum + expense.amount, 0);
         setTotalAmount(total);
       } catch (error) {
@@ -90,6 +91,19 @@ const StudioExpensesList = ({ refreshTrigger, selectedMonth }: StudioExpensesLis
         description: "Failed to delete expense",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setExpenseToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (expenseToDelete) {
+      handleDelete(expenseToDelete);
+      setExpenseToDelete(null);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -160,7 +174,7 @@ const StudioExpensesList = ({ refreshTrigger, selectedMonth }: StudioExpensesLis
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDelete(expense.id)}
+                      onClick={() => handleDeleteClick(expense.id)}
                     >
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
@@ -171,6 +185,14 @@ const StudioExpensesList = ({ refreshTrigger, selectedMonth }: StudioExpensesLis
           </TableBody>
         </Table>
       )}
+
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Studio Expense"
+        description="Are you sure you want to delete this studio expense? This action cannot be undone."
+      />
     </div>
   );
 };

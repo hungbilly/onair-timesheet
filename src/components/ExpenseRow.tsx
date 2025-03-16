@@ -7,6 +7,7 @@ import { Pencil, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExpenseEntry } from "@/types";
+import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 
 interface ExpenseRowProps {
   expense: ExpenseEntry;
@@ -18,6 +19,7 @@ export const ExpenseRow = ({ expense, onDelete, onUpdate }: ExpenseRowProps) => 
   const [isEditing, setIsEditing] = useState(false);
   const [editedExpense, setEditedExpense] = useState(expense);
   const [file, setFile] = useState<File | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleSave = async () => {
     try {
@@ -60,6 +62,11 @@ export const ExpenseRow = ({ expense, onDelete, onUpdate }: ExpenseRowProps) => 
       console.error("Error updating expense:", error);
       toast.error("Failed to update expense");
     }
+  };
+
+  const handleDeleteConfirm = () => {
+    onDelete(expense.id);
+    setDeleteDialogOpen(false);
   };
 
   if (isEditing) {
@@ -138,42 +145,51 @@ export const ExpenseRow = ({ expense, onDelete, onUpdate }: ExpenseRowProps) => 
   }
 
   return (
-    <TableRow>
-      <TableCell>{format(new Date(expense.date), "MMM dd, yyyy")}</TableCell>
-      <TableCell>{expense.description}</TableCell>
-      <TableCell>${expense.amount.toFixed(2)}</TableCell>
-      <TableCell>
-        {expense.receipt_path && (
-          <a
-            href={`${supabase.storage.from('receipts').getPublicUrl(expense.receipt_path).data.publicUrl}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
-          >
-            View Receipt
-          </a>
-        )}
-      </TableCell>
-      <TableCell>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsEditing(true)}
-            title="Edit expense"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onDelete(expense.id)}
-            title="Delete expense"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
+    <>
+      <TableRow>
+        <TableCell>{format(new Date(expense.date), "MMM dd, yyyy")}</TableCell>
+        <TableCell>{expense.description}</TableCell>
+        <TableCell>${expense.amount.toFixed(2)}</TableCell>
+        <TableCell>
+          {expense.receipt_path && (
+            <a
+              href={`${supabase.storage.from('receipts').getPublicUrl(expense.receipt_path).data.publicUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              View Receipt
+            </a>
+          )}
+        </TableCell>
+        <TableCell>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsEditing(true)}
+              title="Edit expense"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setDeleteDialogOpen(true)}
+              title="Delete expense"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Expense"
+        description="Are you sure you want to delete this expense? This action cannot be undone."
+      />
+    </>
   );
 };

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +13,7 @@ import { getMonthDateRange } from "@/utils/dateUtils";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 import EditPersonalExpenseDialog from "./EditPersonalExpenseDialog";
+import DeleteConfirmationDialog from "@/components/DeleteConfirmationDialog";
 
 type PersonalExpense = {
   id: string;
@@ -38,6 +38,8 @@ const PersonalExpensesList = ({ refreshTrigger, selectedMonth }: PersonalExpense
   const [editingExpense, setEditingExpense] = useState<PersonalExpense | null>(null);
   const [totalAmount, setTotalAmount] = useState(0);
   const { toast } = useToast();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -55,7 +57,6 @@ const PersonalExpensesList = ({ refreshTrigger, selectedMonth }: PersonalExpense
         if (error) throw error;
         setExpenses(data || []);
         
-        // Calculate total amount
         const total = (data || []).reduce((sum, expense) => sum + expense.amount, 0);
         setTotalAmount(total);
       } catch (error) {
@@ -91,6 +92,19 @@ const PersonalExpensesList = ({ refreshTrigger, selectedMonth }: PersonalExpense
         description: "Failed to delete expense",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setExpenseToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (expenseToDelete) {
+      handleDelete(expenseToDelete);
+      setExpenseToDelete(null);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -163,7 +177,7 @@ const PersonalExpensesList = ({ refreshTrigger, selectedMonth }: PersonalExpense
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDelete(expense.id)}
+                      onClick={() => handleDeleteClick(expense.id)}
                     >
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
@@ -174,6 +188,14 @@ const PersonalExpensesList = ({ refreshTrigger, selectedMonth }: PersonalExpense
           </TableBody>
         </Table>
       )}
+
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Personal Expense"
+        description="Are you sure you want to delete this personal expense? This action cannot be undone."
+      />
     </div>
   );
 };

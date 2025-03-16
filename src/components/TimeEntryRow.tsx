@@ -7,6 +7,7 @@ import { Pencil, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { TimeEntry } from "@/types";
+import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 
 interface TimeEntryRowProps {
   entry: TimeEntry;
@@ -17,6 +18,7 @@ interface TimeEntryRowProps {
 export const TimeEntryRow = ({ entry, onDelete, onUpdate }: TimeEntryRowProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedEntry, setEditedEntry] = useState(entry);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleSave = async () => {
     try {
@@ -51,6 +53,11 @@ export const TimeEntryRow = ({ entry, onDelete, onUpdate }: TimeEntryRowProps) =
   const handleCancel = () => {
     setEditedEntry(entry);
     setIsEditing(false);
+  };
+
+  const handleDeleteConfirm = () => {
+    onDelete(entry.id);
+    setDeleteDialogOpen(false);
   };
 
   if (isEditing) {
@@ -187,52 +194,61 @@ export const TimeEntryRow = ({ entry, onDelete, onUpdate }: TimeEntryRowProps) =
   }
 
   return (
-    <TableRow className="md:h-32">
-      <TableCell className="p-2 md:p-4 border-r">
-        <div className="flex flex-col gap-2">
-          <div className="font-medium">
-            {format(new Date(entry.date), "MMM dd, yyyy")}
+    <>
+      <TableRow className="md:h-32">
+        <TableCell className="p-2 md:p-4 border-r">
+          <div className="flex flex-col gap-2">
+            <div className="font-medium">
+              {format(new Date(entry.date), "MMM dd, yyyy")}
+            </div>
+            <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+              <div>Start: {entry.start_time}</div>
+              <div>End: {entry.end_time}</div>
+            </div>
           </div>
-          <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-            <div>Start: {entry.start_time}</div>
-            <div>End: {entry.end_time}</div>
+        </TableCell>
+        <TableCell className="p-2 md:p-4">
+          <div className="flex flex-col gap-1">
+            <div className="capitalize font-medium">{entry.work_type}</div>
+            <div className="text-sm">{entry.job_description}</div>
+            <div className="text-sm text-muted-foreground">
+              {entry.work_type === "hourly"
+                ? `${entry.hours} hrs @ $${entry.hourly_rate}/hr`
+                : `${entry.job_count} jobs @ $${entry.job_rate}/job`}
+            </div>
           </div>
-        </div>
-      </TableCell>
-      <TableCell className="p-2 md:p-4">
-        <div className="flex flex-col gap-1">
-          <div className="capitalize font-medium">{entry.work_type}</div>
-          <div className="text-sm">{entry.job_description}</div>
-          <div className="text-sm text-muted-foreground">
-            {entry.work_type === "hourly"
-              ? `${entry.hours} hrs @ $${entry.hourly_rate}/hr`
-              : `${entry.job_count} jobs @ $${entry.job_rate}/job`}
+        </TableCell>
+        <TableCell className="p-2 md:p-4">
+          ${entry.total_salary.toFixed(2)}
+        </TableCell>
+        <TableCell className="p-2 md:p-4">
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsEditing(true)}
+              title="Edit entry"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setDeleteDialogOpen(true)}
+              title="Delete entry"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
-        </div>
-      </TableCell>
-      <TableCell className="p-2 md:p-4">
-        ${entry.total_salary.toFixed(2)}
-      </TableCell>
-      <TableCell className="p-2 md:p-4">
-        <div className="flex gap-2 justify-end">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsEditing(true)}
-            title="Edit entry"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onDelete(entry.id)}
-            title="Delete entry"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
+        </TableCell>
+      </TableRow>
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Time Entry"
+        description="Are you sure you want to delete this time entry? This action cannot be undone."
+      />
+    </>
   );
 };

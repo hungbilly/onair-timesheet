@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import {
   Table,
@@ -31,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import DeleteConfirmationDialog from "@/components/DeleteConfirmationDialog";
 
 type VendorBill = Database["public"]["Tables"]["vendor_bills"]["Row"] & {
   vendors: { name: string } | null;
@@ -51,6 +51,8 @@ const VendorBillsList = ({ refreshTrigger, selectedMonth }: VendorBillsListProps
     description: "",
     method: "",
   });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [billToDelete, setBillToDelete] = useState<string | null>(null);
 
   const fetchBills = async () => {
     try {
@@ -69,7 +71,6 @@ const VendorBillsList = ({ refreshTrigger, selectedMonth }: VendorBillsListProps
       if (error) throw error;
       setBills(data || []);
       
-      // Calculate total amount
       const total = (data || []).reduce((sum, bill) => sum + bill.amount, 0);
       setTotalAmount(total);
     } catch (error) {
@@ -107,8 +108,6 @@ const VendorBillsList = ({ refreshTrigger, selectedMonth }: VendorBillsListProps
   };
 
   const handleDelete = async (billId: string) => {
-    if (!confirm("Are you sure you want to delete this bill?")) return;
-
     try {
       const { error } = await supabase
         .from("vendor_bills")
@@ -121,6 +120,19 @@ const VendorBillsList = ({ refreshTrigger, selectedMonth }: VendorBillsListProps
     } catch (error) {
       console.error("Error deleting bill:", error);
       toast.error("Failed to delete bill");
+    }
+  };
+
+  const handleDeleteClick = (billId: string) => {
+    setBillToDelete(billId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (billToDelete) {
+      handleDelete(billToDelete);
+      setBillToDelete(null);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -209,7 +221,7 @@ const VendorBillsList = ({ refreshTrigger, selectedMonth }: VendorBillsListProps
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDelete(bill.id)}
+                      onClick={() => handleDeleteClick(bill.id)}
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
@@ -270,6 +282,14 @@ const VendorBillsList = ({ refreshTrigger, selectedMonth }: VendorBillsListProps
           </div>
         </DialogContent>
       </Dialog>
+
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Vendor Bill"
+        description="Are you sure you want to delete this vendor bill? This action cannot be undone."
+      />
     </div>
   );
 };
