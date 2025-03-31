@@ -53,7 +53,6 @@ const CompanyIncomeEditDialog = ({ record }: CompanyIncomeEditDialogProps) => {
   
   const queryClient = useQueryClient();
 
-  // Reset form values when record changes or dialog opens
   useEffect(() => {
     if (open) {
       setClient(record.client);

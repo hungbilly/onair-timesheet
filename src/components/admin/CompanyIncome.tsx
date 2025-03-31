@@ -37,13 +37,11 @@ const CompanyIncome = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange>(getCurrentMonthRange());
 
-  // Filter states
   const [filterBrand, setFilterBrand] = useState<string>(ALL_OPTION);
   const [filterJobType, setFilterJobType] = useState<string>(ALL_OPTION);
   const [filterPaymentType, setFilterPaymentType] = useState<string>(ALL_OPTION);
   const [filterPaymentMethod, setFilterPaymentMethod] = useState<string>(ALL_OPTION);
 
-  // Fetch company income records
   const {
     data: incomeRecords,
     isLoading
@@ -64,7 +62,6 @@ const CompanyIncome = () => {
     }
   });
 
-  // Add new income record
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!client.trim() || !amount.trim() || !selectedDate) {
@@ -116,7 +113,6 @@ const CompanyIncome = () => {
     }
   });
 
-  // Delete income record
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const {
@@ -143,7 +139,6 @@ const CompanyIncome = () => {
     createMutation.mutate();
   };
 
-  // Reset all filters
   const resetFilters = () => {
     setFilterBrand(ALL_OPTION);
     setFilterJobType(ALL_OPTION);
@@ -151,41 +146,32 @@ const CompanyIncome = () => {
     setFilterPaymentMethod(ALL_OPTION);
   };
 
-  // Check if any filters are active
   const hasActiveFilters = filterBrand !== ALL_OPTION || filterJobType !== ALL_OPTION || filterPaymentType !== ALL_OPTION || filterPaymentMethod !== ALL_OPTION;
 
-  // Filter records based on date range and other filters
   const filteredRecords = useMemo(() => {
     if (!incomeRecords) return [];
     return incomeRecords.filter(record => {
       const recordDate = new Date(record.date);
 
-      // Date range filter
       const dateInRange = recordDate >= dateRange.startDate && recordDate <= dateRange.endDate;
       if (!dateInRange) return false;
 
-      // Brand filter
       if (filterBrand !== ALL_OPTION && record.brand !== filterBrand) return false;
 
-      // Job type filter
       if (filterJobType !== ALL_OPTION) {
         const recordJobType = record.job_type ? record.job_type.charAt(0).toUpperCase() + record.job_type.slice(1) : "";
         if (recordJobType !== filterJobType) return false;
       }
 
-      // Payment type filter
       if (filterPaymentType !== ALL_OPTION && record.payment_type !== filterPaymentType) return false;
 
-      // Payment method filter
       if (filterPaymentMethod !== ALL_OPTION && record.payment_method !== filterPaymentMethod) return false;
       return true;
     }).sort((a, b) => {
-      // Sort by date in descending order (newest first)
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
   }, [incomeRecords, dateRange, filterBrand, filterJobType, filterPaymentType, filterPaymentMethod]);
 
-  // Calculate totals by brand
   const brandTotals = useMemo(() => {
     if (!filteredRecords.length) return {} as Record<string, number>;
     const totals: Record<string, number> = {};
@@ -208,7 +194,6 @@ const CompanyIncome = () => {
     }));
   };
 
-  // Download CSV function
   const handleDownloadCsv = () => {
     if (!filteredRecords || filteredRecords.length === 0) {
       toast.error("No data to export");
@@ -222,7 +207,6 @@ const CompanyIncome = () => {
     const link = document.createElement("a");
     link.setAttribute("href", url);
 
-    // Create filename with date range
     const startFormatted = format(dateRange.startDate, "yyyy-MM-dd");
     const endFormatted = format(dateRange.endDate, "yyyy-MM-dd");
     link.setAttribute("download", `company-income_${startFormatted}_to_${endFormatted}.csv`);
@@ -234,7 +218,6 @@ const CompanyIncome = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header and action buttons - made more responsive */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h2 className="text-2xl font-bold">Company Income</h2>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
@@ -259,7 +242,6 @@ const CompanyIncome = () => {
         </div>
       </div>
 
-      {/* Filters section - improved for mobile */}
       {showFilters && (
         <Card>
           <CardHeader className="pb-3">
@@ -274,7 +256,6 @@ const CompanyIncome = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {/* Date range filters - made more responsive */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Start Date</label>
@@ -306,7 +287,6 @@ const CompanyIncome = () => {
               </div>
             </div>
             
-            {/* Other filters - made more responsive */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Brand</label>
@@ -380,7 +360,6 @@ const CompanyIncome = () => {
         </Card>
       )}
 
-      {/* Add income form - improved for mobile */}
       {isCreating && (
         <Card>
           <CardHeader className="pb-3">
@@ -506,7 +485,6 @@ const CompanyIncome = () => {
         </Card>
       )}
 
-      {/* Income summary card - improved for mobile */}
       <Card>
         <CardHeader className="flex flex-col sm:flex-row justify-between pb-3">
           <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
@@ -533,7 +511,6 @@ const CompanyIncome = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Brand totals cards - improved for mobile */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-3">Totals by Brand</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -550,7 +527,6 @@ const CompanyIncome = () => {
             </div>
           </div>
 
-          {/* Income records table - improved for mobile with horizontal scroll */}
           {isLoading ? (
             <div className="text-center py-4">Loading income records...</div>
           ) : filteredRecords.length > 0 ? (
