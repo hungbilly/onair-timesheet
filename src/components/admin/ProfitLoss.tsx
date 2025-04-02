@@ -13,6 +13,7 @@ interface MonthlyFinancials {
   employeeExpenses: number;
   studioExpenses: number;
   personalExpenses: number;
+  vendorBills: number;
   netProfit: number;
   netProfitAfterPersonal: number;
 }
@@ -25,6 +26,7 @@ const ProfitLoss = () => {
     employeeExpenses: 0,
     studioExpenses: 0,
     personalExpenses: 0,
+    vendorBills: 0,
     netProfit: 0,
     netProfitAfterPersonal: 0
   });
@@ -81,14 +83,24 @@ const ProfitLoss = () => {
         
         if (personalExpenseError) throw personalExpenseError;
         
+        // Fetch vendor bills for the month
+        const { data: vendorBillsData, error: vendorBillsError } = await supabase
+          .from("vendor_bills")
+          .select("amount")
+          .gte("due_date", startDate)
+          .lte("due_date", endDate);
+        
+        if (vendorBillsError) throw vendorBillsError;
+        
         // Calculate totals
         const totalIncome = incomeData?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
         const totalSalaries = salaryData?.reduce((sum, item) => sum + Number(item.total_salary), 0) || 0;
         const totalExpenses = expenseData?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
         const totalStudioExpenses = studioExpenseData?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
         const totalPersonalExpenses = personalExpenseData?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
+        const totalVendorBills = vendorBillsData?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
         
-        const netProfit = totalIncome - totalSalaries - totalExpenses - totalStudioExpenses;
+        const netProfit = totalIncome - totalSalaries - totalExpenses - totalStudioExpenses - totalVendorBills;
         const netProfitAfterPersonal = netProfit - totalPersonalExpenses;
         
         setFinancials({
@@ -97,6 +109,7 @@ const ProfitLoss = () => {
           employeeExpenses: totalExpenses,
           studioExpenses: totalStudioExpenses,
           personalExpenses: totalPersonalExpenses,
+          vendorBills: totalVendorBills,
           netProfit: netProfit,
           netProfitAfterPersonal: netProfitAfterPersonal
         });
@@ -195,7 +208,7 @@ const ProfitLoss = () => {
                 <div className="flex items-center gap-2">
                   <ArrowDown className="h-5 w-5 text-red-500" />
                   <span className="text-2xl font-bold">
-                    ${(financials.employeeSalaries + financials.employeeExpenses + financials.studioExpenses + financials.personalExpenses).toFixed(2)}
+                    ${(financials.employeeSalaries + financials.employeeExpenses + financials.studioExpenses + financials.personalExpenses + financials.vendorBills).toFixed(2)}
                   </span>
                 </div>
               </CardContent>
@@ -231,6 +244,10 @@ const ProfitLoss = () => {
                   <TableRow>
                     <TableCell>Studio Expenses</TableCell>
                     <TableCell className="text-right text-red-500">-${financials.studioExpenses.toFixed(2)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Vendor Bills</TableCell>
+                    <TableCell className="text-right text-red-500">-${financials.vendorBills.toFixed(2)}</TableCell>
                   </TableRow>
                   <TableRow className="font-bold">
                     <TableCell>Net Profit/Loss</TableCell>
