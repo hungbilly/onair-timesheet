@@ -65,6 +65,54 @@ export const generateDetailedCsv = (employeeData: EmployeeData[]) => {
   return csvRows.join("\n");
 };
 
+// New function for exporting studio expenses
+export const generateStudioExpensesCsv = (expenses: any[], selectedMonth: string) => {
+  const csvRows: string[] = [];
+  
+  // Add header row
+  csvRows.push("Date,Merchant,Method,Details,Amount");
+  
+  // Add data rows
+  expenses.forEach((expense) => {
+    csvRows.push(
+      `${new Date(expense.date).toLocaleDateString()},"${expense.merchant}","${expense.method}","${
+        expense.details || ""
+      }",${Number(expense.amount).toFixed(2)}`
+    );
+  });
+  
+  // Add total row
+  const total = expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
+  csvRows.push("");
+  csvRows.push(`Total Studio Expenses (${selectedMonth}),,,,$${total.toFixed(2)}`);
+  
+  return csvRows.join("\n");
+};
+
+// New function for exporting personal expenses
+export const generatePersonalExpensesCsv = (expenses: any[], selectedMonth: string) => {
+  const csvRows: string[] = [];
+  
+  // Add header row
+  csvRows.push("Date,Merchant,Method,Paid By,Details,Amount");
+  
+  // Add data rows
+  expenses.forEach((expense) => {
+    csvRows.push(
+      `${new Date(expense.date).toLocaleDateString()},"${expense.merchant}","${expense.method}","${
+        expense.paid_by
+      }","${expense.details || ""}",${Number(expense.amount).toFixed(2)}`
+    );
+  });
+  
+  // Add total row
+  const total = expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
+  csvRows.push("");
+  csvRows.push(`Total Personal Expenses (${selectedMonth}),,,,,$${total.toFixed(2)}`);
+  
+  return csvRows.join("\n");
+};
+
 // New function for exporting company income records
 export const generateIncomeRecordsCsv = (records: any[], dateRange: { startDate: Date, endDate: Date }) => {
   const csvRows: string[] = [];
