@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateStudioExpensesCsv } from "@/utils/csvExport";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { getMonthDateRange } from "@/utils/dateUtils";
 
 const StudioExpenses = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -21,8 +22,7 @@ const StudioExpenses = () => {
 
   const exportStudioExpenses = async (format: "csv" | "xlsx") => {
     try {
-      const startDate = `${selectedMonth}-01`;
-      const endDate = `${selectedMonth}-31`;
+      const { startDate, endDate } = getMonthDateRange(selectedMonth);
 
       const { data: expenses, error } = await supabase
         .from("studio_expenses")
