@@ -1,4 +1,4 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type PersonalExpense = {
@@ -12,7 +12,7 @@ interface PersonalExpensesMerchantChartProps {
   expenses: PersonalExpense[];
 }
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted-foreground))', '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088fe'];
+
 
 const PersonalExpensesMerchantChart = ({ expenses }: PersonalExpensesMerchantChartProps) => {
   // Aggregate expenses by merchant
@@ -76,26 +76,27 @@ const PersonalExpensesMerchantChart = ({ expenses }: PersonalExpensesMerchantCha
       <CardContent>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={merchantData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ merchant, percent }) => 
-                  `${merchant} (${(percent * 100).toFixed(1)}%)`
-                }
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="amount"
-              >
-                {merchantData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
+            <BarChart
+              data={merchantData}
+              margin={{
+                top: 20,
+                right: 30,
+                left: 20,
+                bottom: 5,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="merchant" 
+                angle={-45}
+                textAnchor="end"
+                height={80}
+                interval={0}
+              />
+              <YAxis tickFormatter={formatCurrency} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
-            </PieChart>
+              <Bar dataKey="amount" fill="hsl(var(--primary))" />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
