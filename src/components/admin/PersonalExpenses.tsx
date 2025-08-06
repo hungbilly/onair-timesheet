@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import PersonalExpensesList from "./PersonalExpensesList";
@@ -23,7 +23,7 @@ const PersonalExpenses = () => {
     fetchExpensesForChart();
   };
 
-  const fetchExpensesForChart = async () => {
+  const fetchExpensesForChart = useCallback(async () => {
     try {
       const { startDate, endDate } = getMonthDateRange(selectedMonth);
       const { data, error } = await supabase
@@ -37,11 +37,11 @@ const PersonalExpenses = () => {
     } catch (error) {
       console.error("Error fetching expenses for chart:", error);
     }
-  };
+  }, [selectedMonth]);
 
   useEffect(() => {
     fetchExpensesForChart();
-  }, [selectedMonth, refreshTrigger]);
+  }, [selectedMonth, refreshTrigger, fetchExpensesForChart]);
 
   const exportPersonalExpenses = async (format: "csv" | "xlsx") => {
     try {
