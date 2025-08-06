@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import PersonalExpensesList from "./PersonalExpensesList";
@@ -11,14 +11,37 @@ import { generatePersonalExpensesCsv } from "@/utils/csvExport";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { getMonthDateRange } from "@/utils/dateUtils";
+import PersonalExpensesMerchantChart from "./PersonalExpensesMerchantChart";
 
 const PersonalExpenses = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [expenses, setExpenses] = useState<any[]>([]);
 
   const handleExpenseCreated = () => {
     setRefreshTrigger(prev => prev + 1);
+    fetchExpensesForChart();
   };
+
+  const fetchExpensesForChart = async () => {
+    try {
+      const { startDate, endDate } = getMonthDateRange(selectedMonth);
+      const { data, error } = await supabase
+        .from("personal_expenses")
+        .select("id, merchant, amount, date")
+        .gte("date", startDate)
+        .lte("date", endDate);
+
+      if (error) throw error;
+      setExpenses(data || []);
+    } catch (error) {
+      console.error("Error fetching expenses for chart:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchExpensesForChart();
+  }, [selectedMonth, refreshTrigger]);
 
   const exportPersonalExpenses = async (format: "csv" | "xlsx") => {
     try {
@@ -88,9 +111,13 @@ const PersonalExpenses = () => {
         </div>
       </div>
 
-      <Card>
-        <PersonalExpensesList refreshTrigger={refreshTrigger} selectedMonth={selectedMonth} />
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card>
+          <PersonalExpensesList refreshTrigger={refreshTrigger} selectedMonth={selectedMonth} />
+        </Card>
+        
+        <PersonalExpensesMerchantChart expenses={expenses} />
+      </div>
     </div>
   );
 };
