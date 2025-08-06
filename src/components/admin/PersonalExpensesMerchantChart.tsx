@@ -32,6 +32,17 @@ const PersonalExpensesMerchantChart = ({ expenses }: PersonalExpensesMerchantCha
   // Sort by amount descending
   merchantData.sort((a, b) => b.amount - a.amount);
 
+  // Take top 10 and group the rest as "Others"
+  const displayData = merchantData.length > 10 
+    ? [
+        ...merchantData.slice(0, 10),
+        {
+          merchant: "Others",
+          amount: merchantData.slice(10).reduce((sum, item) => sum + item.amount, 0)
+        }
+      ]
+    : merchantData;
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -77,7 +88,7 @@ const PersonalExpensesMerchantChart = ({ expenses }: PersonalExpensesMerchantCha
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={merchantData}
+              data={displayData}
               margin={{
                 top: 20,
                 right: 30,
