@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { getMonthDateRange } from "@/utils/dateUtils";
 import PersonalExpensesMerchantChart from "./PersonalExpensesMerchantChart";
+import PersonalExpensesDayChart from "./PersonalExpensesDayChart";
 
 const PersonalExpenses = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -111,12 +112,13 @@ const PersonalExpenses = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card>
           <PersonalExpensesList refreshTrigger={refreshTrigger} selectedMonth={selectedMonth} />
         </Card>
         
         <PersonalExpensesMerchantChart expenses={expenses} />
+        <PersonalExpensesDayChart expenses={expenses} />
       </div>
     </div>
   );
