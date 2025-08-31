@@ -20,6 +20,15 @@ interface MonthlyData {
 const ProfitLossTrends = () => {
   const [trendsData, setTrendsData] = useState<MonthlyData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [visibleLines, setVisibleLines] = useState({
+    totalIncome: true,
+    totalExpenses: true,
+    personalExpenses: true,
+    vendorBills: true,
+    totalSalary: true,
+    netProfit: true,
+    netProfitAfterPersonal: true
+  });
 
   const formatMonth = (monthString: string) => {
     const [year, month] = monthString.split('-');
@@ -41,11 +50,11 @@ const ProfitLossTrends = () => {
       setIsLoading(true);
       const data: MonthlyData[] = [];
       
-      // Get past 12 months - create array of unique months first
+      // Get past 12 months plus current month (13 total)
       const monthsArray: string[] = [];
       const currentDate = new Date();
       
-      for (let i = 11; i >= 0; i--) {
+      for (let i = 12; i >= 0; i--) {
         const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
         const monthYear = targetDate.toISOString().slice(0, 7);
         monthsArray.push(monthYear);
@@ -153,6 +162,23 @@ const ProfitLossTrends = () => {
     fetchTrendsData();
   }, []);
 
+  const toggleLineVisibility = (lineKey: keyof typeof visibleLines) => {
+    setVisibleLines(prev => ({
+      ...prev,
+      [lineKey]: !prev[lineKey]
+    }));
+  };
+
+  const lineConfigs = [
+    { key: 'totalIncome' as const, name: 'Total Income', color: '#22c55e' },
+    { key: 'totalExpenses' as const, name: 'Total Expenses', color: '#ef4444' },
+    { key: 'personalExpenses' as const, name: 'Personal Expenses', color: '#f97316' },
+    { key: 'vendorBills' as const, name: 'Vendor Bills', color: '#ec4899' },
+    { key: 'totalSalary' as const, name: 'Total Salary', color: '#06b6d4' },
+    { key: 'netProfit' as const, name: 'Net Profit/Loss', color: '#3b82f6' },
+    { key: 'netProfitAfterPersonal' as const, name: 'Net Profit/Loss After Personal', color: '#8b5cf6' }
+  ];
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -192,19 +218,44 @@ const ProfitLossTrends = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
-          12-Month Financial Trends
+          13-Month Financial Trends
         </CardTitle>
       </CardHeader>
       <CardContent>
         {trendsData.length === 0 ? (
           <div className="flex justify-center py-8 text-muted-foreground">
-            No financial data available for the past 12 months
+            No financial data available for the past 13 months
           </div>
         ) : (
           <>
-            <div className="mb-4 text-sm text-muted-foreground">
-              Showing data for {trendsData.length} months
+            <div className="mb-4">
+              <div className="text-sm text-muted-foreground mb-3">
+                Showing data for {trendsData.length} months
+              </div>
+              
+              {/* Line visibility controls */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {lineConfigs.map(({ key, name, color }) => (
+                  <label 
+                    key={key}
+                    className="flex items-center gap-2 cursor-pointer bg-muted/30 hover:bg-muted/50 px-3 py-1 rounded-full transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={visibleLines[key]}
+                      onChange={() => toggleLineVisibility(key)}
+                      className="w-4 h-4"
+                    />
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: color }}
+                    />
+                    <span className="text-sm font-medium">{name}</span>
+                  </label>
+                ))}
+              </div>
             </div>
+            
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={trendsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -220,62 +271,76 @@ const ProfitLossTrends = () => {
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="totalIncome" 
-                    stroke="#22c55e" 
-                    strokeWidth={2}
-                    name="Total Income"
-                    dot={{ r: 4 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="totalExpenses" 
-                    stroke="#ef4444" 
-                    strokeWidth={2}
-                    name="Total Expenses"
-                    dot={{ r: 4 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="personalExpenses" 
-                    stroke="#f97316" 
-                    strokeWidth={2}
-                    name="Personal Expenses"
-                    dot={{ r: 4 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="vendorBills" 
-                    stroke="#ec4899" 
-                    strokeWidth={2}
-                    name="Vendor Bills"
-                    dot={{ r: 4 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="totalSalary" 
-                    stroke="#06b6d4" 
-                    strokeWidth={2}
-                    name="Total Salary"
-                    dot={{ r: 4 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="netProfit" 
-                    stroke="#3b82f6" 
-                    strokeWidth={2}
-                    name="Net Profit/Loss"
-                    dot={{ r: 4 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="netProfitAfterPersonal" 
-                    stroke="#8b5cf6" 
-                    strokeWidth={2}
-                    name="Net Profit/Loss After Personal"
-                    dot={{ r: 4 }}
-                  />
+                  {visibleLines.totalIncome && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="totalIncome" 
+                      stroke="#22c55e" 
+                      strokeWidth={2}
+                      name="Total Income"
+                      dot={{ r: 4 }}
+                    />
+                  )}
+                  {visibleLines.totalExpenses && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="totalExpenses" 
+                      stroke="#ef4444" 
+                      strokeWidth={2}
+                      name="Total Expenses"
+                      dot={{ r: 4 }}
+                    />
+                  )}
+                  {visibleLines.personalExpenses && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="personalExpenses" 
+                      stroke="#f97316" 
+                      strokeWidth={2}
+                      name="Personal Expenses"
+                      dot={{ r: 4 }}
+                    />
+                  )}
+                  {visibleLines.vendorBills && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="vendorBills" 
+                      stroke="#ec4899" 
+                      strokeWidth={2}
+                      name="Vendor Bills"
+                      dot={{ r: 4 }}
+                    />
+                  )}
+                  {visibleLines.totalSalary && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="totalSalary" 
+                      stroke="#06b6d4" 
+                      strokeWidth={2}
+                      name="Total Salary"
+                      dot={{ r: 4 }}
+                    />
+                  )}
+                  {visibleLines.netProfit && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="netProfit" 
+                      stroke="#3b82f6" 
+                      strokeWidth={2}
+                      name="Net Profit/Loss"
+                      dot={{ r: 4 }}
+                    />
+                  )}
+                  {visibleLines.netProfitAfterPersonal && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="netProfitAfterPersonal" 
+                      stroke="#8b5cf6" 
+                      strokeWidth={2}
+                      name="Net Profit/Loss After Personal"
+                      dot={{ r: 4 }}
+                    />
+                  )}
                 </LineChart>
               </ResponsiveContainer>
             </div>
