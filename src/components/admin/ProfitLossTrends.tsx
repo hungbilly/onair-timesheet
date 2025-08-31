@@ -56,24 +56,25 @@ const ProfitLossTrends = () => {
       const selectedPeriod = monthsPeriod[0];
       const monthsArray: string[] = [];
       const currentDate = new Date();
+      const currentMonthYear = currentDate.toISOString().slice(0, 7);
       console.log("Current date:", currentDate.toISOString());
+      console.log("Current month year:", currentMonthYear);
       console.log("Selected period:", selectedPeriod, "months");
       
-      // Generate selected period months (including current month)
+      // Generate months ending with current month
       for (let i = selectedPeriod - 1; i >= 0; i--) {
         const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
         const monthYear = targetDate.toISOString().slice(0, 7);
-        console.log(`Month ${selectedPeriod - i}:`, monthYear, targetDate.toDateString());
+        console.log(`Month ${selectedPeriod - i}:`, monthYear, "->", targetDate.toDateString());
         monthsArray.push(monthYear);
       }
       
-      // Ensure current month is always included as the last month
-      const currentMonthYear = currentDate.toISOString().slice(0, 7);
+      console.log("Generated months array:", monthsArray);
+      
+      // Double check current month is included (it should be the last one)
       if (!monthsArray.includes(currentMonthYear)) {
-        console.log("Current month not in array, adding:", currentMonthYear);
-        // Remove the oldest month and add current month
-        monthsArray.shift();
-        monthsArray.push(currentMonthYear);
+        console.log("WARNING: Current month not in array, replacing last month");
+        monthsArray[monthsArray.length - 1] = currentMonthYear;
       }
       console.log("Final months array:", monthsArray);
       
