@@ -19,12 +19,12 @@ interface CreateExpenseDialogProps {
 
 const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => {
   const [open, setOpen] = useState(false);
-  const [expenseType, setExpenseType] = useState<"studio" | "personal">("studio");
+  const [expenseType, setExpenseType] = useState<"studio" | "personal">("personal");
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     amount: "",
     merchant: "",
-    method: "",
+    method: "Credit Card (Master)",
     details: "",
     date: new Date(),
     paidBy: "Billy"
@@ -62,12 +62,12 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
       setFormData({
         amount: "",
         merchant: "",
-        method: "",
+        method: "Credit Card (Master)",
         details: "",
         date: new Date(),
         paidBy: "Billy"
       });
-      setExpenseType("studio");
+      setExpenseType("personal");
       onExpenseCreated();
     } catch (error) {
       console.error("Error creating expense:", error);
