@@ -11,6 +11,8 @@ interface MonthlyData {
   totalIncome: number;
   totalExpenses: number;
   personalExpenses: number;
+  vendorBills: number;
+  totalSalary: number;
   netProfit: number;
   netProfitAfterPersonal: number;
 }
@@ -121,6 +123,8 @@ const ProfitLossTrends = () => {
             totalIncome,
             totalExpenses,
             personalExpenses: totalPersonalExpenses,
+            vendorBills: totalVendorBills,
+            totalSalary: totalSalaries,
             netProfit,
             netProfitAfterPersonal
           });
@@ -133,6 +137,8 @@ const ProfitLossTrends = () => {
             totalIncome: 0,
             totalExpenses: 0,
             personalExpenses: 0,
+            vendorBills: 0,
+            totalSalary: 0,
             netProfit: 0,
             netProfitAfterPersonal: 0
           });
@@ -236,6 +242,22 @@ const ProfitLossTrends = () => {
                     stroke="#f97316" 
                     strokeWidth={2}
                     name="Personal Expenses"
+                    dot={{ r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="vendorBills" 
+                    stroke="#ec4899" 
+                    strokeWidth={2}
+                    name="Vendor Bills"
+                    dot={{ r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="totalSalary" 
+                    stroke="#06b6d4" 
+                    strokeWidth={2}
+                    name="Total Salary"
                     dot={{ r: 4 }}
                   />
                   <Line 
