@@ -158,6 +158,17 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="details">Details</Label>
+            <Textarea
+              id="details"
+              placeholder="Additional details (optional)"
+              value={formData.details}
+              onChange={(e) => setFormData({ ...formData, details: e.target.value })}
+              className="resize-none"
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label>Payment Method *</Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {[
@@ -180,17 +191,6 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
                 </Button>
               ))}
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="details">Details</Label>
-            <Textarea
-              id="details"
-              placeholder="Additional details (optional)"
-              value={formData.details}
-              onChange={(e) => setFormData({ ...formData, details: e.target.value })}
-              className="resize-none"
-            />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2 pt-4">
