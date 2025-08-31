@@ -2,6 +2,14 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { getMonthDateRange } from "@/utils/dateUtils";
 
@@ -17,7 +25,8 @@ interface ExpenseData {
   merchant: string;
   method: string;
   date: string;
-  details?: string;
+  details?: string | null;
+  paid_by?: string;
 }
 
 const paymentMethods = [
@@ -41,7 +50,7 @@ const ExpensesByMethod = ({ refreshTrigger, selectedMonth, expenseType }: Expens
       
       const { data, error } = await supabase
         .from(tableName)
-        .select("id, amount, merchant, method, date, details")
+        .select("*")
         .gte("date", startDate)
         .lte("date", endDate)
         .order("date", { ascending: false });
@@ -112,10 +121,10 @@ const ExpensesByMethod = ({ refreshTrigger, selectedMonth, expenseType }: Expens
 
           return (
             <TabsContent key={method} value={method}>
-              <Card>
-                <CardHeader>
+              <div className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg">
                   <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg">{method}</CardTitle>
+                    <h3 className="text-lg font-semibold">{method}</h3>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-primary">
                         {formatCurrency(total)}
@@ -125,37 +134,41 @@ const ExpensesByMethod = ({ refreshTrigger, selectedMonth, expenseType }: Expens
                       </div>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {methodExpenses.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No expenses found for {method} in {selectedMonth}
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
+                </div>
+
+                {methodExpenses.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No expenses found for {method} in {selectedMonth}
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Merchant</TableHead>
+                        <TableHead>Details</TableHead>
+                        <TableHead>Method</TableHead>
+                        {expenseType === "personal" && <TableHead>Paid By</TableHead>}
+                        <TableHead>Amount</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {methodExpenses.map((expense) => (
-                        <div 
-                          key={expense.id} 
-                          className="flex justify-between items-center p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                        >
-                          <div className="flex-1">
-                            <div className="font-medium">{expense.merchant}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {formatDate(expense.date)}
-                              {expense.details && ` • ${expense.details}`}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-semibold">
-                              {formatCurrency(expense.amount)}
-                            </div>
-                          </div>
-                        </div>
+                        <TableRow key={expense.id}>
+                          <TableCell>{expense.date}</TableCell>
+                          <TableCell>{expense.merchant}</TableCell>
+                          <TableCell>{expense.details || "-"}</TableCell>
+                          <TableCell>{expense.method}</TableCell>
+                          {expenseType === "personal" && (
+                            <TableCell>{expense.paid_by || "-"}</TableCell>
+                          )}
+                          <TableCell>{formatCurrency(expense.amount)}</TableCell>
+                        </TableRow>
                       ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
             </TabsContent>
           );
         })}
