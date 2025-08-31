@@ -98,6 +98,44 @@ const Expenses = ({ userRole }: ExpensesProps) => {
         <CreateExpenseDialog onExpenseCreated={handleExpenseCreated} />
       </div>
 
+      {/* Expense Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Studio Expenses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">
+              {loading ? "..." : formatCurrency(studioTotal)}
+            </div>
+          </CardContent>
+        </Card>
+        
+        {userRole === "admin" && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Personal Expenses</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {loading ? "..." : formatCurrency(personalTotal)}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Expenses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">
+              {loading ? "..." : formatCurrency(totalExpenses)}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Tabs defaultValue="studio" className="space-y-4">
         <TabsList>
           <TabsTrigger value="studio">Studio Expenses</TabsTrigger>
@@ -142,44 +180,6 @@ const Expenses = ({ userRole }: ExpensesProps) => {
           </TabsContent>
         )}
       </Tabs>
-
-      {/* Expense Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Studio Expenses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {loading ? "..." : formatCurrency(studioTotal)}
-            </div>
-          </CardContent>
-        </Card>
-        
-        {userRole === "admin" && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Personal Expenses</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {loading ? "..." : formatCurrency(personalTotal)}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Expenses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">
-              {loading ? "..." : formatCurrency(totalExpenses)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 };
