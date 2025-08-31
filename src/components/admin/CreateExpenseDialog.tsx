@@ -83,11 +83,11 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
           Add Expense
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px] max-w-[95vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Expense</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 px-1">
           <div className="space-y-2">
             <Label>Expense Type</Label>
             <RadioGroup
@@ -120,7 +120,7 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
                   {formData.date ? format(formData.date, "PPP") : "Pick a date"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={formData.date}
@@ -131,33 +131,35 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
             </Popover>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="amount">Amount *</Label>
-            <Input
-              id="amount"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              required
-            />
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="amount">Amount *</Label>
+              <Input
+                id="amount"
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                required
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="merchant">Merchant *</Label>
-            <Input
-              id="merchant"
-              placeholder="Enter merchant name"
-              value={formData.merchant}
-              onChange={(e) => setFormData({ ...formData, merchant: e.target.value })}
-              required
-            />
+            <div className="space-y-2">
+              <Label htmlFor="merchant">Merchant *</Label>
+              <Input
+                id="merchant"
+                placeholder="Enter merchant name"
+                value={formData.merchant}
+                onChange={(e) => setFormData({ ...formData, merchant: e.target.value })}
+                required
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
             <Label>Payment Method *</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {[
                 "Credit Card (Master)",
                 "Credit Card (Visa)", 
@@ -170,7 +172,7 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
                   key={method}
                   type="button"
                   variant={formData.method === method ? "default" : "outline"}
-                  className="text-xs p-2 h-auto"
+                  className="text-xs sm:text-sm p-2 h-auto whitespace-nowrap"
                   onClick={() => setFormData({ ...formData, method })}
                 >
                   {method}
@@ -186,10 +188,11 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
               placeholder="Additional details (optional)"
               value={formData.details}
               onChange={(e) => setFormData({ ...formData, details: e.target.value })}
+              className="resize-none"
             />
           </div>
 
-          <div className="flex gap-2 pt-4">
+          <div className="flex flex-col sm:flex-row gap-2 pt-4">
             <Button type="submit" disabled={isLoading} className="flex-1">
               {isLoading ? "Creating..." : "Create Expense"}
             </Button>
