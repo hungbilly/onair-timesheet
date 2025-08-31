@@ -111,6 +111,7 @@ const ProfitLossTrends = () => {
         }
       }
       
+      console.log("Trends data loaded:", data);
       setTrendsData(data);
       setIsLoading(false);
     };
@@ -176,59 +177,75 @@ const ProfitLossTrends = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={trendsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="month" 
-                tickFormatter={formatMonth}
-                tick={{ fontSize: 12 }}
-              />
-              <YAxis 
-                tickFormatter={formatCurrency}
-                tick={{ fontSize: 12 }}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="totalIncome" 
-                stroke="hsl(var(--chart-1))" 
-                strokeWidth={2}
-                name="Total Income"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="totalExpenses" 
-                stroke="hsl(var(--chart-2))" 
-                strokeWidth={2}
-                name="Total Expenses"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="personalExpenses" 
-                stroke="hsl(var(--chart-3))" 
-                strokeWidth={2}
-                name="Personal Expenses"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="netProfit" 
-                stroke="hsl(var(--chart-4))" 
-                strokeWidth={2}
-                name="Net Profit/Loss"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="netProfitAfterPersonal" 
-                stroke="hsl(var(--chart-5))" 
-                strokeWidth={2}
-                name="Net Profit/Loss After Personal"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        {trendsData.length === 0 ? (
+          <div className="flex justify-center py-8 text-muted-foreground">
+            No financial data available for the past 12 months
+          </div>
+        ) : (
+          <>
+            <div className="mb-4 text-sm text-muted-foreground">
+              Showing data for {trendsData.length} months
+            </div>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={trendsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="month" 
+                    tickFormatter={formatMonth}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    tickFormatter={formatCurrency}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="totalIncome" 
+                    stroke="#22c55e" 
+                    strokeWidth={2}
+                    name="Total Income"
+                    dot={{ r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="totalExpenses" 
+                    stroke="#ef4444" 
+                    strokeWidth={2}
+                    name="Total Expenses"
+                    dot={{ r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="personalExpenses" 
+                    stroke="#f97316" 
+                    strokeWidth={2}
+                    name="Personal Expenses"
+                    dot={{ r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="netProfit" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    name="Net Profit/Loss"
+                    dot={{ r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="netProfitAfterPersonal" 
+                    stroke="#8b5cf6" 
+                    strokeWidth={2}
+                    name="Net Profit/Loss After Personal"
+                    dot={{ r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
