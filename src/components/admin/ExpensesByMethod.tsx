@@ -33,7 +33,8 @@ const paymentMethods = [
   "Credit Card (Master)",
   "Credit Card (Visa)",
   "Payme",
-  "Octopus", 
+  "Octopus",
+  "Cash",
   "Bank Transfer (Riano)",
   "Bank Transfer (Personal)"
 ];
@@ -98,7 +99,7 @@ const ExpensesByMethod = ({ refreshTrigger, selectedMonth, expenseType }: Expens
   return (
     <div className="space-y-4">
       <Tabs defaultValue={paymentMethods[0]} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7">
           {paymentMethods.map((method) => {
             const total = getTotalByMethod(method);
             const count = getExpensesByMethod(method).length;

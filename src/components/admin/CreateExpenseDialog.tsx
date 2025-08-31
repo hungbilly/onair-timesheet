@@ -165,6 +165,7 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
                 "Credit Card (Visa)", 
                 "Payme",
                 "Octopus",
+                "Cash",
                 "Bank Transfer (Riano)",
                 "Bank Transfer (Personal)"
               ].map((method) => (
