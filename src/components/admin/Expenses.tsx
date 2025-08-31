@@ -99,13 +99,13 @@ const Expenses = ({ userRole }: ExpensesProps) => {
       </div>
 
       {/* Expense Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 md:gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Studio Expenses</CardTitle>
+            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Studio Expenses</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-lg md:text-2xl font-bold text-blue-600">
               {loading ? "..." : formatCurrency(studioTotal)}
             </div>
           </CardContent>
@@ -114,10 +114,10 @@ const Expenses = ({ userRole }: ExpensesProps) => {
         {userRole === "admin" && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Personal Expenses</CardTitle>
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Personal Expenses</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-lg md:text-2xl font-bold text-green-600">
                 {loading ? "..." : formatCurrency(personalTotal)}
               </div>
             </CardContent>
@@ -126,10 +126,10 @@ const Expenses = ({ userRole }: ExpensesProps) => {
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Expenses</CardTitle>
+            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Total Expenses</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">
+            <div className="text-lg md:text-2xl font-bold text-primary">
               {loading ? "..." : formatCurrency(totalExpenses)}
             </div>
           </CardContent>
