@@ -39,11 +39,20 @@ const ProfitLossTrends = () => {
       setIsLoading(true);
       const data: MonthlyData[] = [];
       
-      // Get past 12 months
+      // Get past 12 months - create array of unique months first
+      const monthsArray: string[] = [];
+      const currentDate = new Date();
+      
       for (let i = 11; i >= 0; i--) {
-        const date = new Date();
-        date.setMonth(date.getMonth() - i);
-        const monthYear = date.toISOString().slice(0, 7);
+        const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+        const monthYear = targetDate.toISOString().slice(0, 7);
+        monthsArray.push(monthYear);
+      }
+      
+      console.log("Generated months:", monthsArray);
+      
+      // Process each unique month
+      for (const monthYear of monthsArray) {
         console.log(`Processing month: ${monthYear}`);
         const { startDate, endDate } = getMonthDateRange(monthYear);
         
