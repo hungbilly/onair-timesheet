@@ -67,6 +67,16 @@ const ProfitLossTrends = () => {
         monthsArray.push(monthYear);
       }
       
+      // Ensure current month is always included as the last month
+      const currentMonthYear = currentDate.toISOString().slice(0, 7);
+      if (!monthsArray.includes(currentMonthYear)) {
+        console.log("Current month not in array, adding:", currentMonthYear);
+        // Remove the oldest month and add current month
+        monthsArray.shift();
+        monthsArray.push(currentMonthYear);
+      }
+      console.log("Final months array:", monthsArray);
+      
       console.log("Generated months:", monthsArray);
       
       // Process each unique month
