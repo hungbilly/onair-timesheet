@@ -69,7 +69,9 @@ const ExpensesByMethod = ({ refreshTrigger, selectedMonth, expenseType }: Expens
   }, [refreshTrigger, selectedMonth, expenseType]);
 
   const getExpensesByMethod = (method: string) => {
-    return expenses.filter(expense => expense.method === method);
+    return expenses.filter(expense => 
+      expense.method && expense.method.toLowerCase() === method.toLowerCase()
+    );
   };
 
   const getTotalByMethod = (method: string) => {
