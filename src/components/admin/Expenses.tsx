@@ -3,6 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { DollarSign } from "lucide-react";
 import CreateExpenseDialog from "./CreateExpenseDialog";
+import ExpensesByMethod from "./ExpensesByMethod";
+import MonthSelector from "./MonthSelector";
 
 // Dynamic imports to avoid potential circular dependencies
 import { lazy, Suspense } from "react";
@@ -15,6 +17,7 @@ interface ExpensesProps {
 
 const Expenses = ({ userRole }: ExpensesProps) => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
 
   const handleExpenseCreated = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -22,11 +25,17 @@ const Expenses = ({ userRole }: ExpensesProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <DollarSign className="h-5 w-5" />
-          Expenses
-        </h2>
+      <div className="flex justify-between items-center flex-wrap gap-4">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <DollarSign className="h-5 w-5" />
+            Expenses
+          </h2>
+          <MonthSelector
+            selectedMonth={selectedMonth}
+            onChange={setSelectedMonth}
+          />
+        </div>
         <CreateExpenseDialog onExpenseCreated={handleExpenseCreated} />
       </div>
 
@@ -35,6 +44,10 @@ const Expenses = ({ userRole }: ExpensesProps) => {
           <TabsTrigger value="studio">Studio Expenses</TabsTrigger>
           {userRole === "admin" && (
             <TabsTrigger value="personal">Personal Expenses</TabsTrigger>
+          )}
+          <TabsTrigger value="studio-methods">Studio by Method</TabsTrigger>
+          {userRole === "admin" && (
+            <TabsTrigger value="personal-methods">Personal by Method</TabsTrigger>
           )}
         </TabsList>
 
@@ -49,6 +62,24 @@ const Expenses = ({ userRole }: ExpensesProps) => {
             <Suspense fallback={<div>Loading...</div>}>
               <PersonalExpenses key={`personal-${refreshTrigger}`} refreshTrigger={refreshTrigger} />
             </Suspense>
+          </TabsContent>
+        )}
+
+        <TabsContent value="studio-methods">
+          <ExpensesByMethod 
+            refreshTrigger={refreshTrigger} 
+            selectedMonth={selectedMonth}
+            expenseType="studio"
+          />
+        </TabsContent>
+
+        {userRole === "admin" && (
+          <TabsContent value="personal-methods">
+            <ExpensesByMethod 
+              refreshTrigger={refreshTrigger} 
+              selectedMonth={selectedMonth}
+              expenseType="personal"
+            />
           </TabsContent>
         )}
       </Tabs>
