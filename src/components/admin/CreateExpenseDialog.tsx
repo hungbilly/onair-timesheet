@@ -26,8 +26,7 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
     merchant: "",
     method: "Credit Card (Master)",
     details: "",
-    date: new Date(),
-    paidBy: "Billy"
+    date: new Date()
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,7 +48,7 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
         details: formData.details || null,
         date: format(formData.date, "yyyy-MM-dd"),
         created_by: user.id,
-        ...(expenseType === "personal" && { paid_by: formData.paidBy })
+        ...(expenseType === "personal" && { paid_by: "Billy" })
       };
 
       const tableName = expenseType === "studio" ? "studio_expenses" : "personal_expenses";
@@ -64,8 +63,7 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
         merchant: "",
         method: "Credit Card (Master)",
         details: "",
-        date: new Date(),
-        paidBy: "Billy"
+        date: new Date()
       });
       setExpenseType("personal");
       onExpenseCreated();
@@ -180,18 +178,6 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
               ))}
             </div>
           </div>
-
-          {expenseType === "personal" && (
-            <div className="space-y-2">
-              <Label htmlFor="paidBy">Paid By</Label>
-              <Input
-                id="paidBy"
-                placeholder="Who paid for this expense"
-                value={formData.paidBy}
-                onChange={(e) => setFormData({ ...formData, paidBy: e.target.value })}
-              />
-            </div>
-          )}
 
           <div className="space-y-2">
             <Label htmlFor="details">Details</Label>
