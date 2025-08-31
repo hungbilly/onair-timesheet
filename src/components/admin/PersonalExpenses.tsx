@@ -18,6 +18,8 @@ const PersonalExpenses = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [expenses, setExpenses] = useState<any[]>([]);
+  const [showMerchantChart, setShowMerchantChart] = useState(false);
+  const [showDayChart, setShowDayChart] = useState(false);
 
   const handleExpenseCreated = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -112,13 +114,36 @@ const PersonalExpenses = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="flex gap-2 mb-4">
+        <Button
+          variant="outline"
+          onClick={() => setShowMerchantChart(!showMerchantChart)}
+          className="flex items-center gap-2"
+        >
+          {showMerchantChart ? "Hide" : "Show"} Merchant Distribution
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => setShowDayChart(!showDayChart)}
+          className="flex items-center gap-2"
+        >
+          {showDayChart ? "Hide" : "Show"} Daily Average Spending
+        </Button>
+      </div>
+
+      <div className={`grid gap-4 ${
+        showMerchantChart && showDayChart 
+          ? "grid-cols-1 lg:grid-cols-3" 
+          : showMerchantChart || showDayChart 
+            ? "grid-cols-1 lg:grid-cols-2" 
+            : "grid-cols-1"
+      }`}>
         <Card>
           <PersonalExpensesList refreshTrigger={refreshTrigger} selectedMonth={selectedMonth} />
         </Card>
         
-        <PersonalExpensesMerchantChart expenses={expenses} />
-        <PersonalExpensesDayChart expenses={expenses} />
+        {showMerchantChart && <PersonalExpensesMerchantChart expenses={expenses} />}
+        {showDayChart && <PersonalExpensesDayChart expenses={expenses} />}
       </div>
     </div>
   );
