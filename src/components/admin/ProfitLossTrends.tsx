@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { getMonthDateRange } from "@/utils/dateUtils";
 import { TrendingUp } from "lucide-react";
@@ -20,6 +21,7 @@ interface MonthlyData {
 const ProfitLossTrends = () => {
   const [trendsData, setTrendsData] = useState<MonthlyData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [monthsPeriod, setMonthsPeriod] = useState([6]); // Default to 6 months
   const [visibleLines, setVisibleLines] = useState({
     totalIncome: true,
     totalExpenses: true,
@@ -50,25 +52,19 @@ const ProfitLossTrends = () => {
       setIsLoading(true);
       const data: MonthlyData[] = [];
       
-      // Get past 12 months plus current month (13 total)
+      // Get selected months period (including current month)
+      const selectedPeriod = monthsPeriod[0];
       const monthsArray: string[] = [];
       const currentDate = new Date();
       console.log("Current date:", currentDate.toISOString());
-      console.log("Current month/year:", currentDate.getMonth(), currentDate.getFullYear());
+      console.log("Selected period:", selectedPeriod, "months");
       
-      // Generate 12 previous months + current month = 13 total
-      for (let i = 12; i >= 0; i--) {
+      // Generate selected period months (including current month)
+      for (let i = selectedPeriod - 1; i >= 0; i--) {
         const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
         const monthYear = targetDate.toISOString().slice(0, 7);
-        console.log(`Month ${12-i}:`, monthYear, targetDate.toDateString());
+        console.log(`Month ${selectedPeriod - i}:`, monthYear, targetDate.toDateString());
         monthsArray.push(monthYear);
-      }
-      
-      // Add current month explicitly to make sure it's included
-      const currentMonthYear = currentDate.toISOString().slice(0, 7);
-      if (!monthsArray.includes(currentMonthYear)) {
-        console.log("Adding missing current month:", currentMonthYear);
-        monthsArray.push(currentMonthYear);
       }
       
       console.log("Generated months:", monthsArray);
@@ -171,7 +167,7 @@ const ProfitLossTrends = () => {
     };
 
     fetchTrendsData();
-  }, []);
+  }, [monthsPeriod]);
 
   const toggleLineVisibility = (lineKey: keyof typeof visibleLines) => {
     setVisibleLines(prev => ({
@@ -236,7 +232,7 @@ const ProfitLossTrends = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            13-Month Financial Trends
+            {monthsPeriod[0]}-Month Financial Trends
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -253,16 +249,38 @@ const ProfitLossTrends = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
-          13-Month Financial Trends
+          {monthsPeriod[0]}-Month Financial Trends
         </CardTitle>
       </CardHeader>
       <CardContent>
         {trendsData.length === 0 ? (
           <div className="flex justify-center py-8 text-muted-foreground">
-            No financial data available for the past 13 months
+            No financial data available for the past {monthsPeriod[0]} months
           </div>
         ) : (
           <>
+            {/* Time period slider */}
+            <div className="mb-6">
+              <div className="flex items-center gap-4">
+                <label className="text-sm font-medium text-muted-foreground">
+                  Time Period: {monthsPeriod[0]} months
+                </label>
+                <div className="flex-1 max-w-xs">
+                  <Slider
+                    value={monthsPeriod}
+                    onValueChange={setMonthsPeriod}
+                    min={2}
+                    max={12}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Select from 2 to 12 months
+              </div>
+            </div>
+
             <div className="mb-4">
               <div className="text-sm text-muted-foreground mb-3">
                 Showing data for {trendsData.length} months
