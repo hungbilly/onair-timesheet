@@ -10,8 +10,7 @@ import EmployeeStats from "@/components/admin/EmployeeStats";
 import VendorBills from "@/components/admin/VendorBills";
 import VendorManagement from "@/components/admin/VendorManagement";
 import CompanyIncome from "@/components/admin/CompanyIncome";
-import StudioExpenses from "@/components/admin/StudioExpenses";
-import PersonalExpenses from "@/components/admin/PersonalExpenses";
+import Expenses from "@/components/admin/Expenses";
 import ProfitLoss from "@/components/admin/ProfitLoss";
 import ChangePasswordDialog from "@/components/admin/ChangePasswordDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -90,12 +89,9 @@ const Admin = () => {
           <TabsTrigger value="bills" className="mb-1">Vendor Bills</TabsTrigger>
           <TabsTrigger value="vendors" className="mb-1">Vendors</TabsTrigger>
           <TabsTrigger value="income" className="mb-1">Company Income</TabsTrigger>
-          <TabsTrigger value="studio" className="mb-1">Studio Expenses</TabsTrigger>
+          <TabsTrigger value="expenses" className="mb-1">Expenses</TabsTrigger>
           {userRole === "admin" && (
-            <>
-              <TabsTrigger value="personal" className="mb-1">Personal Expenses</TabsTrigger>
-              <TabsTrigger value="profitloss" className="mb-1">Profit/Loss</TabsTrigger>
-            </>
+            <TabsTrigger value="profitloss" className="mb-1">Profit/Loss</TabsTrigger>
           )}
         </TabsList>
 
@@ -121,20 +117,14 @@ const Admin = () => {
           <CompanyIncome />
         </TabsContent>
 
-        <TabsContent value="studio">
-          <StudioExpenses />
+        <TabsContent value="expenses">
+          <Expenses userRole={userRole as "admin" | "manager"} />
         </TabsContent>
 
         {userRole === "admin" && (
-          <>
-            <TabsContent value="personal">
-              <PersonalExpenses />
-            </TabsContent>
-
-            <TabsContent value="profitloss">
-              <ProfitLoss />
-            </TabsContent>
-          </>
+          <TabsContent value="profitloss">
+            <ProfitLoss />
+          </TabsContent>
         )}
       </Tabs>
     </div>

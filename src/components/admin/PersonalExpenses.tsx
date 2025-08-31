@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import PersonalExpensesList from "./PersonalExpensesList";
-import CreatePersonalExpenseDialog from "./CreatePersonalExpenseDialog";
 import { Wallet, Download } from "lucide-react";
 import MonthSelector from "./MonthSelector";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,17 +13,15 @@ import { getMonthDateRange } from "@/utils/dateUtils";
 import PersonalExpensesMerchantChart from "./PersonalExpensesMerchantChart";
 import PersonalExpensesDayChart from "./PersonalExpensesDayChart";
 
-const PersonalExpenses = () => {
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+interface PersonalExpensesProps {
+  refreshTrigger?: number;
+}
+
+const PersonalExpenses = ({ refreshTrigger = 0 }: PersonalExpensesProps) => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [expenses, setExpenses] = useState<any[]>([]);
   const [showMerchantChart, setShowMerchantChart] = useState(false);
   const [showDayChart, setShowDayChart] = useState(false);
-
-  const handleExpenseCreated = () => {
-    setRefreshTrigger(prev => prev + 1);
-    fetchExpensesForChart();
-  };
 
   const fetchExpensesForChart = useCallback(async () => {
     try {
@@ -110,7 +107,6 @@ const PersonalExpenses = () => {
             <Download className="h-4 w-4" />
             Export XLSX
           </Button>
-          <CreatePersonalExpenseDialog onExpenseCreated={handleExpenseCreated} />
         </div>
       </div>
 

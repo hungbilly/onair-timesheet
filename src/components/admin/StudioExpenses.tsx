@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import StudioExpensesList from "./StudioExpensesList";
-import CreateStudioExpenseDialog from "./CreateStudioExpenseDialog";
 import { Building2, Download } from "lucide-react";
 import MonthSelector from "./MonthSelector";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,13 +11,12 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { getMonthDateRange } from "@/utils/dateUtils";
 
-const StudioExpenses = () => {
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+interface StudioExpensesProps {
+  refreshTrigger?: number;
+}
 
-  const handleExpenseCreated = () => {
-    setRefreshTrigger(prev => prev + 1);
-  };
+const StudioExpenses = ({ refreshTrigger = 0 }: StudioExpensesProps) => {
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
 
   const exportStudioExpenses = async (format: "csv" | "xlsx") => {
     try {
@@ -84,7 +82,6 @@ const StudioExpenses = () => {
             <Download className="h-4 w-4" />
             Export XLSX
           </Button>
-          <CreateStudioExpenseDialog onExpenseCreated={handleExpenseCreated} />
         </div>
       </div>
 
