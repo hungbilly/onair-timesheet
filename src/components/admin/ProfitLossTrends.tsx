@@ -61,7 +61,7 @@ const ProfitLossTrends = () => {
       console.log("Current month year:", currentMonthYear);
       console.log("Selected period:", selectedPeriod, "months");
       
-      // Generate months ending with current month
+      // Generate consecutive months ending with current month
       for (let i = selectedPeriod - 1; i >= 0; i--) {
         const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
         const monthYear = targetDate.toISOString().slice(0, 7);
@@ -69,14 +69,7 @@ const ProfitLossTrends = () => {
         monthsArray.push(monthYear);
       }
       
-      console.log("Generated months array:", monthsArray);
-      
-      // Double check current month is included (it should be the last one)
-      if (!monthsArray.includes(currentMonthYear)) {
-        console.log("WARNING: Current month not in array, replacing last month");
-        monthsArray[monthsArray.length - 1] = currentMonthYear;
-      }
-      console.log("Final months array:", monthsArray);
+      console.log("Generated months array (should end with current month):", monthsArray);
       
       console.log("Generated months:", monthsArray);
       
