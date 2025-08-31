@@ -7,6 +7,7 @@ import { TrendingUp } from "lucide-react";
 
 interface MonthlyData {
   month: string;
+  displayMonth: string;
   totalIncome: number;
   totalExpenses: number;
   personalExpenses: number;
@@ -18,6 +19,21 @@ const ProfitLossTrends = () => {
   const [trendsData, setTrendsData] = useState<MonthlyData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const formatMonth = (monthString: string) => {
+    const [year, month] = monthString.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
   useEffect(() => {
     const fetchTrendsData = async () => {
       setIsLoading(true);
@@ -28,6 +44,7 @@ const ProfitLossTrends = () => {
         const date = new Date();
         date.setMonth(date.getMonth() - i);
         const monthYear = date.toISOString().slice(0, 7);
+        console.log(`Processing month: ${monthYear}`);
         const { startDate, endDate } = getMonthDateRange(monthYear);
         
         try {
@@ -91,6 +108,7 @@ const ProfitLossTrends = () => {
 
           data.push({
             month: monthYear,
+            displayMonth: formatMonth(monthYear),
             totalIncome,
             totalExpenses,
             personalExpenses: totalPersonalExpenses,
@@ -102,6 +120,7 @@ const ProfitLossTrends = () => {
           // Add empty data for this month to maintain chart continuity
           data.push({
             month: monthYear,
+            displayMonth: formatMonth(monthYear),
             totalIncome: 0,
             totalExpenses: 0,
             personalExpenses: 0,
@@ -119,26 +138,11 @@ const ProfitLossTrends = () => {
     fetchTrendsData();
   }, []);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
-  const formatMonth = (monthString: string) => {
-    const [year, month] = monthString.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-  };
-
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-          <p className="font-semibold">{formatMonth(label)}</p>
+          <p className="font-semibold">{payload[0]?.payload?.displayMonth}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
               {entry.name}: {formatCurrency(entry.value)}
@@ -191,9 +195,9 @@ const ProfitLossTrends = () => {
                 <LineChart data={trendsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
-                    dataKey="month" 
-                    tickFormatter={formatMonth}
+                    dataKey="displayMonth"
                     tick={{ fontSize: 12 }}
+                    interval={0}
                   />
                   <YAxis 
                     tickFormatter={formatCurrency}
