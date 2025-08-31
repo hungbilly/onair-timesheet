@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import MonthSelector from "./MonthSelector";
+import ProfitLossTrends from "./ProfitLossTrends";
 import { supabase } from "@/integrations/supabase/client";
 import { getMonthDateRange } from "@/utils/dateUtils";
 import { TrendingUp, ArrowDown, ArrowUp, DollarSign, Wallet } from "lucide-react";
@@ -144,6 +145,9 @@ const ProfitLoss = () => {
         </div>
       ) : (
         <>
+          {/* 12-Month Trends Chart */}
+          <ProfitLossTrends />
+
           {/* Summary cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className={`${financials.netProfit >= 0 ? 'border-green-500/50' : 'border-red-500/50'}`}>
