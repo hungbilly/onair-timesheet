@@ -158,14 +158,27 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="method">Payment Method *</Label>
-            <Input
-              id="method"
-              placeholder="e.g., Credit Card, Cash, Bank Transfer"
-              value={formData.method}
-              onChange={(e) => setFormData({ ...formData, method: e.target.value })}
-              required
-            />
+            <Label>Payment Method *</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                "Credit Card (Master)",
+                "Credit Card (Visa)", 
+                "Payme",
+                "Octopus",
+                "Bank Transfer (Riano)",
+                "Bank Transfer (Personal)"
+              ].map((method) => (
+                <Button
+                  key={method}
+                  type="button"
+                  variant={formData.method === method ? "default" : "outline"}
+                  className="text-xs p-2 h-auto"
+                  onClick={() => setFormData({ ...formData, method })}
+                >
+                  {method}
+                </Button>
+              ))}
+            </div>
           </div>
 
           {expenseType === "personal" && (
