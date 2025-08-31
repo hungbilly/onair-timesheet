@@ -53,10 +53,12 @@ const ProfitLossTrends = () => {
       // Get past 12 months plus current month (13 total)
       const monthsArray: string[] = [];
       const currentDate = new Date();
+      console.log("Current date:", currentDate.toISOString());
       
       for (let i = 12; i >= 0; i--) {
         const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
         const monthYear = targetDate.toISOString().slice(0, 7);
+        console.log(`Month ${i}:`, monthYear, targetDate.toDateString());
         monthsArray.push(monthYear);
       }
       
@@ -169,6 +171,30 @@ const ProfitLossTrends = () => {
     }));
   };
 
+  const selectAllLines = () => {
+    setVisibleLines({
+      totalIncome: true,
+      totalExpenses: true,
+      personalExpenses: true,
+      vendorBills: true,
+      totalSalary: true,
+      netProfit: true,
+      netProfitAfterPersonal: true
+    });
+  };
+
+  const deselectAllLines = () => {
+    setVisibleLines({
+      totalIncome: false,
+      totalExpenses: false,
+      personalExpenses: false,
+      vendorBills: false,
+      totalSalary: false,
+      netProfit: false,
+      netProfitAfterPersonal: false
+    });
+  };
+
   const lineConfigs = [
     { key: 'totalIncome' as const, name: 'Total Income', color: '#22c55e' },
     { key: 'totalExpenses' as const, name: 'Total Expenses', color: '#ef4444' },
@@ -201,7 +227,7 @@ const ProfitLossTrends = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            12-Month Financial Trends
+            13-Month Financial Trends
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -234,25 +260,42 @@ const ProfitLossTrends = () => {
               </div>
               
               {/* Line visibility controls */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {lineConfigs.map(({ key, name, color }) => (
-                  <label 
-                    key={key}
-                    className="flex items-center gap-2 cursor-pointer bg-muted/30 hover:bg-muted/50 px-3 py-1 rounded-full transition-colors"
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <button
+                    onClick={selectAllLines}
+                    className="text-xs px-3 py-1 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
                   >
-                    <input
-                      type="checkbox"
-                      checked={visibleLines[key]}
-                      onChange={() => toggleLineVisibility(key)}
-                      className="w-4 h-4"
-                    />
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: color }}
-                    />
-                    <span className="text-sm font-medium">{name}</span>
-                  </label>
-                ))}
+                    Select All
+                  </button>
+                  <button
+                    onClick={deselectAllLines}
+                    className="text-xs px-3 py-1 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors"
+                  >
+                    Deselect All
+                  </button>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  {lineConfigs.map(({ key, name, color }) => (
+                    <label 
+                      key={key}
+                      className="flex items-center gap-2 cursor-pointer bg-muted/30 hover:bg-muted/50 px-3 py-1 rounded-full transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={visibleLines[key]}
+                        onChange={() => toggleLineVisibility(key)}
+                        className="w-4 h-4"
+                      />
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: color }}
+                      />
+                      <span className="text-sm font-medium">{name}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
             
