@@ -2,9 +2,12 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { DollarSign } from "lucide-react";
-import StudioExpenses from "./StudioExpenses";
-import PersonalExpenses from "./PersonalExpenses";
 import CreateExpenseDialog from "./CreateExpenseDialog";
+
+// Dynamic imports to avoid potential circular dependencies
+import { lazy, Suspense } from "react";
+const StudioExpenses = lazy(() => import("./StudioExpenses"));
+const PersonalExpenses = lazy(() => import("./PersonalExpenses"));
 
 interface ExpensesProps {
   userRole: "admin" | "manager";
@@ -36,12 +39,16 @@ const Expenses = ({ userRole }: ExpensesProps) => {
         </TabsList>
 
         <TabsContent value="studio">
-          <StudioExpenses key={`studio-${refreshTrigger}`} />
+          <Suspense fallback={<div>Loading...</div>}>
+            <StudioExpenses key={`studio-${refreshTrigger}`} refreshTrigger={refreshTrigger} />
+          </Suspense>
         </TabsContent>
 
         {userRole === "admin" && (
           <TabsContent value="personal">
-            <PersonalExpenses key={`personal-${refreshTrigger}`} />
+            <Suspense fallback={<div>Loading...</div>}>
+              <PersonalExpenses key={`personal-${refreshTrigger}`} refreshTrigger={refreshTrigger} />
+            </Suspense>
           </TabsContent>
         )}
       </Tabs>
