@@ -54,12 +54,21 @@ const ProfitLossTrends = () => {
       const monthsArray: string[] = [];
       const currentDate = new Date();
       console.log("Current date:", currentDate.toISOString());
+      console.log("Current month/year:", currentDate.getMonth(), currentDate.getFullYear());
       
+      // Generate 12 previous months + current month = 13 total
       for (let i = 12; i >= 0; i--) {
         const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
         const monthYear = targetDate.toISOString().slice(0, 7);
-        console.log(`Month ${i}:`, monthYear, targetDate.toDateString());
+        console.log(`Month ${12-i}:`, monthYear, targetDate.toDateString());
         monthsArray.push(monthYear);
+      }
+      
+      // Add current month explicitly to make sure it's included
+      const currentMonthYear = currentDate.toISOString().slice(0, 7);
+      if (!monthsArray.includes(currentMonthYear)) {
+        console.log("Adding missing current month:", currentMonthYear);
+        monthsArray.push(currentMonthYear);
       }
       
       console.log("Generated months:", monthsArray);
