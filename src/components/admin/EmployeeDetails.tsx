@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2, Plus, Eye } from "lucide-react";
 
 interface EmployeeDetail {
   id: string;
@@ -43,7 +43,9 @@ const EmployeeDetails = () => {
   const [employeeDetails, setEmployeeDetails] = useState<EmployeeDetail[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<EmployeeDetail | null>(null);
+  const [viewingEmployee, setViewingEmployee] = useState<EmployeeDetail | null>(null);
   const [formData, setFormData] = useState({
     user_id: "",
     full_name: "",
@@ -178,6 +180,17 @@ const EmployeeDetails = () => {
     }
   };
 
+  const handleViewEmployee = (employee: EmployeeDetail) => {
+    setViewingEmployee(employee);
+    setIsViewDialogOpen(true);
+  };
+
+  const truncateText = (text: string | null, maxLength: number = 50) => {
+    if (!text) return "-";
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -288,7 +301,6 @@ const EmployeeDetails = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Full Name</TableHead>
-              <TableHead>Address</TableHead>
               <TableHead>Mobile</TableHead>
               <TableHead>Salary Details</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -297,23 +309,29 @@ const EmployeeDetails = () => {
           <TableBody>
             {employeeDetails.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={4} className="text-center text-muted-foreground">
                   No employee details found. Add one to get started.
                 </TableCell>
               </TableRow>
             ) : (
               employeeDetails.map((employee) => (
-                <TableRow key={employee.id}>
+                <TableRow key={employee.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewEmployee(employee)}>
                   <TableCell className="font-medium">
                     {employee.full_name}
                   </TableCell>
-                  <TableCell>{employee.address || "-"}</TableCell>
                   <TableCell>{employee.mobile || "-"}</TableCell>
-                  <TableCell className="max-w-xs whitespace-pre-wrap">
-                    {employee.salary_details || "-"}
+                  <TableCell className="max-w-xs">
+                    {truncateText(employee.salary_details, 50)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleViewEmployee(employee)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -336,6 +354,57 @@ const EmployeeDetails = () => {
           </TableBody>
         </Table>
       </div>
+
+      {/* View Employee Details Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Employee Details</DialogTitle>
+          </DialogHeader>
+          {viewingEmployee && (
+            <div className="space-y-4 pr-2">
+              <div className="space-y-2">
+                <Label className="text-muted-foreground">Full Name</Label>
+                <p className="text-lg font-medium">{viewingEmployee.full_name}</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-muted-foreground">Mobile</Label>
+                <p>{viewingEmployee.mobile || "-"}</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-muted-foreground">Address</Label>
+                <p className="whitespace-pre-wrap">{viewingEmployee.address || "-"}</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-muted-foreground">Salary Details</Label>
+                <p className="whitespace-pre-wrap">{viewingEmployee.salary_details || "-"}</p>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsViewDialogOpen(false);
+                    handleEdit(viewingEmployee);
+                  }}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsViewDialogOpen(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
