@@ -7,6 +7,7 @@ import { LogOut, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import UserManagement from "@/components/admin/UserManagement";
 import EmployeeStats from "@/components/admin/EmployeeStats";
+import EmployeeDetails from "@/components/admin/EmployeeDetails";
 import VendorBills from "@/components/admin/VendorBills";
 import VendorManagement from "@/components/admin/VendorManagement";
 import CompanyIncome from "@/components/admin/CompanyIncome";
@@ -86,6 +87,7 @@ const Admin = () => {
             <TabsTrigger value="users" className="mb-1">User Management</TabsTrigger>
           )}
           <TabsTrigger value="stats" className="mb-1">Employee Stats</TabsTrigger>
+          <TabsTrigger value="employee-details" className="mb-1">Employee Details</TabsTrigger>
           <TabsTrigger value="bills" className="mb-1">Vendor Bills</TabsTrigger>
           <TabsTrigger value="vendors" className="mb-1">Vendors</TabsTrigger>
           <TabsTrigger value="income" className="mb-1">Company Income</TabsTrigger>
@@ -103,6 +105,10 @@ const Admin = () => {
 
         <TabsContent value="stats">
           <EmployeeStats />
+        </TabsContent>
+
+        <TabsContent value="employee-details">
+          <EmployeeDetails />
         </TabsContent>
 
         <TabsContent value="bills">
