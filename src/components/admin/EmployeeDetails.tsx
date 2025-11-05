@@ -189,13 +189,13 @@ const EmployeeDetails = () => {
               Add Employee Details
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingEmployee ? "Edit Employee Details" : "Add Employee Details"}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 pr-2">
               <div className="space-y-2">
                 <Label htmlFor="user_id">Employee *</Label>
                 <select
