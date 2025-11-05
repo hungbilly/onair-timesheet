@@ -309,7 +309,7 @@ const EmployeeDetails = () => {
                   </TableCell>
                   <TableCell>{employee.address || "-"}</TableCell>
                   <TableCell>{employee.mobile || "-"}</TableCell>
-                  <TableCell className="max-w-xs truncate">
+                  <TableCell className="max-w-xs whitespace-pre-wrap">
                     {employee.salary_details || "-"}
                   </TableCell>
                   <TableCell className="text-right">
