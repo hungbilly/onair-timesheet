@@ -9,10 +9,14 @@ import { generateDetailedCsv } from "@/utils/csvExport";
 import { getMonthDateRange } from "@/utils/dateUtils";
 import { supabase } from "@/integrations/supabase/client";
 import * as XLSX from 'xlsx';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+import { useToast } from "@/hooks/use-toast";
 
 const EmployeeStats = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [selectedEmployee, setSelectedEmployee] = useState<string>("all");
+  const { toast } = useToast();
   
   const { employees, stats, timesheetEntries, expenses, refetch } = useEmployeeData(
     selectedMonth,
@@ -73,7 +77,52 @@ const EmployeeStats = () => {
     );
   };
 
-  const handleExportCsv = async (selectedMonths: string[], selectedEmployees: string[]) => {
+  const downloadReceiptsAsZip = async (employeeData: any[]) => {
+    const zip = new JSZip();
+    let hasReceipts = false;
+
+    for (const employee of employeeData) {
+      const employeeName = (employee.full_name || employee.email).replace(/[^a-zA-Z0-9]/g, '_');
+      const employeeFolder = zip.folder(employeeName);
+
+      if (employeeFolder && employee.expenses) {
+        for (const expense of employee.expenses) {
+          if (expense.receipt_path) {
+            try {
+              const { data, error } = await supabase.storage
+                .from('receipts')
+                .download(expense.receipt_path);
+
+              if (data && !error) {
+                const fileName = expense.receipt_path.split('/').pop() || `receipt_${expense.id}`;
+                employeeFolder.file(fileName, data);
+                hasReceipts = true;
+              }
+            } catch (error) {
+              console.error(`Error downloading receipt for ${employee.full_name}:`, error);
+            }
+          }
+        }
+      }
+    }
+
+    if (hasReceipts) {
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `employee-receipts-${new Date().toISOString().slice(0, 10)}.zip`);
+      toast({
+        title: "Success",
+        description: "Receipts downloaded successfully",
+      });
+    } else {
+      toast({
+        title: "No receipts found",
+        description: "No receipts were found for the selected employees and months",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExportCsv = async (selectedMonths: string[], selectedEmployees: string[], includeReceipts: boolean) => {
     const employeeData = await fetchEmployeeData(selectedMonths, selectedEmployees);
     const csvContent = generateDetailedCsv(employeeData);
     const blob = new Blob([csvContent], { type: "text/csv" });
@@ -83,9 +132,13 @@ const EmployeeStats = () => {
     a.download = `employee-report-${selectedMonths.join("-")}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
+
+    if (includeReceipts) {
+      await downloadReceiptsAsZip(employeeData);
+    }
   };
 
-  const handleExportXlsx = async (selectedMonths: string[], selectedEmployees: string[]) => {
+  const handleExportXlsx = async (selectedMonths: string[], selectedEmployees: string[], includeReceipts: boolean) => {
     const employeeData = await fetchEmployeeData(selectedMonths, selectedEmployees);
     const workbook = XLSX.utils.book_new();
     
@@ -127,6 +180,10 @@ const EmployeeStats = () => {
 
     // Export the workbook
     XLSX.writeFile(workbook, `employee-report-${selectedMonths.join("-")}.xlsx`);
+
+    if (includeReceipts) {
+      await downloadReceiptsAsZip(employeeData);
+    }
   };
 
   return (

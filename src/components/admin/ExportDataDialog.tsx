@@ -20,8 +20,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ExportDataDialogProps {
   employees: { id: string; full_name: string; email: string }[];
-  onExportCsv: (selectedMonths: string[], selectedEmployees: string[]) => void;
-  onExportXlsx: (selectedMonths: string[], selectedEmployees: string[]) => void;
+  onExportCsv: (selectedMonths: string[], selectedEmployees: string[], includeReceipts: boolean) => void;
+  onExportXlsx: (selectedMonths: string[], selectedEmployees: string[], includeReceipts: boolean) => void;
 }
 
 const ExportDataDialog = ({
@@ -31,6 +31,7 @@ const ExportDataDialog = ({
 }: ExportDataDialogProps) => {
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
+  const [includeReceipts, setIncludeReceipts] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   // Generate array of last 12 months
@@ -82,9 +83,9 @@ const ExportDataDialog = ({
         : employees.map((emp) => emp.id);
 
     if (type === "csv") {
-      onExportCsv(monthsToExport, employeesToExport);
+      onExportCsv(monthsToExport, employeesToExport, includeReceipts);
     } else {
-      onExportXlsx(monthsToExport, employeesToExport);
+      onExportXlsx(monthsToExport, employeesToExport, includeReceipts);
     }
     setIsOpen(false);
   };
@@ -164,6 +165,16 @@ const ExportDataDialog = ({
               ))}
             </ScrollArea>
           </div>
+        </div>
+        <div className="flex items-center space-x-2 mt-4 mb-2">
+          <Checkbox
+            id="include-receipts"
+            checked={includeReceipts}
+            onCheckedChange={(checked) => setIncludeReceipts(checked as boolean)}
+          />
+          <Label htmlFor="include-receipts" className="cursor-pointer">
+            Include receipt files (will download as ZIP)
+          </Label>
         </div>
         <div className="flex justify-end space-x-2 mt-4">
           <Button variant="outline" onClick={() => handleExport("csv")}>
