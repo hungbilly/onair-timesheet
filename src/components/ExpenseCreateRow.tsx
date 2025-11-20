@@ -2,7 +2,7 @@ import { useState } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Save, X } from "lucide-react";
+import { Save, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -19,7 +19,7 @@ export const ExpenseCreateRow = ({ onSave }: ExpenseCreateRowProps) => {
   });
   const [file, setFile] = useState<File | null>(null);
 
-  const handleSave = async () => {
+  const handleSave = async (addAnother: boolean = false) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -52,7 +52,6 @@ export const ExpenseCreateRow = ({ onSave }: ExpenseCreateRowProps) => {
       if (error) throw error;
 
       toast.success("Expense created successfully");
-      setIsCreating(false);
       onSave();
       
       // Reset form
@@ -62,6 +61,11 @@ export const ExpenseCreateRow = ({ onSave }: ExpenseCreateRowProps) => {
         amount: "",
       });
       setFile(null);
+
+      // If not adding another, close the form
+      if (!addAnother) {
+        setIsCreating(false);
+      }
     } catch (error) {
       console.error("Error creating expense:", error);
       toast.error("Failed to create expense");
@@ -121,10 +125,18 @@ export const ExpenseCreateRow = ({ onSave }: ExpenseCreateRowProps) => {
           <Button
             variant="outline"
             size="icon"
-            onClick={handleSave}
+            onClick={() => handleSave(false)}
             title="Save expense"
           >
             <Save className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handleSave(true)}
+            title="Save & add another"
+          >
+            <Plus className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
