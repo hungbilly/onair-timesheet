@@ -105,7 +105,7 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
         }));
 
         const tableName = expenseType === "studio" ? "studio_expenses" : "personal_expenses";
-        const { error } = await supabase.from(tableName).insert(expensesData);
+        const { error } = await supabase.from(tableName).insert(expensesData as any);
 
         if (error) throw error;
 
@@ -151,7 +151,7 @@ const CreateExpenseDialog = ({ onExpenseCreated }: CreateExpenseDialogProps) => 
         };
 
         const tableName = expenseType === "studio" ? "studio_expenses" : "personal_expenses";
-        const { error } = await supabase.from(tableName).insert([expenseData]);
+        const { error } = await supabase.from(tableName).insert([expenseData] as any);
 
         if (error) throw error;
 
