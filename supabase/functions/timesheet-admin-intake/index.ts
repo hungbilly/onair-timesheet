@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const MAX_REQUEST_AGE_MS = 5 * 60 * 1000
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/
 
 const json = (body: unknown, status = 200) =>
@@ -38,9 +38,27 @@ function normaliseText(value: unknown) {
   return String(value ?? '').trim().replace(/\s+/g, ' ').toLocaleLowerCase()
 }
 
+function isValidDate(value: string) {
+  const match = DATE_PATTERN.exec(value)
+  if (!match) return false
+
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  const date = new Date(Date.UTC(year, month - 1, day))
+
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  )
+}
+
 function asPositiveNumber(value: unknown, fieldName: string) {
   const number = Number(value)
-  if (!Number.isFinite(number) || number <= 0) throw new Error(`${fieldName} must be a positive number.`)
+  if (!Number.isFinite(number) || number <= 0) {
+    throw new Error(`${fieldName} must be a positive number.`)
+  }
   return number
 }
 
@@ -57,7 +75,10 @@ function minutesSinceMidnight(value: string) {
 }
 
 function periodsOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string) {
-  return minutesSinceMidnight(aStart) < minutesSinceMidnight(bEnd) && minutesSinceMidnight(bStart) < minutesSinceMidnight(aEnd)
+  return (
+    minutesSinceMidnight(aStart) < minutesSinceMidnight(bEnd) &&
+    minutesSinceMidnight(bStart) < minutesSinceMidnight(aEnd)
+  )
 }
 
 type IntakePayload = {
@@ -84,13 +105,15 @@ function validatePayload(raw: Record<string, unknown>): IntakePayload {
 
   if (!UUID_PATTERN.test(external_intake_id)) throw new Error('external_intake_id must be a UUID.')
   if (employee_name_input.length < 2) throw new Error('employee_name_input is required.')
-  if (!DATE_PATTERN.test(date) || Number.isNaN(new Date(`${date}T00:00:00Z`).getTime())) throw new Error('date must be a valid YYYY-MM-DD value.')
+  if (!isValidDate(date)) throw new Error('date must be a real calendar date in YYYY-MM-DD format.')
   if (!work_type) throw new Error('work_type must be hourly or job.')
   if (!job_description) throw new Error('job_description is required.')
 
   const start_time = asOptionalTime(raw.start_time, 'start_time')
   const end_time = asOptionalTime(raw.end_time, 'end_time')
-  if ((start_time && !end_time) || (!start_time && end_time)) throw new Error('start_time and end_time must be supplied together.')
+  if ((start_time && !end_time) || (!start_time && end_time)) {
+    throw new Error('start_time and end_time must be supplied together.')
+  }
   if (start_time && end_time && minutesSinceMidnight(start_time) >= minutesSinceMidnight(end_time)) {
     throw new Error('end_time must be later than start_time.')
   }
@@ -141,11 +164,20 @@ async function resolveEmployee(
   if (error) throw new Error(`Employee lookup failed: ${error.message}`)
 
   const wanted = normaliseText(inputName)
-  const exact = (profiles ?? []).filter((profile) => normaliseText(profile.full_name) === wanted || normaliseText(profile.email) === wanted)
-  const partial = (profiles ?? []).filter((profile) => normaliseText(profile.full_name).includes(wanted))
+  const exact = (profiles ?? []).filter(
+    (profile) =>
+      normaliseText(profile.full_name) === wanted ||
+      normaliseText(profile.email) === wanted,
+  )
+  const partial = (profiles ?? []).filter((profile) =>
+    normaliseText(profile.full_name).includes(wanted)
+  )
   const matches = exact.length ? exact : partial
 
-  if (matches.length === 1) return { outcome: 'resolved' as const, employee: matches[0], created: false }
+  if (matches.length === 1) {
+    return { outcome: 'resolved' as const, employee: matches[0], created: false }
+  }
+
   if (matches.length > 1) {
     return {
       outcome: 'needs_review' as const,
@@ -153,15 +185,30 @@ async function resolveEmployee(
       candidates: matches.map(({ id, full_name, email }) => ({ id, full_name, email })),
     }
   }
-  if (!createIfMissing) return { outcome: 'needs_review' as const, reason: 'Employee could not be uniquely resolved.' }
+
+  if (!createIfMissing) {
+    return {
+      outcome: 'needs_review' as const,
+      reason: 'Employee could not be uniquely resolved.',
+    }
+  }
 
   const generatedEmail = `one-off-${crypto.randomUUID()}@onair.local`
   const { data: createdUser, error: createError } = await supabase.auth.admin.createUser({
     email: generatedEmail,
     email_confirm: true,
-    user_metadata: { full_name: inputName, worker_type: 'one_off', login_provided: false },
+    user_metadata: {
+      full_name: inputName,
+      worker_type: 'one_off',
+      login_provided: false,
+    },
   })
-  if (createError || !createdUser.user) throw new Error(`Could not create one-off staff identity: ${createError?.message ?? 'No user returned.'}`)
+
+  if (createError || !createdUser.user) {
+    throw new Error(
+      `Could not create one-off staff identity: ${createError?.message ?? 'No user returned.'}`,
+    )
+  }
 
   const profile = {
     id: createdUser.user.id,
@@ -170,19 +217,47 @@ async function resolveEmployee(
     role: 'staff',
     updated_at: new Date().toISOString(),
   }
+
   const { data: savedProfile, error: profileError } = await supabase
     .from('profiles')
     .upsert(profile, { onConflict: 'id' })
     .select('id, full_name, email, role')
     .single()
-  if (profileError) throw new Error(`Could not create one-off staff profile: ${profileError.message}`)
 
-  return { outcome: 'resolved' as const, employee: savedProfile, created: true }
+  if (profileError) {
+    throw new Error(`Could not create one-off staff profile: ${profileError.message}`)
+  }
+
+  return {
+    outcome: 'resolved' as const,
+    employee: savedProfile,
+    created: true,
+  }
 }
 
 function sameNumber(left: number | null, right: number | null) {
-  if (left === null || left === undefined || right === null || right === undefined) return left === right
+  if (left === null || left === undefined || right === null || right === undefined) {
+    return left === right
+  }
   return Number(left) === Number(right)
+}
+
+function sameWorkAndPay(entry: Record<string, any>, input: IntakePayload) {
+  return (
+    entry.work_type === input.work_type &&
+    sameNumber(entry.hours, input.hours ?? null) &&
+    sameNumber(entry.hourly_rate, input.hourly_rate ?? null) &&
+    sameNumber(entry.job_count, input.job_count ?? null) &&
+    sameNumber(entry.job_rate, input.job_rate ?? null)
+  )
+}
+
+function sameDescription(entry: Record<string, any>, input: IntakePayload) {
+  return normaliseText(entry.job_description) === normaliseText(input.job_description)
+}
+
+function hasCompleteTimes(entry: Record<string, any>) {
+  return Boolean(entry.start_time && entry.end_time)
 }
 
 Deno.serve(async (request) => {
@@ -191,15 +266,25 @@ Deno.serve(async (request) => {
   const sharedSecret = Deno.env.get('SHEET_MIRROR_SHARED_SECRET')
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
-  if (!sharedSecret || !serviceRoleKey || !supabaseUrl) return json({ error: 'Server configuration is incomplete.' }, 500)
+
+  if (!sharedSecret || !serviceRoleKey || !supabaseUrl) {
+    return json({ error: 'Server configuration is incomplete.' }, 500)
+  }
 
   const timestamp = request.headers.get('x-boa-timestamp')
   const signature = request.headers.get('x-boa-signature')
   const bodyText = await request.text()
   const timestampMs = Number(timestamp)
-  if (!timestamp || !signature || !Number.isFinite(timestampMs) || Math.abs(Date.now() - timestampMs) > MAX_REQUEST_AGE_MS) {
+
+  if (
+    !timestamp ||
+    !signature ||
+    !Number.isFinite(timestampMs) ||
+    Math.abs(Date.now() - timestampMs) > MAX_REQUEST_AGE_MS
+  ) {
     return json({ error: 'Request signature is missing or expired.' }, 401)
   }
+
   if (!sameValue(signature, await hmacHex(sharedSecret, `${timestamp}.${bodyText}`))) {
     return json({ error: 'Request signature is invalid.' }, 401)
   }
@@ -215,67 +300,151 @@ Deno.serve(async (request) => {
   try {
     input = validatePayload(raw)
   } catch (error) {
-    return json({ outcome: 'needs_review', reason: error instanceof Error ? error.message : String(error) }, 422)
+    return json(
+      {
+        outcome: 'needs_review',
+        reason: error instanceof Error ? error.message : String(error),
+      },
+      422,
+    )
   }
 
-  const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } })
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
 
   try {
     const { data: existingByIntakeId, error: idempotencyError } = await supabase
       .from('timesheet_entries')
-      .select('id, user_id, date, work_type, job_description, hours, hourly_rate, start_time, end_time, job_count, job_rate, total_salary')
+      .select(
+        'id, user_id, date, work_type, job_description, hours, hourly_rate, start_time, end_time, job_count, job_rate, total_salary',
+      )
       .eq('external_intake_id', input.external_intake_id)
       .maybeSingle()
-    if (idempotencyError) throw new Error(`Idempotency lookup failed: ${idempotencyError.message}`)
-    if (existingByIntakeId) return json({ outcome: 'synced', idempotent: true, record: existingByIntakeId })
 
-    const employeeResult = await resolveEmployee(supabase, input.employee_name_input, Boolean(input.create_staff_if_missing))
-    if (employeeResult.outcome !== 'resolved') return json(employeeResult, 409)
+    if (idempotencyError) {
+      throw new Error(`Idempotency lookup failed: ${idempotencyError.message}`)
+    }
+
+    if (existingByIntakeId) {
+      return json({
+        outcome: 'synced',
+        idempotent: true,
+        record: existingByIntakeId,
+      })
+    }
+
+    const employeeResult = await resolveEmployee(
+      supabase,
+      input.employee_name_input,
+      Boolean(input.create_staff_if_missing),
+    )
+
+    if (employeeResult.outcome !== 'resolved') {
+      return json(employeeResult, 409)
+    }
+
     const employee = employeeResult.employee
 
     const { data: existingEntries, error: existingError } = await supabase
       .from('timesheet_entries')
-      .select('id, work_type, job_description, hours, hourly_rate, start_time, end_time, job_count, job_rate, total_salary')
+      .select(
+        'id, work_type, job_description, hours, hourly_rate, start_time, end_time, job_count, job_rate, total_salary',
+      )
       .eq('user_id', employee.id)
       .eq('date', input.date)
-    if (existingError) throw new Error(`Duplicate lookup failed: ${existingError.message}`)
 
-    const exactDuplicate = (existingEntries ?? []).find((entry) =>
-      entry.work_type === input.work_type &&
-      normaliseText(entry.job_description) === normaliseText(input.job_description) &&
-      sameNumber(entry.hours, input.hours ?? null) &&
-      sameNumber(entry.hourly_rate, input.hourly_rate ?? null) &&
-      sameNumber(entry.job_count, input.job_count ?? null) &&
-      sameNumber(entry.job_rate, input.job_rate ?? null) &&
-      (entry.start_time ?? null) === input.start_time &&
-      (entry.end_time ?? null) === input.end_time,
+    if (existingError) {
+      throw new Error(`Duplicate lookup failed: ${existingError.message}`)
+    }
+
+    const exactDuplicate = (existingEntries ?? []).find(
+      (entry) =>
+        sameWorkAndPay(entry, input) &&
+        sameDescription(entry, input) &&
+        (entry.start_time ?? null) === input.start_time &&
+        (entry.end_time ?? null) === input.end_time,
     )
+
     if (exactDuplicate) {
-      return json({ outcome: 'exact_duplicate', reason: 'An identical active timesheet entry already exists.', employee, record: exactDuplicate })
+      return json({
+        outcome: 'exact_duplicate',
+        reason: 'An identical active timesheet entry already exists.',
+        employee,
+        record: exactDuplicate,
+      })
     }
 
-    const overlappingEntry = input.start_time && input.end_time
-      ? (existingEntries ?? []).find((entry) => entry.start_time && entry.end_time && periodsOverlap(input.start_time!, input.end_time!, entry.start_time, entry.end_time))
-      : null
+    const overlappingEntry =
+      input.start_time && input.end_time
+        ? (existingEntries ?? []).find(
+            (entry) =>
+              entry.start_time &&
+              entry.end_time &&
+              periodsOverlap(
+                input.start_time!,
+                input.end_time!,
+                entry.start_time,
+                entry.end_time,
+              ),
+          )
+        : null
+
     if (overlappingEntry) {
-      return json({ outcome: 'needs_review', reason: 'Work period overlaps an existing entry.', employee, record: overlappingEntry }, 409)
+      return json(
+        {
+          outcome: 'needs_review',
+          reason: 'Work period overlaps an existing entry.',
+          employee,
+          record: overlappingEntry,
+        },
+        409,
+      )
     }
 
-    const likelyDuplicate = (existingEntries ?? []).find((entry) =>
-      entry.work_type === input.work_type &&
-      normaliseText(entry.job_description) !== normaliseText(input.job_description) &&
-      sameNumber(entry.hours, input.hours ?? null) &&
-      sameNumber(entry.hourly_rate, input.hourly_rate ?? null) &&
-      sameNumber(entry.job_count, input.job_count ?? null) &&
-      sameNumber(entry.job_rate, input.job_rate ?? null),
+    const ambiguousMissingTimeDuplicate = (existingEntries ?? []).find(
+      (entry) =>
+        sameWorkAndPay(entry, input) &&
+        sameDescription(entry, input) &&
+        (!hasCompleteTimes(entry) || !input.start_time || !input.end_time),
     )
-    if (likelyDuplicate) {
-      return json({ outcome: 'needs_review', reason: 'Same employee, date, work values and pay rate as an existing entry, but the job description differs.', employee, record: likelyDuplicate }, 409)
+
+    if (ambiguousMissingTimeDuplicate) {
+      return json(
+        {
+          outcome: 'needs_review',
+          reason:
+            'Same employee, date, work description and pay values as an existing entry, but one side has no complete time window. Review before inserting.',
+          employee,
+          record: ambiguousMissingTimeDuplicate,
+        },
+        409,
+      )
     }
 
-    const totalSalary = input.work_type === 'hourly'
-      ? Number(input.hours) * Number(input.hourly_rate)
-      : Number(input.job_count) * Number(input.job_rate)
+    const likelyDuplicate = (existingEntries ?? []).find(
+      (entry) =>
+        sameWorkAndPay(entry, input) &&
+        !sameDescription(entry, input),
+    )
+
+    if (likelyDuplicate) {
+      return json(
+        {
+          outcome: 'needs_review',
+          reason:
+            'Same employee, date, work values and pay rate as an existing entry, but the job description differs.',
+          employee,
+          record: likelyDuplicate,
+        },
+        409,
+      )
+    }
+
+    const totalSalary =
+      input.work_type === 'hourly'
+        ? Number(input.hours) * Number(input.hourly_rate)
+        : Number(input.job_count) * Number(input.job_rate)
 
     const { data: createdEntry, error: insertError } = await supabase
       .from('timesheet_entries')
@@ -294,22 +463,64 @@ Deno.serve(async (request) => {
         job_rate: input.job_rate,
         total_salary: totalSalary,
       })
-      .select('id, user_id, date, work_type, job_description, hours, hourly_rate, start_time, end_time, job_count, job_rate, total_salary, external_intake_id, source')
+      .select(
+        'id, user_id, date, work_type, job_description, hours, hourly_rate, start_time, end_time, job_count, job_rate, total_salary, external_intake_id, source',
+      )
       .single()
 
     if (insertError?.code === '23505') {
       const { data: racedEntry, error: raceError } = await supabase
         .from('timesheet_entries')
-        .select('id, user_id, date, work_type, job_description, hours, hourly_rate, start_time, end_time, job_count, job_rate, total_salary')
+        .select(
+          'id, user_id, date, work_type, job_description, hours, hourly_rate, start_time, end_time, job_count, job_rate, total_salary',
+        )
         .eq('external_intake_id', input.external_intake_id)
         .maybeSingle()
-      if (raceError || !racedEntry) throw new Error(`Duplicate recovery failed: ${raceError?.message ?? insertError.message}`)
-      return json({ outcome: 'synced', idempotent: true, record: racedEntry })
-    }
-    if (insertError) throw new Error(`Timesheet insert failed: ${insertError.message}`)
 
-    return json({ outcome: 'synced', idempotent: false, employee, employee_created: employeeResult.created, record: createdEntry })
+      if (raceError || !racedEntry) {
+        throw new Error(
+          `Duplicate recovery failed: ${raceError?.message ?? insertError.message}`,
+        )
+      }
+
+      return json({
+        outcome: 'synced',
+        idempotent: true,
+        record: racedEntry,
+      })
+    }
+
+    if (
+      insertError?.code === 'P0001' &&
+      (insertError.message?.includes('TIMESHEET_DUPLICATE_GUARD') ||
+        insertError.details?.includes('Potential duplicate or overlapping timesheet'))
+    ) {
+      return json(
+        {
+          outcome: 'needs_review',
+          reason:
+            'The database blocked this entry because another write created a duplicate or overlap during processing. Review the existing entry before retrying.',
+          employee,
+        },
+        409,
+      )
+    }
+
+    if (insertError) {
+      throw new Error(`Timesheet insert failed: ${insertError.message}`)
+    }
+
+    return json({
+      outcome: 'synced',
+      idempotent: false,
+      employee,
+      employee_created: employeeResult.created,
+      record: createdEntry,
+    })
   } catch (error) {
-    return json({ error: error instanceof Error ? error.message : String(error) }, 500)
+    return json(
+      { error: error instanceof Error ? error.message : String(error) },
+      500,
+    )
   }
 })
