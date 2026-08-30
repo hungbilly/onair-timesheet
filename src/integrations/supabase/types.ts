@@ -252,12 +252,14 @@ export type Database = {
           created_at: string
           date: string
           end_time: string | null
+          external_intake_id: string | null
           hourly_rate: number | null
           hours: number | null
           id: string
           job_count: number | null
           job_description: string
           job_rate: number | null
+          source: string
           start_time: string | null
           total_salary: number
           user_id: string
@@ -267,12 +269,14 @@ export type Database = {
           created_at?: string
           date: string
           end_time?: string | null
+          external_intake_id?: string | null
           hourly_rate?: number | null
           hours?: number | null
           id?: string
           job_count?: number | null
           job_description: string
           job_rate?: number | null
+          source?: string
           start_time?: string | null
           total_salary: number
           user_id: string
@@ -282,12 +286,14 @@ export type Database = {
           created_at?: string
           date?: string
           end_time?: string | null
+          external_intake_id?: string | null
           hourly_rate?: number | null
           hours?: number | null
           id?: string
           job_count?: number | null
           job_description?: string
           job_rate?: number | null
+          source?: string
           start_time?: string | null
           total_salary?: number
           user_id?: string
